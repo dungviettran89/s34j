@@ -1,0 +1,2 @@
+rootProject.name = 's34j'
+include 's34j-server'
