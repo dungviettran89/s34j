@@ -45,7 +45,9 @@ public class S3RequestParser {
         S3Request s3Request = new S3Request()
                 .setMethod(request.getMethod())
                 .setUri(request.getRequestURI())
-                .setUrl(request.getRequestURL().toString());
+                .setUrl(request.getRequestURL().toString())
+                .setQueryString(request.getQueryString())
+                .setDate(request.getDateHeader("Date"));
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String header = headerNames.nextElement();

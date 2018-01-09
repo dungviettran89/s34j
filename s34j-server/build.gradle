@@ -26,13 +26,6 @@ repositories {
 dependencies {
 	compile project(':s34j-core')
 
-	compile('com.amazonaws:aws-java-sdk-s3:1.11.258')
-	compile('org.apache.commons:commons-lang3:3.6')
-	compile('org.slf4j:slf4j-api:1.7.25')
-	compile('commons-io:commons-io:2.6')
-	compile('com.google.guava:guava:23.3-jre')
-	compile('com.google.code.gson:gson:2.8.2')
-
 	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('org.springframework.boot:spring-boot-starter-web')
 	runtime('com.h2database:h2')

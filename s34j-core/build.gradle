@@ -16,17 +16,15 @@ repositories {
 
 
 dependencies {
-    compile('com.amazonaws:aws-java-sdk-s3:1.11.258')
-
     compile('org.apache.commons:commons-lang3:3.6')
     compile('org.slf4j:slf4j-api:1.7.25')
     compile('commons-io:commons-io:2.6')
     compile('com.google.guava:guava:23.3-jre')
     compile('com.google.code.gson:gson:2.8.2')
     compile('org.modelmapper:modelmapper:1.1.2')
+    compile('org.apache.httpcomponents:httpclient:4.5.4')
 
     compileOnly('javax.servlet:javax.servlet-api:3.1.0')
-
 
     testCompile('junit:junit:4.12')
     testCompile('org.slf4j:slf4j-simple:1.7.25')

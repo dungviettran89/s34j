@@ -2,6 +2,7 @@ package us.cuatoi.s34jserver.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import us.cuatoi.s34jserver.core.auth.S3RequestVerifier;
 import us.cuatoi.s34jserver.core.model.S3Request;
 
 import javax.servlet.http.HttpServletRequest;

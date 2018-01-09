@@ -14,6 +14,8 @@ public class S3Request {
     private String uri;
     private String url;
     private String method;
+    private String queryString;
+    private long date;
     private transient Path content;
     private Map<String, String> headers = new HashMap<>();
 
@@ -55,6 +57,14 @@ public class S3Request {
         return url;
     }
 
+    public String getQueryString() {
+        return queryString;
+    }
+
+    public long getDate() {
+        return date;
+    }
+
     /**
      * Setters
      */
@@ -93,6 +103,16 @@ public class S3Request {
         return this;
     }
 
+    public S3Request setQueryString(String queryString) {
+        this.queryString = queryString;
+        return this;
+    }
+
+    public S3Request setDate(long date) {
+        this.date = date;
+        return this;
+    }
+
     /**
      * Utilities
      */
@@ -101,9 +121,15 @@ public class S3Request {
         return this;
     }
 
+    public String getHeader(String header) {
+        return this.headers.get(header);
+    }
+
 
     @Override
     public String toString() {
         return getClass().getSimpleName() + GsonHelper.toPrettyJson(this);
     }
+
+
 }
