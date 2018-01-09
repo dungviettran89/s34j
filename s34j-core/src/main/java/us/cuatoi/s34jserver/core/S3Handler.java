@@ -5,14 +5,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.cuatoi.s34jserver.core.auth.S3RequestVerifier;
 import us.cuatoi.s34jserver.core.dto.ErrorResponse;
-import us.cuatoi.s34jserver.core.model.*;
+import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
+import us.cuatoi.s34jserver.core.model.S3Request;
+import us.cuatoi.s34jserver.core.model.S3Response;
 import us.cuatoi.s34jserver.core.model.bucket.*;
-import us.cuatoi.s34jserver.core.operation.GetBucketsRequestRequestHandler;
+import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
+import us.cuatoi.s34jserver.core.operation.GetBucketsS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.S3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.bucket.DeleteBucketS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.bucket.GetLocationBucketS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.bucket.HeadBucketS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.bucket.PutBucketS3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.S3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.object.DeleteObjectS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.object.PutObjectS3RequestHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -67,8 +73,8 @@ public class S3Handler {
     }
 
     private S3RequestHandler getHandler(S3Request s3Request) {
-        if (s3Request instanceof GetBucketsRequest) {
-            return new GetBucketsRequestRequestHandler(context, (GetBucketsRequest) s3Request);
+        if (s3Request instanceof GetBucketsS3Request) {
+            return new GetBucketsS3RequestHandler(context, (GetBucketsS3Request) s3Request);
         } else if (s3Request instanceof PutBucketS3Request) {
             return new PutBucketS3RequestHandler(context, (PutBucketS3Request) s3Request);
         } else if (s3Request instanceof GetLocationBucketS3Request) {
@@ -77,6 +83,10 @@ public class S3Handler {
             return new DeleteBucketS3RequestHandler(context, (DeleteBucketS3Request) s3Request);
         } else if (s3Request instanceof HeadBucketS3Request) {
             return new HeadBucketS3RequestHandler(context, (HeadBucketS3Request) s3Request);
+        } else if (s3Request instanceof PutObjectS3Request) {
+            return new PutObjectS3RequestHandler(context, (PutObjectS3Request) s3Request);
+        }else if (s3Request instanceof DeleteObjectS3Request) {
+            return new DeleteObjectS3RequestHandler(context, (DeleteObjectS3Request) s3Request);
         }
         return null;
     }

@@ -2,12 +2,15 @@ package us.cuatoi.s34jserver.core;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import us.cuatoi.s34jserver.core.model.GetBucketsRequest;
+import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.DeleteBucketS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.GetLocationBucketS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.HeadBucketS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.PutBucketS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
+import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.GetObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -51,7 +54,7 @@ public class S3RequestParser {
         }
         if (root) {
             //root request
-            return new GetBucketsRequest(s3Request);
+            return new GetBucketsS3Request(s3Request);
         } else if (slashCount == 1) {
             //bucket request
             String bucketName = substring(uri, 1);
@@ -61,8 +64,19 @@ public class S3RequestParser {
                 return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "delete")) {
                 return new DeleteBucketS3Request(s3Request).setBucketName(bucketName);
-            }else if (equalsIgnoreCase(method, "head")) {
+            } else if (equalsIgnoreCase(method, "head")) {
                 return new HeadBucketS3Request(s3Request).setBucketName(bucketName);
+            }
+        } else {
+            int secondSlash = indexOf(uri, '/', 2);
+            String bucketName = substring(uri, 1, secondSlash);
+            String objectName = substring(uri, secondSlash + 1);
+            if (equalsIgnoreCase(method, "put") && queryParams.size() == 0) {
+                return new PutObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+            } else if (equalsIgnoreCase(method, "delete") && queryParams.size() == 0) {
+                return new DeleteObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+            } else if (equalsIgnoreCase(method, "get") && queryParams.size() == 0) {
+                return new GetObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
             }
         }
         return s3Request;

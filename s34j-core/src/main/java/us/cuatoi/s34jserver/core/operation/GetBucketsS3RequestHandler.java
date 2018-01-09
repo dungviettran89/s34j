@@ -6,8 +6,8 @@ import us.cuatoi.s34jserver.core.dto.BucketResponse;
 import us.cuatoi.s34jserver.core.dto.BucketsResponse;
 import us.cuatoi.s34jserver.core.dto.ListAllMyBucketsResult;
 import us.cuatoi.s34jserver.core.dto.OwnerResponse;
-import us.cuatoi.s34jserver.core.model.GetBucketsRequest;
-import us.cuatoi.s34jserver.core.model.GetBucketsResponse;
+import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
+import us.cuatoi.s34jserver.core.model.GetBucketsS3Response;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,13 +15,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import static us.cuatoi.s34jserver.core.S3Constants.EXPIRATION_DATE_FORMAT;
 
-public class GetBucketsRequestRequestHandler extends S3RequestHandler<GetBucketsRequest, GetBucketsResponse> {
-    public GetBucketsRequestRequestHandler(S3Context context, GetBucketsRequest s3Request) {
+public class GetBucketsS3RequestHandler extends S3RequestHandler<GetBucketsS3Request, GetBucketsS3Response> {
+    public GetBucketsS3RequestHandler(S3Context context, GetBucketsS3Request s3Request) {
         super(context, s3Request);
     }
 
     @Override
-    public GetBucketsResponse handle() throws IOException {
+    public GetBucketsS3Response handle() throws IOException {
         BucketsResponse b = new BucketsResponse();
         Files.list(baseDir).forEach((p) -> {
             try {
@@ -45,6 +45,6 @@ public class GetBucketsRequestRequestHandler extends S3RequestHandler<GetBuckets
         ListAllMyBucketsResult content = new ListAllMyBucketsResult();
         content.setOwner(or);
         content.setBuckets(b);
-        return (GetBucketsResponse) new GetBucketsResponse(s3Request).setContent(content);
+        return (GetBucketsS3Response) new GetBucketsS3Response(s3Request).setContent(content);
     }
 }
