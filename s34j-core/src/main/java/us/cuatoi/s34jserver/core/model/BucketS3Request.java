@@ -1,17 +1,17 @@
 package us.cuatoi.s34jserver.core.model;
 
-public class S3BucketRequest extends S3Request {
+public class BucketS3Request extends S3Request {
     private String bucketName;
 
     /**
      * Constructors
      */
 
-    public S3BucketRequest() {
+    public BucketS3Request() {
         super();
     }
 
-    public S3BucketRequest(S3Request request) {
+    public BucketS3Request(S3Request request) {
         super(request);
     }
 
@@ -25,7 +25,7 @@ public class S3BucketRequest extends S3Request {
     /**
      * Setters
      */
-    public S3BucketRequest setBucketName(String bucketName) {
+    public BucketS3Request setBucketName(String bucketName) {
         this.bucketName = bucketName;
         return this;
     }

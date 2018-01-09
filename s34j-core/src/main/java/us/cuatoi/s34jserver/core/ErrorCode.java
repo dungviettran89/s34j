@@ -2,7 +2,7 @@ package us.cuatoi.s34jserver.core;
 
 import static javax.servlet.http.HttpServletResponse.*;
 
-public enum S3ErrorCode {
+public enum ErrorCode {
     // custom error codes
     NO_SUCH_OBJECT(SC_NOT_FOUND, "NoSuchKey", "Object does not exist"),
     RESOURCE_NOT_FOUND(SC_NOT_FOUND, "ResourceNotFound", "Request resource not found"),
@@ -109,7 +109,7 @@ public enum S3ErrorCode {
     private String name;
     private String description;
 
-    S3ErrorCode(int statusCode, String name, String description) {
+    ErrorCode(int statusCode, String name, String description) {
         this.statusCode = statusCode;
         this.name = name;
         this.description = description;

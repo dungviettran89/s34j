@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.cuatoi.s34jserver.core.S3ErrorCode;
+import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Exception;
 
 import java.text.SimpleDateFormat;
@@ -93,7 +93,7 @@ public class AWS4Authorization {
         Matcher matcher = PATTERN.matcher(authorizationHeader);
 
         if (!matcher.matches()) {
-            throw new S3Exception(S3ErrorCode.AUTHORIZATION_HEADER_MALFORMED);
+            throw new S3Exception(ErrorCode.AUTHORIZATION_HEADER_MALFORMED);
         }
 
         try {
@@ -106,7 +106,7 @@ public class AWS4Authorization {
             return this;
         } catch (Exception ex) {
             logger.warn("Can not parse header " + authorizationHeader, ex);
-            throw new S3Exception(S3ErrorCode.AUTHORIZATION_HEADER_MALFORMED);
+            throw new S3Exception(ErrorCode.AUTHORIZATION_HEADER_MALFORMED);
         }
     }
 

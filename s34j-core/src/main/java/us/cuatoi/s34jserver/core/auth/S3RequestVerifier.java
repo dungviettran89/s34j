@@ -7,7 +7,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.cuatoi.s34jserver.core.S3Context;
-import us.cuatoi.s34jserver.core.S3ErrorCode;
+import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Exception;
 import us.cuatoi.s34jserver.core.model.S3Request;
 
@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.*;
+import static us.cuatoi.s34jserver.core.ErrorCode.MISSING_SECURITY_HEADER;
 
 public class S3RequestVerifier {
     private S3Context context;
@@ -53,18 +54,18 @@ public class S3RequestVerifier {
                     com.google.common.io.Files.asByteSource(content.toFile()).hash(Hashing.sha256()).toString() :
                     AWS4SignerBase.EMPTY_BODY_SHA256;
             if (!equalsIgnoreCase(computedSha256, providedSha256)) {
-                throw new S3Exception(S3ErrorCode.BAD_DIGEST);
+                throw new S3Exception(ErrorCode.BAD_DIGEST);
             }
             String providedMd5 = s3Request.getHeader("content-md5");
             if (contentLength > 0 && isNotBlank(providedMd5)) {
                 String computedMd5 = com.google.common.io.Files.asByteSource(content.toFile()).hash(Hashing.md5()).toString();
                 if (!equalsIgnoreCase(providedMd5, computedMd5)) {
-                    throw new S3Exception(S3ErrorCode.INVALID_DIGEST);
+                    throw new S3Exception(ErrorCode.INVALID_DIGEST);
                 }
             }
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
-            throw new S3Exception(S3ErrorCode.INTERNAL_ERROR);
+            throw new S3Exception(ErrorCode.INTERNAL_ERROR);
         }
     }
 
@@ -75,7 +76,7 @@ public class S3RequestVerifier {
             AWS4Authorization authorization = new AWS4Authorization(authorizationHeader);
             String bodyHash = s3Request.getHeader("x-amz-content-sha256");
             if (isBlank(bodyHash)) {
-                throw new S3Exception(S3ErrorCode.MISSING_SECURITY_HEADER);
+                throw new S3Exception(MISSING_SECURITY_HEADER);
             }
             String method = s3Request.getMethod();
             String serviceName = authorization.getServiceName();
@@ -85,7 +86,7 @@ public class S3RequestVerifier {
             String awsSecretKey = context.getSecretKey(awsAccessKey);
 
             if (isBlank(awsSecretKey)) {
-                throw new S3Exception(S3ErrorCode.INVALID_ACCESS_KEY_ID);
+                throw new S3Exception(ErrorCode.INVALID_ACCESS_KEY_ID);
             }
             HashMap<String, String> headers = new HashMap<>();
             for (String header : authorization.getSignedHeaders()) {
@@ -105,10 +106,13 @@ public class S3RequestVerifier {
 
             String amzDateHeader = s3Request.getHeader("x-amz-date");
             long dateHeader = s3Request.getDate();
+            if (dateHeader <= 0 && isBlank(amzDateHeader)) {
+                throw new S3Exception(MISSING_SECURITY_HEADER);
+            }
             Date date = isBlank(amzDateHeader) ? new Date(dateHeader) :
                     AWS4Authorization.utcDateFormat(AWS4SignerBase.ISO8601BasicFormat).parse(amzDateHeader);
             if (Math.abs(date.getTime() - new Date().getTime()) > maxDifferent) {
-                throw new S3Exception(S3ErrorCode.REQUEST_TIME_TOO_SKEWED);
+                throw new S3Exception(ErrorCode.REQUEST_TIME_TOO_SKEWED);
             }
             String computedHeader = signer.computeSignature(headers, queryParams, bodyHash, awsAccessKey, awsSecretKey, date);
             logger.debug("fullURL=" + fullURL);
@@ -124,12 +128,12 @@ public class S3RequestVerifier {
             logger.debug("a=" + authorizationHeader);
             logger.debug("c=" + computedHeader);
             if (!StringUtils.equals(authorizationHeader, computedHeader)) {
-                throw new S3Exception(S3ErrorCode.SIGNATURE_DOES_NOT_MATCH);
+                throw new S3Exception(ErrorCode.SIGNATURE_DOES_NOT_MATCH);
             }
         } catch (MalformedURLException | URISyntaxException e) {
             throw new RuntimeException(e);
         } catch (ParseException e) {
-            throw new S3Exception(S3ErrorCode.AUTHORIZATION_HEADER_MALFORMED);
+            throw new S3Exception(ErrorCode.AUTHORIZATION_HEADER_MALFORMED);
         }
     }
 }

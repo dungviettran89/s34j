@@ -1,6 +1,6 @@
 package us.cuatoi.s34jserver.core;
 
-import us.cuatoi.s34jserver.core.model.PutBucketRequest;
+import us.cuatoi.s34jserver.core.model.PutBucketS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +35,7 @@ public class S3RequestParser {
             String bucketName = substring(uri, 1);
             switch (method) {
                 case "put":
-                    return new PutBucketRequest(s3Request).setBucketName(bucketName);
+                    return new PutBucketS3Request(s3Request).setBucketName(bucketName);
             }
         }
         return s3Request;
