@@ -15,4 +15,8 @@ public class S3Context {
     public Path getPath() {
         return Paths.get("data");
     }
+
+    public String getRegion() {
+        return "us-central-1";
+    }
 }

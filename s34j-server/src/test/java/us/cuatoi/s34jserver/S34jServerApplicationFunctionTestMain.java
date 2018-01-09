@@ -10,8 +10,8 @@ public class S34jServerApplicationFunctionTestMain {
     public static void main(String[] args) {
         new Thread(() -> {
             try {
-                for (int i = 0; i < 5 && available(19000); i++) {
-                    sleep(5000);
+                for (int i = 0; i < 30 && available(19000); i++) {
+                    sleep(2000);
                 }
                 S34JFunctionalTest.main(args);
             } catch (Exception e) {

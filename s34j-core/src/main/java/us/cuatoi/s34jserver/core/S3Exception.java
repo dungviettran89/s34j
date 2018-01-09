@@ -10,9 +10,17 @@ public class S3Exception extends RuntimeException {
      */
 
     public S3Exception(ErrorCode errorCode) {
+        this(errorCode, errorCode.getDescription());
+    }
+
+    /**
+     * Constructors
+     */
+
+    public S3Exception(ErrorCode errorCode, String description) {
         this.statusCode = errorCode.getStatusCode();
         this.name = errorCode.getName();
-        this.description = errorCode.getDescription();
+        this.description = description;
     }
 
     /**

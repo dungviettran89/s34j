@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class S3Response {
-    private int statusCode;
+    private int statusCode = 200;
+    private Object content;
+    private String contentType;
     private Map<String, String> headers = new HashMap<>();
 
-    /**
-     * Constructors
-     */
-    public S3Response(PutBucketS3Request request) {
+    /*  Constructors    */
+    public S3Response(S3Request request) {
         setHeader("x-amz-request-id", request.getRequestId());
         setHeader("x-amz-id-2x-amz-id-2x-amz-id-2x-amz-id-2", request.getRequestId());
         setHeader("Server", request.getServerId());
@@ -27,6 +27,14 @@ public class S3Response {
         return statusCode;
     }
 
+    public Object getContent() {
+        return content;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
     /*  Setters */
     public S3Response setHeaders(Map<String, String> headers) {
         this.headers = headers;
@@ -35,6 +43,16 @@ public class S3Response {
 
     public S3Response setStatusCode(int statusCode) {
         this.statusCode = statusCode;
+        return this;
+    }
+
+    public S3Response setContent(Object content) {
+        this.content = content;
+        return this;
+    }
+
+    public S3Response setContentType(String contentType) {
+        this.contentType = contentType;
         return this;
     }
 

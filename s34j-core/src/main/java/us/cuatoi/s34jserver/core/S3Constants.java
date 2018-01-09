@@ -8,4 +8,5 @@ public class S3Constants {
     public static final String TERMINATOR = "aws4_request";
     public static final String ISO8601BasicFormat = "yyyyMMdd'T'HHmmss'Z'";
     public static final String DateStringFormat = "yyyyMMdd";
+    public static final String CONTENT_TYPE = "application/xml; charset=utf-8";
 }

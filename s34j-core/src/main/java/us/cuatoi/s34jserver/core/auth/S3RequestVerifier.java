@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Exception;
+import us.cuatoi.s34jserver.core.model.BucketS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
+import us.cuatoi.s34jserver.core.operation.Verifier;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -42,6 +44,10 @@ public class S3RequestVerifier {
         logger.debug("request=" + s3Request);
         verifyHeaders();
         verifyContent();
+        if(s3Request instanceof BucketS3Request){
+            BucketS3Request bucketS3Request = (BucketS3Request) this.s3Request;
+            Verifier.verifyBucketName(bucketS3Request.getBucketName());
+        }
     }
 
     @SuppressWarnings("deprecation")

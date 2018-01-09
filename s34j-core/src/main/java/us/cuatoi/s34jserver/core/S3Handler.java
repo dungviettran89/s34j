@@ -1,19 +1,22 @@
 package us.cuatoi.s34jserver.core;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.cuatoi.s34jserver.core.auth.S3RequestVerifier;
 import us.cuatoi.s34jserver.core.dto.ErrorResponse;
-import us.cuatoi.s34jserver.core.model.BucketS3Request;
-import us.cuatoi.s34jserver.core.model.PutBucketS3Request;
-import us.cuatoi.s34jserver.core.model.S3Request;
-import us.cuatoi.s34jserver.core.model.S3Response;
+import us.cuatoi.s34jserver.core.model.*;
+import us.cuatoi.s34jserver.core.operation.bucket.DeleteBucketS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.bucket.GetLocationBucketS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.bucket.PutBucketS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.bucket.S3RequestHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Enumeration;
 
 public class S3Handler {
@@ -41,15 +44,16 @@ public class S3Handler {
             //Step 2: verify request
             new S3RequestVerifier(context, s3Request).verify();
             //Step 3: execute request
-            if (s3Request instanceof PutBucketS3Request) {
-                S3Response response = new PutBucketS3RequestHandler(context, (PutBucketS3Request) s3Request).handle();
-                returnResponse(response);
+            S3RequestHandler handler = getHandler(s3Request);
+            if (handler != null) {
+                returnResponse(handler.handle());
             } else {
                 returnError(s3Request, new S3Exception(ErrorCode.NOT_IMPLEMENTED));
             }
         } catch (S3Exception ex) {
             returnError(s3Request, ex);
         } catch (Exception ex) {
+            logger.error("Unexpected error.", ex);
             returnError(s3Request, new S3Exception(ErrorCode.INTERNAL_ERROR));
         } finally {
             //Final: clean up
@@ -59,12 +63,36 @@ public class S3Handler {
         }
     }
 
-    private void returnResponse(S3Response s3Response) {
+    private S3RequestHandler getHandler(S3Request s3Request) {
+        if (s3Request instanceof PutBucketS3Request) {
+            return new PutBucketS3RequestHandler(context, (PutBucketS3Request) s3Request);
+        } else if (s3Request instanceof GetLocationBucketS3Request) {
+            return new GetLocationBucketS3RequestHandler(context, (GetLocationBucketS3Request) s3Request);
+        } else if (s3Request instanceof DeleteBucketS3Request) {
+            return new DeleteBucketS3RequestHandler(context, (DeleteBucketS3Request) s3Request);
+        }
+        return null;
+    }
+
+    private void returnResponse(S3Response s3Response) throws IOException {
+        logger.debug("Response=" + s3Response);
+
         response.setStatus(s3Response.getStatusCode());
         s3Response.getHeaders().forEach((k, v) -> {
             response.setHeader(k, v);
         });
-        logger.info("Response=" + s3Response);
+        if (s3Response.getContent() instanceof Path) {
+            response.setContentType(s3Response.getContentType());
+            Path contentFile = (Path) s3Response.getContent();
+            response.setContentLengthLong(Files.size(contentFile));
+            try (InputStream is = Files.newInputStream(contentFile)) {
+                IOUtils.copy(is, response.getOutputStream());
+            }
+        } else if (s3Response.getContent() != null) {
+            response.setContentType(S3Constants.CONTENT_TYPE);
+            response.getWriter().write(s3Response.getContent().toString());
+            logger.debug("Content=" + s3Response.getContent().toString());
+        }
         logger.debug("-------- END " + request.getMethod() + " " + request.getRequestURL() + " ----------------------");
     }
 

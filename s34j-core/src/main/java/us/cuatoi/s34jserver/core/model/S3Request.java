@@ -16,7 +16,7 @@ public class S3Request {
     private String method;
     private String queryString;
     private long date;
-    private transient Path content;
+    private Path content;
     private Map<String, String> headers = new HashMap<>();
 
     public S3Request() {
