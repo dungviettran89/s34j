@@ -1,4 +1,6 @@
-package us.cuatoi.s34jserver.core.model;
+package us.cuatoi.s34jserver.core.model.bucket;
+
+import us.cuatoi.s34jserver.core.model.S3Response;
 
 public class PutBucketS3Response extends S3Response {
 

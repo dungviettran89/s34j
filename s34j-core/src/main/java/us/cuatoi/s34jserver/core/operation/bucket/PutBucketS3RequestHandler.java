@@ -3,8 +3,8 @@ package us.cuatoi.s34jserver.core.operation.bucket;
 import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
-import us.cuatoi.s34jserver.core.model.PutBucketS3Request;
-import us.cuatoi.s34jserver.core.model.PutBucketS3Response;
+import us.cuatoi.s34jserver.core.model.bucket.PutBucketS3Request;
+import us.cuatoi.s34jserver.core.model.bucket.PutBucketS3Response;
 
 import java.io.IOException;
 import java.nio.file.Files;

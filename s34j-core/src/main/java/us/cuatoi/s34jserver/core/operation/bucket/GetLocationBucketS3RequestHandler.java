@@ -2,8 +2,8 @@ package us.cuatoi.s34jserver.core.operation.bucket;
 
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.dto.LocationConstraintResponse;
-import us.cuatoi.s34jserver.core.model.GetLocationBucketS3Request;
-import us.cuatoi.s34jserver.core.model.GetLocationBucketS3Response;
+import us.cuatoi.s34jserver.core.model.bucket.GetLocationBucketS3Request;
+import us.cuatoi.s34jserver.core.model.bucket.GetLocationBucketS3Response;
 
 import java.io.IOException;
 

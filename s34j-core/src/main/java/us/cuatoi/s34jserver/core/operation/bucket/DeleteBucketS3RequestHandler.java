@@ -1,8 +1,8 @@
 package us.cuatoi.s34jserver.core.operation.bucket;
 
 import us.cuatoi.s34jserver.core.S3Context;
-import us.cuatoi.s34jserver.core.model.DeleteBucketS3Request;
-import us.cuatoi.s34jserver.core.model.DeleteBucketS3Response;
+import us.cuatoi.s34jserver.core.model.bucket.DeleteBucketS3Request;
+import us.cuatoi.s34jserver.core.model.bucket.DeleteBucketS3Response;
 
 import java.io.IOException;
 import java.nio.file.Files;

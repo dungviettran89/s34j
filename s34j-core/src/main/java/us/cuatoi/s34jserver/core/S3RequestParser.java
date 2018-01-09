@@ -2,9 +2,11 @@ package us.cuatoi.s34jserver.core;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import us.cuatoi.s34jserver.core.model.DeleteBucketS3Request;
-import us.cuatoi.s34jserver.core.model.GetLocationBucketS3Request;
-import us.cuatoi.s34jserver.core.model.PutBucketS3Request;
+import us.cuatoi.s34jserver.core.model.GetBucketsRequest;
+import us.cuatoi.s34jserver.core.model.bucket.DeleteBucketS3Request;
+import us.cuatoi.s34jserver.core.model.bucket.GetLocationBucketS3Request;
+import us.cuatoi.s34jserver.core.model.bucket.HeadBucketS3Request;
+import us.cuatoi.s34jserver.core.model.bucket.PutBucketS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,15 +49,20 @@ public class S3RequestParser {
         for (NameValuePair pair : URLEncodedUtils.parse(new URI(fullURL), Charset.forName("UTF-8"))) {
             queryParams.put(pair.getName(), pair.getValue());
         }
-        if (!root && slashCount == 1) {
+        if (root) {
+            //root request
+            return new GetBucketsRequest(s3Request);
+        } else if (slashCount == 1) {
             //bucket request
             String bucketName = substring(uri, 1);
             if (equalsIgnoreCase(method, "put")) {
                 return new PutBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "get") && queryParams.get("location") != null) {
                 return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
-            } else if(equalsIgnoreCase(method,"delete")){
+            } else if (equalsIgnoreCase(method, "delete")) {
                 return new DeleteBucketS3Request(s3Request).setBucketName(bucketName);
+            }else if (equalsIgnoreCase(method, "head")) {
+                return new HeadBucketS3Request(s3Request).setBucketName(bucketName);
             }
         }
         return s3Request;
