@@ -3,11 +3,11 @@ package us.cuatoi.s34jserver.core;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
+import us.cuatoi.s34jserver.core.model.S3Request;
 import us.cuatoi.s34jserver.core.model.bucket.DeleteBucketS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.GetLocationBucketS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.HeadBucketS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.PutBucketS3Request;
-import us.cuatoi.s34jserver.core.model.S3Request;
 import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.GetObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
@@ -21,8 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.apache.commons.lang3.StringUtils.*;
 
@@ -44,14 +42,7 @@ public class S3RequestParser {
         int slashCount = countMatches(uri, '/');
         boolean root = equalsIgnoreCase(uri, "/");
         String method = lowerCase(s3Request.getMethod());
-        String fullURL = s3Request.getUrl();
-        if (isNotBlank(s3Request.getQueryString())) {
-            fullURL += "?" + s3Request.getQueryString();
-        }
-        Map<String, String> queryParams = new HashMap<>();
-        for (NameValuePair pair : URLEncodedUtils.parse(new URI(fullURL), Charset.forName("UTF-8"))) {
-            queryParams.put(pair.getName(), pair.getValue());
-        }
+        boolean noQueryParams = s3Request.getQueryParameters().size() == 0;
         if (root) {
             //root request
             return new GetBucketsS3Request(s3Request);
@@ -60,7 +51,7 @@ public class S3RequestParser {
             String bucketName = substring(uri, 1);
             if (equalsIgnoreCase(method, "put")) {
                 return new PutBucketS3Request(s3Request).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "get") && queryParams.get("location") != null) {
+            } else if (equalsIgnoreCase(method, "get") && s3Request.getQueryParameter("location") != null) {
                 return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "delete")) {
                 return new DeleteBucketS3Request(s3Request).setBucketName(bucketName);
@@ -71,18 +62,18 @@ public class S3RequestParser {
             int secondSlash = indexOf(uri, '/', 2);
             String bucketName = substring(uri, 1, secondSlash);
             String objectName = substring(uri, secondSlash + 1);
-            if (equalsIgnoreCase(method, "put") && queryParams.size() == 0) {
+            if (equalsIgnoreCase(method, "put") && noQueryParams) {
                 return new PutObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "delete") && queryParams.size() == 0) {
+            } else if (equalsIgnoreCase(method, "delete")) {
                 return new DeleteObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "get") && queryParams.size() == 0) {
+            } else if (equalsIgnoreCase(method, "get")) {
                 return new GetObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
             }
         }
         return s3Request;
     }
 
-    private S3Request parseGenericInformation() throws IOException {
+    private S3Request parseGenericInformation() throws IOException, URISyntaxException {
         S3Request s3Request = new S3Request()
                 .setMethod(request.getMethod())
                 .setUri(request.getRequestURI())
@@ -93,6 +84,13 @@ public class S3RequestParser {
         while (headerNames.hasMoreElements()) {
             String header = headerNames.nextElement();
             s3Request.setHeader(lowerCase(header), request.getHeader(header));
+        }
+        String fullURL = s3Request.getUrl();
+        if (isNotBlank(s3Request.getQueryString())) {
+            fullURL += "?" + s3Request.getQueryString();
+        }
+        for (NameValuePair pair : URLEncodedUtils.parse(new URI(fullURL), Charset.forName("UTF-8"))) {
+            s3Request.setQueryParameter(pair.getName(), pair.getValue());
         }
         Path content = Files.createTempFile(s3Request.getRequestId() + ".", ".tmp");
         Files.copy(request.getInputStream(), content, StandardCopyOption.REPLACE_EXISTING);

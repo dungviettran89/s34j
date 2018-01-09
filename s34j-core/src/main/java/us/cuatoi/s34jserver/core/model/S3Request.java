@@ -18,6 +18,7 @@ public class S3Request {
     private long date;
     private Path content;
     private Map<String, String> headers = new HashMap<>();
+    private Map<String, String> queryParameters = new HashMap<>();
 
     public S3Request() {
     }
@@ -63,6 +64,10 @@ public class S3Request {
 
     public long getDate() {
         return date;
+    }
+
+    public Map<String, String> getQueryParameters() {
+        return queryParameters;
     }
 
     /**
@@ -113,6 +118,11 @@ public class S3Request {
         return this;
     }
 
+    public S3Request setQueryParameters(Map<String, String> queryParameters) {
+        this.queryParameters = queryParameters;
+        return this;
+    }
+
     /**
      * Utilities
      */
@@ -123,6 +133,15 @@ public class S3Request {
 
     public String getHeader(String header) {
         return this.headers.get(header);
+    }
+
+    public S3Request setQueryParameter(String key, String value) {
+        this.queryParameters.put(key, value);
+        return this;
+    }
+
+    public String getQueryParameter(String header) {
+        return this.queryParameters.get(header);
     }
 
 
