@@ -4,21 +4,24 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.cuatoi.s34jserver.core.auth.S3RequestVerifier;
-import us.cuatoi.s34jserver.core.dto.ErrorResponse;
+import us.cuatoi.s34jserver.core.dto.ErrorResponseDTO;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
 import us.cuatoi.s34jserver.core.model.S3Response;
 import us.cuatoi.s34jserver.core.model.bucket.*;
 import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.multipart.CompleteMultipartUploadObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.multipart.InitiateMultipartUploadObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.multipart.UploadPartObjectS3Request;
 import us.cuatoi.s34jserver.core.operation.GetBucketsS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.S3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.bucket.DeleteBucketS3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.bucket.GetLocationBucketS3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.bucket.HeadBucketS3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.bucket.PutBucketS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.bucket.*;
 import us.cuatoi.s34jserver.core.operation.object.DeleteObjectS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.object.PutObjectS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.object.multipart.CompleteMultipartUploadObjectS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.object.multipart.InitiateMultipartUploadObjectS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.object.multipart.UploadPartObjectS3RequestHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,6 +30,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Enumeration;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class S3Handler {
 
@@ -79,14 +84,22 @@ public class S3Handler {
             return new PutBucketS3RequestHandler(context, (PutBucketS3Request) s3Request);
         } else if (s3Request instanceof GetLocationBucketS3Request) {
             return new GetLocationBucketS3RequestHandler(context, (GetLocationBucketS3Request) s3Request);
+        } else if (s3Request instanceof ListMultipartUploadsBucketS3Request) {
+            return new ListMultipartUploadsBucketS3RequestHandler(context, (ListMultipartUploadsBucketS3Request) s3Request);
         } else if (s3Request instanceof DeleteBucketS3Request) {
             return new DeleteBucketS3RequestHandler(context, (DeleteBucketS3Request) s3Request);
         } else if (s3Request instanceof HeadBucketS3Request) {
             return new HeadBucketS3RequestHandler(context, (HeadBucketS3Request) s3Request);
         } else if (s3Request instanceof PutObjectS3Request) {
             return new PutObjectS3RequestHandler(context, (PutObjectS3Request) s3Request);
-        }else if (s3Request instanceof DeleteObjectS3Request) {
+        } else if (s3Request instanceof DeleteObjectS3Request) {
             return new DeleteObjectS3RequestHandler(context, (DeleteObjectS3Request) s3Request);
+        } else if (s3Request instanceof InitiateMultipartUploadObjectS3Request) {
+            return new InitiateMultipartUploadObjectS3RequestHandler(context, (InitiateMultipartUploadObjectS3Request) s3Request);
+        } else if (s3Request instanceof UploadPartObjectS3Request) {
+            return new UploadPartObjectS3RequestHandler(context, (UploadPartObjectS3Request) s3Request);
+        } else if (s3Request instanceof CompleteMultipartUploadObjectS3Request) {
+            return new CompleteMultipartUploadObjectS3RequestHandler(context, (CompleteMultipartUploadObjectS3Request) s3Request);
         }
         return null;
     }
@@ -110,7 +123,11 @@ public class S3Handler {
             response.getWriter().write(s3Response.getContent().toString());
             logger.debug("Content=" + s3Response.getContent().toString());
         }
-        logger.debug("-------- END " + request.getMethod() + " " + request.getRequestURL() + " ----------------------");
+        logger.debug("-------- END " + debugInfo() + " ----------------------");
+    }
+
+    private String debugInfo() {
+        return request.getMethod() + " " + request.getRequestURL() + (isBlank(request.getQueryString()) ? "" : "?" + request.getQueryString());
     }
 
     private void returnError(S3Request s3Request, S3Exception exception) throws IOException {
@@ -119,7 +136,7 @@ public class S3Handler {
         response.setHeader("x-amz-request-id", s3Request.getRequestId());
         response.setHeader("x-amz-version-id", "1.0");
 
-        ErrorResponse errorResponse = new ErrorResponse();
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO();
         errorResponse.setRequestId(s3Request.getRequestId());
         errorResponse.setHostId(s3Request.getServerId());
         errorResponse.setResource(s3Request.getUri());
@@ -132,7 +149,7 @@ public class S3Handler {
     }
 
     private void printDebugInfo() {
-        logger.debug("-------- START " + request.getMethod() + " " + request.getRequestURL() + " ----------------------");
+        logger.debug("-------- START " + debugInfo() + " ----------------------");
         logger.trace("request.getMethod=" + request.getMethod());
         logger.trace("request.getPathInfo=" + request.getPathInfo());
         logger.trace("request.getRequestURI=" + request.getRequestURI());

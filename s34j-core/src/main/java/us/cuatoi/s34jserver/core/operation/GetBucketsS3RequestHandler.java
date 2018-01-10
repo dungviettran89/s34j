@@ -2,10 +2,10 @@ package us.cuatoi.s34jserver.core.operation;
 
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
-import us.cuatoi.s34jserver.core.dto.BucketResponse;
-import us.cuatoi.s34jserver.core.dto.BucketsResponse;
-import us.cuatoi.s34jserver.core.dto.ListAllMyBucketsResult;
-import us.cuatoi.s34jserver.core.dto.OwnerResponse;
+import us.cuatoi.s34jserver.core.dto.BucketDTO;
+import us.cuatoi.s34jserver.core.dto.BucketsDTO;
+import us.cuatoi.s34jserver.core.dto.ListAllMyBucketsResultDTO;
+import us.cuatoi.s34jserver.core.dto.OwnerDTO;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Response;
 
@@ -22,12 +22,12 @@ public class GetBucketsS3RequestHandler extends S3RequestHandler<GetBucketsS3Req
 
     @Override
     public GetBucketsS3Response handle() throws IOException {
-        BucketsResponse b = new BucketsResponse();
+        BucketsDTO b = new BucketsDTO();
         Files.list(baseDir).forEach((p) -> {
             try {
                 Verifier.verifyBucketName(p.getFileName().toString());
                 BasicFileAttributes attribute = Files.readAttributes(p, BasicFileAttributes.class);
-                BucketResponse br = new BucketResponse();
+                BucketDTO br = new BucketDTO();
                 br.setName(p.getFileName().toString());
                 br.setCreationDate(EXPIRATION_DATE_FORMAT.print(attribute.creationTime().toMillis()));
                 b.getBucketList().add(br);
@@ -38,11 +38,11 @@ public class GetBucketsS3RequestHandler extends S3RequestHandler<GetBucketsS3Req
             }
         });
 
-        OwnerResponse or = new OwnerResponse();
+        OwnerDTO or = new OwnerDTO();
         or.setId(context.getServerId());
         or.setDisplayName(context.getServerId());
 
-        ListAllMyBucketsResult content = new ListAllMyBucketsResult();
+        ListAllMyBucketsResultDTO content = new ListAllMyBucketsResultDTO();
         content.setOwner(or);
         content.setBuckets(b);
         return (GetBucketsS3Response) new GetBucketsS3Response(s3Request).setContent(content);

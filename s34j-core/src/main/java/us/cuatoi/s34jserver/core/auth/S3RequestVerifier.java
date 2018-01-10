@@ -42,9 +42,10 @@ public class S3RequestVerifier {
 
     public void verify() {
         logger.debug("request=" + s3Request);
+        logger.debug("contentFile=" + s3Request.getContent());
         verifyHeaders();
         verifyContent();
-        if(s3Request instanceof BucketS3Request){
+        if (s3Request instanceof BucketS3Request) {
             BucketS3Request bucketS3Request = (BucketS3Request) this.s3Request;
             Verifier.verifyBucketName(bucketS3Request.getBucketName());
         }
@@ -121,18 +122,18 @@ public class S3RequestVerifier {
                 throw new S3Exception(ErrorCode.REQUEST_TIME_TOO_SKEWED);
             }
             String computedHeader = signer.computeSignature(headers, queryParams, bodyHash, awsAccessKey, awsSecretKey, date);
-            logger.debug("fullURL=" + fullURL);
-            logger.debug("headers=" + headers);
-            logger.debug("parameters=" + queryParams);
-            logger.debug("bodyHash=" + bodyHash);
-            logger.debug("amzDateHeader=" + amzDateHeader);
-            logger.debug("dateHeader=" + dateHeader);
-            logger.debug("date=" + date);
-            logger.debug("url=" + url);
-            logger.debug("url.getHost()=" + url.getHost());
-            logger.debug("url.getPort()=" + url.getPort());
-            logger.debug("a=" + authorizationHeader);
-            logger.debug("c=" + computedHeader);
+            logger.trace("fullURL=" + fullURL);
+            logger.trace("headers=" + headers);
+            logger.trace("parameters=" + queryParams);
+            logger.trace("bodyHash=" + bodyHash);
+            logger.trace("amzDateHeader=" + amzDateHeader);
+            logger.trace("dateHeader=" + dateHeader);
+            logger.trace("date=" + date);
+            logger.trace("url=" + url);
+            logger.trace("url.getHost()=" + url.getHost());
+            logger.trace("url.getPort()=" + url.getPort());
+            logger.trace("a=" + authorizationHeader);
+            logger.trace("c=" + computedHeader);
             if (!StringUtils.equals(authorizationHeader, computedHeader)) {
                 throw new S3Exception(ErrorCode.SIGNATURE_DOES_NOT_MATCH);
             }

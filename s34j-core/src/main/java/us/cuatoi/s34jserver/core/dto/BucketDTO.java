@@ -2,13 +2,13 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class BucketResponse extends GenericResponse {
+public class BucketDTO extends GenericDTO {
     @Key("Name")
     private String name;
     @Key("CreationDate")
     private String creationDate;
 
-    public BucketResponse() {
+    public BucketDTO() {
         super.name = "Bucket";
     }
 

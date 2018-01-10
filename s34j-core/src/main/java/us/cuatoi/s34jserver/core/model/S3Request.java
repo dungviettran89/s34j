@@ -1,5 +1,6 @@
 package us.cuatoi.s34jserver.core.model;
 
+import com.google.common.io.BaseEncoding;
 import org.modelmapper.ModelMapper;
 import us.cuatoi.s34jserver.core.helper.GsonHelper;
 
@@ -131,8 +132,8 @@ public class S3Request {
         return this;
     }
 
-    public String getHeader(String header) {
-        return this.headers.get(header);
+    public String getHeader(String key) {
+        return this.headers.get(key);
     }
 
     public S3Request setQueryParameter(String key, String value) {
@@ -140,8 +141,8 @@ public class S3Request {
         return this;
     }
 
-    public String getQueryParameter(String header) {
-        return this.queryParameters.get(header);
+    public String getQueryParameter(String key) {
+        return this.queryParameters.get(key);
     }
 
 

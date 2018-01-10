@@ -5,20 +5,20 @@ import com.google.api.client.util.Key;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BucketsResponse extends GenericResponse {
+public class BucketsDTO extends GenericDTO {
     @Key("Bucket")
-    private List<BucketResponse> bucketList = new ArrayList<>();
+    private List<BucketDTO> bucketList = new ArrayList<>();
 
 
-    public BucketsResponse()  {
+    public BucketsDTO()  {
         super.name = "Buckets";
     }
 
-    public List<BucketResponse> getBucketList() {
+    public List<BucketDTO> getBucketList() {
         return bucketList;
     }
 
-    public void setBucketList(List<BucketResponse> bucketList) {
+    public void setBucketList(List<BucketDTO> bucketList) {
         this.bucketList = bucketList;
     }
 }

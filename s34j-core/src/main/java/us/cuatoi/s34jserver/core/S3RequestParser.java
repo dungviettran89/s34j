@@ -1,18 +1,27 @@
 package us.cuatoi.s34jserver.core;
 
+import com.google.api.client.xml.Xml;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import us.cuatoi.s34jserver.core.dto.CompleteMultipartUploadDTO;
+import us.cuatoi.s34jserver.core.dto.GenericDTO;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
-import us.cuatoi.s34jserver.core.model.bucket.DeleteBucketS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.GetLocationBucketS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.HeadBucketS3Request;
+import us.cuatoi.s34jserver.core.model.bucket.ListMultipartUploadsBucketS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.PutBucketS3Request;
 import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.GetObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.multipart.CompleteMultipartUploadObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.multipart.InitiateMultipartUploadObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.multipart.UploadPartObjectS3Request;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,12 +41,12 @@ public class S3RequestParser {
         this.request = request;
     }
 
-    public S3Request parse() throws IOException, URISyntaxException {
+    public S3Request parse() throws Exception {
         S3Request s3Request = parseGenericInformation();
         return detectRequest(s3Request);
     }
 
-    private S3Request detectRequest(S3Request s3Request) throws URISyntaxException {
+    private S3Request detectRequest(S3Request s3Request) throws Exception {
         String uri = s3Request.getUri();
         int slashCount = countMatches(uri, '/');
         boolean root = equalsIgnoreCase(uri, "/");
@@ -53,8 +62,10 @@ public class S3RequestParser {
                 return new PutBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "get") && s3Request.getQueryParameter("location") != null) {
                 return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
+            } else if (equalsIgnoreCase(method, "get") && s3Request.getQueryParameter("uploads") != null) {
+                return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "delete")) {
-                return new DeleteBucketS3Request(s3Request).setBucketName(bucketName);
+                return new ListMultipartUploadsBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "head")) {
                 return new HeadBucketS3Request(s3Request).setBucketName(bucketName);
             }
@@ -68,9 +79,27 @@ public class S3RequestParser {
                 return new DeleteObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "get")) {
                 return new GetObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+            } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("uploads") != null) {
+                return new InitiateMultipartUploadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+            } else if (equalsIgnoreCase(method, "put") && s3Request.getQueryParameter("uploadId") != null) {
+                return new UploadPartObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+            } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("uploadId") != null) {
+                CompleteMultipartUploadDTO dto = parseXmlContent(s3Request, new CompleteMultipartUploadDTO());
+                return new CompleteMultipartUploadObjectS3Request(s3Request)
+                        .setCompleteMultipartUploadDTO(dto)
+                        .setObjectName(objectName).setBucketName(bucketName);
             }
         }
         return s3Request;
+    }
+
+    private <D extends GenericDTO> D parseXmlContent(S3Request s3Request, D dto) throws IOException, XmlPullParserException {
+        try (BufferedReader br = Files.newBufferedReader(s3Request.getContent(), Charset.forName("UTF-8"))) {
+            XmlPullParser parser = Xml.createParser();
+            parser.setInput(br);
+            Xml.parseElement(parser, dto, dto.getNamespaceDictionary(), null);
+        }
+        return dto;
     }
 
     private S3Request parseGenericInformation() throws IOException, URISyntaxException {

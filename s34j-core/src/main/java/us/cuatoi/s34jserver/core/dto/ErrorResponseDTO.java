@@ -2,7 +2,7 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class ErrorResponse extends GenericResponse {
+public class ErrorResponseDTO extends GenericDTO {
     @Key("Code")
     protected String code;
     @Key("Message")
@@ -18,8 +18,7 @@ public class ErrorResponse extends GenericResponse {
     @Key("HostId")
     protected String hostId;
 
-    public ErrorResponse() {
-        super();
+    public ErrorResponseDTO() {
         super.name = "ErrorResponse";
     }
 
