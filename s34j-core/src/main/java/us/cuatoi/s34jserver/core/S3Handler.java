@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Enumeration;
+import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -56,10 +57,12 @@ public class S3Handler {
     public void handle() throws IOException {
         //Start:
         printDebugInfo();
-        S3Request s3Request = null;
+        S3Request s3Request = new S3Request()
+                .setRequestId(UUID.randomUUID().toString())
+                .setServerId(context.getServerId());
         try {
             //Step 1: parse request
-            s3Request = new S3RequestParser(request).parse();
+            s3Request = new S3RequestParser(request,s3Request).fillAndDetect();
             s3Request = s3Request.setServerId(context.getServerId());
             //Step 2: verify request
             new S3RequestVerifier(context, s3Request).verify();

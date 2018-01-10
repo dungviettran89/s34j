@@ -1,16 +1,14 @@
 package us.cuatoi.s34jserver.core.model;
 
-import com.google.common.io.BaseEncoding;
 import org.modelmapper.ModelMapper;
 import us.cuatoi.s34jserver.core.helper.GsonHelper;
 
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class S3Request {
-    private String requestId = UUID.randomUUID().toString();
+    private String requestId;
     private String serverId;
     private String uri;
     private String url;

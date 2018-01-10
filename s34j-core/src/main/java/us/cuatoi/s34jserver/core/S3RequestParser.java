@@ -37,18 +37,20 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 public class S3RequestParser {
 
+    private S3Request s3Request;
     private HttpServletRequest request;
 
-    public S3RequestParser(HttpServletRequest request) {
+    public S3RequestParser(HttpServletRequest request, S3Request s3Request) {
         this.request = request;
+        this.s3Request = s3Request;
     }
 
-    public S3Request parse() throws Exception {
-        S3Request s3Request = parseGenericInformation();
-        return detectRequest(s3Request);
+    public S3Request fillAndDetect() throws Exception {
+        fillGenericInformation();
+        return detectRequest();
     }
 
-    private S3Request detectRequest(S3Request s3Request) throws Exception {
+    private S3Request detectRequest() throws Exception {
         String uri = s3Request.getUri();
         int slashCount = countMatches(uri, '/');
         boolean root = equalsIgnoreCase(uri, "/");
@@ -108,9 +110,8 @@ public class S3RequestParser {
         return dto;
     }
 
-    private S3Request parseGenericInformation() throws IOException, URISyntaxException {
-        S3Request s3Request = new S3Request()
-                .setMethod(request.getMethod())
+    private S3Request fillGenericInformation() throws IOException, URISyntaxException {
+        s3Request.setMethod(request.getMethod())
                 .setUri(request.getRequestURI())
                 .setUrl(request.getRequestURL().toString())
                 .setQueryString(request.getQueryString())
