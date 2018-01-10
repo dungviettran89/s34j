@@ -10,7 +10,10 @@ import us.cuatoi.s34jserver.core.model.S3Request;
 import us.cuatoi.s34jserver.core.model.S3Response;
 import us.cuatoi.s34jserver.core.model.bucket.*;
 import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.GetObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.HeadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.multipart.AbortMultipartUploadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.multipart.CompleteMultipartUploadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.multipart.InitiateMultipartUploadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.multipart.UploadPartObjectS3Request;
@@ -18,7 +21,10 @@ import us.cuatoi.s34jserver.core.operation.GetBucketsS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.S3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.bucket.*;
 import us.cuatoi.s34jserver.core.operation.object.DeleteObjectS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.object.GetObjectS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.object.HeadObjectS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.object.PutObjectS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.object.multipart.AbortMultipartUploadObjectS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.object.multipart.CompleteMultipartUploadObjectS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.object.multipart.InitiateMultipartUploadObjectS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.object.multipart.UploadPartObjectS3RequestHandler;
@@ -100,6 +106,12 @@ public class S3Handler {
             return new UploadPartObjectS3RequestHandler(context, (UploadPartObjectS3Request) s3Request);
         } else if (s3Request instanceof CompleteMultipartUploadObjectS3Request) {
             return new CompleteMultipartUploadObjectS3RequestHandler(context, (CompleteMultipartUploadObjectS3Request) s3Request);
+        } else if (s3Request instanceof HeadObjectS3Request) {
+            return new HeadObjectS3RequestHandler(context, (HeadObjectS3Request) s3Request);
+        } else if (s3Request instanceof GetObjectS3Request) {
+            return new GetObjectS3RequestHandler(context, (GetObjectS3Request) s3Request);
+        } else if (s3Request instanceof AbortMultipartUploadObjectS3Request) {
+            return new AbortMultipartUploadObjectS3RequestHandler(context, (AbortMultipartUploadObjectS3Request) s3Request);
         }
         return null;
     }

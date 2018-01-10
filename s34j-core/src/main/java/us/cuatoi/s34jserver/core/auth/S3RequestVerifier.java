@@ -6,11 +6,11 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.ErrorCode;
+import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
-import us.cuatoi.s34jserver.core.model.bucket.BucketS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
+import us.cuatoi.s34jserver.core.model.bucket.BucketS3Request;
 import us.cuatoi.s34jserver.core.operation.Verifier;
 
 import java.io.IOException;
@@ -18,7 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -28,6 +28,7 @@ import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34jserver.core.ErrorCode.MISSING_SECURITY_HEADER;
+import static us.cuatoi.s34jserver.core.ErrorCode.NOT_IMPLEMENTED;
 
 public class S3RequestVerifier {
     private S3Context context;
@@ -53,26 +54,41 @@ public class S3RequestVerifier {
 
     @SuppressWarnings("deprecation")
     private void verifyContent() {
-        try {
-            Path content = s3Request.getContent();
-            long contentLength = Files.size(content);
-            String providedSha256 = s3Request.getHeader("x-amz-content-sha256");
-            String computedSha256 = contentLength > 0 ?
-                    com.google.common.io.Files.asByteSource(content.toFile()).hash(Hashing.sha256()).toString() :
-                    AWS4SignerBase.EMPTY_BODY_SHA256;
-            if (!equalsIgnoreCase(computedSha256, providedSha256)) {
-                throw new S3Exception(ErrorCode.BAD_DIGEST);
-            }
-            String providedMd5 = s3Request.getHeader("content-md5");
-            if (contentLength > 0 && isNotBlank(providedMd5)) {
-                String computedMd5 = com.google.common.io.Files.asByteSource(content.toFile()).hash(Hashing.md5()).toString();
-                if (!equalsIgnoreCase(providedMd5, computedMd5)) {
-                    throw new S3Exception(ErrorCode.INVALID_DIGEST);
+        if (s3Request.getContent() != null) {
+            try {
+                String contentEncoding = s3Request.getHeader("content-encoding");
+                if (equalsIgnoreCase("aws-chunked", contentEncoding)) {
+                    verifyMultipleChunk();
+                } else {
+                    verifySingleChunk();
                 }
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+                throw new S3Exception(ErrorCode.INTERNAL_ERROR);
             }
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-            throw new S3Exception(ErrorCode.INTERNAL_ERROR);
+        }
+    }
+
+    private void verifyMultipleChunk() throws IOException {
+        throw new S3Exception(NOT_IMPLEMENTED);
+    }
+
+    private void verifySingleChunk() throws IOException {
+        String providedSha256 = s3Request.getHeader("x-amz-content-sha256");
+        Path content = s3Request.getContent();
+        long contentLength = Files.size(content);
+        String computedSha256 = contentLength > 0 ?
+                com.google.common.io.Files.asByteSource(content.toFile()).hash(Hashing.sha256()).toString() :
+                AWS4SignerBase.EMPTY_BODY_SHA256;
+        if (!equalsIgnoreCase(computedSha256, providedSha256)) {
+            throw new S3Exception(ErrorCode.BAD_DIGEST);
+        }
+        String providedMd5 = s3Request.getHeader("content-md5");
+        if (contentLength > 0 && isNotBlank(providedMd5)) {
+            String computedMd5 = com.google.common.io.Files.asByteSource(content.toFile()).hash(Hashing.md5()).toString();
+            if (!equalsIgnoreCase(providedMd5, computedMd5)) {
+                throw new S3Exception(ErrorCode.INVALID_DIGEST);
+            }
         }
     }
 
@@ -105,7 +121,7 @@ public class S3RequestVerifier {
             if (isNotBlank(s3Request.getQueryString())) {
                 fullURL += "?" + s3Request.getQueryString();
             }
-            List<NameValuePair> nameValuePairs = URLEncodedUtils.parse(new URI(fullURL), Charset.forName("UTF-8"));
+            List<NameValuePair> nameValuePairs = URLEncodedUtils.parse(new URI(fullURL), StandardCharsets.UTF_8);
             HashMap<String, String> queryParams = nameValuePairs.size() > 0 ? new HashMap<>() : null;
             for (NameValuePair nvp : nameValuePairs) {
                 queryParams.put(nvp.getName(), nvp.getValue());

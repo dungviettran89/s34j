@@ -15,7 +15,9 @@ import us.cuatoi.s34jserver.core.model.bucket.ListMultipartUploadsBucketS3Reques
 import us.cuatoi.s34jserver.core.model.bucket.PutBucketS3Request;
 import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.GetObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.HeadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.multipart.AbortMultipartUploadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.multipart.CompleteMultipartUploadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.multipart.InitiateMultipartUploadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.multipart.UploadPartObjectS3Request;
@@ -25,7 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -52,21 +54,21 @@ public class S3RequestParser {
         boolean root = equalsIgnoreCase(uri, "/");
         String method = lowerCase(s3Request.getMethod());
         boolean noQueryParams = s3Request.getQueryParameters().size() == 0;
-        if (root) {
+        if (root && noQueryParams) {
             //root request
             return new GetBucketsS3Request(s3Request);
         } else if (slashCount == 1) {
             //bucket request
             String bucketName = substring(uri, 1);
-            if (equalsIgnoreCase(method, "put")) {
+            if (equalsIgnoreCase(method, "put") && noQueryParams) {
                 return new PutBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "get") && s3Request.getQueryParameter("location") != null) {
                 return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "get") && s3Request.getQueryParameter("uploads") != null) {
                 return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "delete")) {
+            } else if (equalsIgnoreCase(method, "delete") && noQueryParams) {
                 return new ListMultipartUploadsBucketS3Request(s3Request).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "head")) {
+            } else if (equalsIgnoreCase(method, "head") && noQueryParams) {
                 return new HeadBucketS3Request(s3Request).setBucketName(bucketName);
             }
         } else {
@@ -75,14 +77,18 @@ public class S3RequestParser {
             String objectName = substring(uri, secondSlash + 1);
             if (equalsIgnoreCase(method, "put") && noQueryParams) {
                 return new PutObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "delete")) {
+            } else if (equalsIgnoreCase(method, "delete") && noQueryParams) {
                 return new DeleteObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "get")) {
+            } else if (equalsIgnoreCase(method, "get") && noQueryParams) {
                 return new GetObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+            } else if (equalsIgnoreCase(method, "head") && noQueryParams) {
+                return new HeadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("uploads") != null) {
                 return new InitiateMultipartUploadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "put") && s3Request.getQueryParameter("uploadId") != null) {
                 return new UploadPartObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+            } else if (equalsIgnoreCase(method, "delete") && s3Request.getQueryParameter("uploadId") != null) {
+                return new AbortMultipartUploadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("uploadId") != null) {
                 CompleteMultipartUploadDTO dto = parseXmlContent(s3Request, new CompleteMultipartUploadDTO());
                 return new CompleteMultipartUploadObjectS3Request(s3Request)
@@ -94,7 +100,7 @@ public class S3RequestParser {
     }
 
     private <D extends GenericDTO> D parseXmlContent(S3Request s3Request, D dto) throws IOException, XmlPullParserException {
-        try (BufferedReader br = Files.newBufferedReader(s3Request.getContent(), Charset.forName("UTF-8"))) {
+        try (BufferedReader br = Files.newBufferedReader(s3Request.getContent(), StandardCharsets.UTF_8)) {
             XmlPullParser parser = Xml.createParser();
             parser.setInput(br);
             Xml.parseElement(parser, dto, dto.getNamespaceDictionary(), null);
@@ -118,12 +124,19 @@ public class S3RequestParser {
         if (isNotBlank(s3Request.getQueryString())) {
             fullURL += "?" + s3Request.getQueryString();
         }
-        for (NameValuePair pair : URLEncodedUtils.parse(new URI(fullURL), Charset.forName("UTF-8"))) {
+        for (NameValuePair pair : URLEncodedUtils.parse(new URI(fullURL), StandardCharsets.UTF_8)) {
             s3Request.setQueryParameter(pair.getName(), pair.getValue());
         }
-        Path content = Files.createTempFile(s3Request.getRequestId() + ".", ".tmp");
-        Files.copy(request.getInputStream(), content, StandardCopyOption.REPLACE_EXISTING);
-        s3Request.setContent(content);
+        if (!equalsIgnoreCase(request.getMethod(), "get")) {
+            String contentEncoding = s3Request.getHeader("content-encoding");
+            if (equalsIgnoreCase("aws-chunked", contentEncoding)) {
+                throw new S3Exception(ErrorCode.NOT_IMPLEMENTED);
+            } else {
+                Path content = Files.createTempFile(s3Request.getRequestId() + ".", ".tmp");
+                Files.copy(request.getInputStream(), content, StandardCopyOption.REPLACE_EXISTING);
+                s3Request.setContent(content);
+            }
+        }
         return s3Request;
     }
 }

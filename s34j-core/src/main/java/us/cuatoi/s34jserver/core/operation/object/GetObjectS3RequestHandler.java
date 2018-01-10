@@ -13,8 +13,6 @@ public class GetObjectS3RequestHandler extends ObjectS3RequestHandler<GetObjectS
 
     @Override
     protected GetObjectS3Response handleObject() throws IOException {
-        verifyObjectExists();
-        return (GetObjectS3Response) new GetObjectS3Response(s3Request).setContent(objectFile);
+        return (GetObjectS3Response) buildGetObjectResponse().setContent(objectFile);
     }
-
 }

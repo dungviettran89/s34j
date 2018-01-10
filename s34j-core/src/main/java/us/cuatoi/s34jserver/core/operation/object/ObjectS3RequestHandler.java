@@ -8,6 +8,7 @@ import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
 import us.cuatoi.s34jserver.core.helper.GsonHelper;
 import us.cuatoi.s34jserver.core.model.S3Response;
+import us.cuatoi.s34jserver.core.model.object.GetObjectS3Response;
 import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
 import us.cuatoi.s34jserver.core.model.object.ObjectS3Request;
 import us.cuatoi.s34jserver.core.operation.bucket.BucketS3RequestHandler;
@@ -15,6 +16,7 @@ import us.cuatoi.s34jserver.core.operation.bucket.BucketS3RequestHandler;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
@@ -93,5 +95,19 @@ public abstract class ObjectS3RequestHandler<F extends ObjectS3Request, T extend
         Files.write(objectMetadataFile, metadataString.getBytes("UTF-8"));
         logger.info("Updated " + objectMetadataFile);
         logger.info("Metadata=" + metadataString);
+    }
+
+    protected GetObjectS3Response buildGetObjectResponse() throws IOException {
+        verifyObjectExists();
+        GetObjectS3Response response = new GetObjectS3Response(s3Request);
+        if (Files.exists(objectMetadataFile)) {
+            ObjectMetadata metadata = GsonHelper.fromJson(objectMetadataFile, ObjectMetadata.class);
+            metadata.getHeaders().forEach(response::setHeader);
+            metadata.getMetadata().forEach(response::setHeader);
+        }
+        BasicFileAttributes attribute = Files.readAttributes(objectFile, BasicFileAttributes.class);
+        response.setHeader("Last-Modified", S3Constants.HTTP_HEADER_DATE_FORMAT.print(attribute.lastModifiedTime().toMillis()));
+        response.setHeader("Content-Length", String.valueOf(Files.size(objectFile)));
+        return response;
     }
 }

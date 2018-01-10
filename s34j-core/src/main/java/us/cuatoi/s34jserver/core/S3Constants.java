@@ -21,5 +21,7 @@ public class S3Constants {
 
     public static final DateTimeFormatter EXPIRATION_DATE_FORMAT =
             DateTimeFormat.forPattern("yyyy-MM-dd'T'HH':'mm':'ss'.'SSS'Z'").withZoneUTC().withLocale(Locale.US);
+    public static final DateTimeFormatter HTTP_HEADER_DATE_FORMAT =
+            DateTimeFormat.forPattern("EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'").withZoneUTC().withLocale(Locale.US);
     public static final String METADATA_JSON = "metadata.json";
 }

@@ -6,7 +6,7 @@ import com.google.gson.GsonBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -21,7 +21,7 @@ public class GsonHelper {
     }
 
     public static <O> O fromJson(Path path, Class<O> oClass) throws IOException {
-        try (BufferedReader br = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
+        try (BufferedReader br = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             return prettyBuilder.create().fromJson(br, oClass);
         }
     }

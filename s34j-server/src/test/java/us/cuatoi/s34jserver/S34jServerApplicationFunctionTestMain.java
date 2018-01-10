@@ -14,6 +14,10 @@ public class S34jServerApplicationFunctionTestMain {
                     sleep(2000);
                 }
                 S34JFunctionalTest.main(args);
+                System.out.println("------------------------------------------------------------------");
+                System.out.println("TEST COMPLETED, YES.");
+                System.out.println("------------------------------------------------------------------");
+                sleep(5000);
             } catch (Exception e) {
                 sleep(5000);
                 throw new RuntimeException(e);

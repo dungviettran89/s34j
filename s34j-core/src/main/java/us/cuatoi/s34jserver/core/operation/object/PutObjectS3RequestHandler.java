@@ -16,6 +16,7 @@ public class PutObjectS3RequestHandler extends ObjectS3RequestHandler<PutObjectS
 
     @Override
     protected PutObjectS3Response handleObject() throws IOException {
+        Files.createDirectories(objectFile.getParent());
         Files.copy(s3Request.getContent(), objectFile);
         logger.info("Saved " + objectFile);
         Files.createDirectories(objectUploadDir);

@@ -31,6 +31,7 @@ public class CompleteMultipartUploadObjectS3RequestHandler
         verifyUploadExists();
         verifyParts();
 
+        Files.createDirectories(objectFile.getParent());
         try (OutputStream os = Files.newOutputStream(objectFile)) {
             for (PartDTO part : s3Request.getCompleteMultipartUploadDTO().getParts()) {
                 try (InputStream is = Files.newInputStream(uploadDir.resolve(part.getPartNumber()))) {
