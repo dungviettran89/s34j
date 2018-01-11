@@ -6,7 +6,7 @@ import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
-import us.cuatoi.s34jserver.core.helper.GsonHelper;
+import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.model.S3Response;
 import us.cuatoi.s34jserver.core.model.object.GetObjectS3Response;
 import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
@@ -91,7 +91,7 @@ public abstract class ObjectS3RequestHandler<F extends ObjectS3Request, T extend
             Files.createDirectories(objectMetadataDir);
             logger.info("Created " + objectMetadataDir);
         }
-        String metadataString = GsonHelper.toPrettyJson(metadata);
+        String metadataString = DTOHelper.toPrettyJson(metadata);
         Files.write(objectMetadataFile, metadataString.getBytes("UTF-8"));
         logger.info("Updated " + objectMetadataFile);
         logger.info("Metadata=" + metadataString);
@@ -101,7 +101,7 @@ public abstract class ObjectS3RequestHandler<F extends ObjectS3Request, T extend
         verifyObjectExists();
         GetObjectS3Response response = new GetObjectS3Response(s3Request);
         if (Files.exists(objectMetadataFile)) {
-            ObjectMetadata metadata = GsonHelper.fromJson(objectMetadataFile, ObjectMetadata.class);
+            ObjectMetadata metadata = DTOHelper.fromJson(objectMetadataFile, ObjectMetadata.class);
             metadata.getHeaders().forEach(response::setHeader);
             metadata.getMetadata().forEach(response::setHeader);
         }

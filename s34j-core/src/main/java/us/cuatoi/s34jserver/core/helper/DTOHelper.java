@@ -1,8 +1,12 @@
 package us.cuatoi.s34jserver.core.helper;
 
+import com.google.api.client.xml.Xml;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.GsonBuilder;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import us.cuatoi.s34jserver.core.dto.GenericDTO;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class GsonHelper {
+public class DTOHelper {
 
     public static final GsonBuilder prettyBuilder = new GsonBuilder()
             .setExclusionStrategies(new ExcludePathStrategy())
@@ -24,6 +28,15 @@ public class GsonHelper {
         try (BufferedReader br = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             return prettyBuilder.create().fromJson(br, oClass);
         }
+    }
+
+    public static  <D extends GenericDTO> D parseXmlContent(Path file, D dto) throws IOException, XmlPullParserException {
+        try (BufferedReader br = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+            XmlPullParser parser = Xml.createParser();
+            parser.setInput(br);
+            Xml.parseElement(parser, dto, dto.getNamespaceDictionary(), null);
+        }
+        return dto;
     }
 
 

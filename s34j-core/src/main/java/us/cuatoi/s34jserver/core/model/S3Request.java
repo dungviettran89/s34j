@@ -1,7 +1,7 @@
 package us.cuatoi.s34jserver.core.model;
 
 import org.modelmapper.ModelMapper;
-import us.cuatoi.s34jserver.core.helper.GsonHelper;
+import us.cuatoi.s34jserver.core.helper.DTOHelper;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -146,7 +146,7 @@ public class S3Request {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + GsonHelper.toPrettyJson(this);
+        return getClass().getSimpleName() + DTOHelper.toPrettyJson(this);
     }
 
 

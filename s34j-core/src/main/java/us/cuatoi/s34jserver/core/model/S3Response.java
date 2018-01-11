@@ -1,6 +1,6 @@
 package us.cuatoi.s34jserver.core.model;
 
-import us.cuatoi.s34jserver.core.helper.GsonHelper;
+import us.cuatoi.s34jserver.core.helper.DTOHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,6 +68,6 @@ public class S3Response {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + GsonHelper.toPrettyJson(this);
+        return getClass().getSimpleName() + DTOHelper.toPrettyJson(this);
     }
 }

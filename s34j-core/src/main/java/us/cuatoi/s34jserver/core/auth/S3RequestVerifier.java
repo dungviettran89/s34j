@@ -10,8 +10,6 @@ import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
 import us.cuatoi.s34jserver.core.model.S3Request;
-import us.cuatoi.s34jserver.core.model.bucket.BucketS3Request;
-import us.cuatoi.s34jserver.core.operation.Verifier;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -28,52 +26,22 @@ import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34jserver.core.ErrorCode.MISSING_SECURITY_HEADER;
-import static us.cuatoi.s34jserver.core.ErrorCode.NOT_IMPLEMENTED;
+import static us.cuatoi.s34jserver.core.auth.AWS4SignerForChunkedUpload.STREAMING_BODY_SHA256;
 
 public class S3RequestVerifier {
     private S3Context context;
     private S3Request s3Request;
     private Logger logger = LoggerFactory.getLogger(getClass());
     private int maxDifferent = Integer.parseInt(System.getProperty("s34j.auth.request.maxDifferenceMinutes", "15")) * 60 * 1000;
+    private AWS4SignerForChunkedUpload aws4SignerForChunkedUpload;
 
     public S3RequestVerifier(S3Context context, S3Request s3Request) {
         this.context = context;
         this.s3Request = s3Request;
     }
 
-    public void verify() {
-        logger.debug("request=" + s3Request);
-        logger.debug("contentFile=" + s3Request.getContent());
-        verifyHeaders();
-        verifyContent();
-        if (s3Request instanceof BucketS3Request) {
-            BucketS3Request bucketS3Request = (BucketS3Request) this.s3Request;
-            Verifier.verifyBucketName(bucketS3Request.getBucketName());
-        }
-    }
-
     @SuppressWarnings("deprecation")
-    private void verifyContent() {
-        if (s3Request.getContent() != null) {
-            try {
-                String contentEncoding = s3Request.getHeader("content-encoding");
-                if (equalsIgnoreCase("aws-chunked", contentEncoding)) {
-                    verifyMultipleChunk();
-                } else {
-                    verifySingleChunk();
-                }
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-                throw new S3Exception(ErrorCode.INTERNAL_ERROR);
-            }
-        }
-    }
-
-    private void verifyMultipleChunk() throws IOException {
-        throw new S3Exception(NOT_IMPLEMENTED);
-    }
-
-    private void verifySingleChunk() throws IOException {
+    public void verifySingleChunk() throws IOException {
         String providedSha256 = s3Request.getHeader("x-amz-content-sha256");
         Path content = s3Request.getContent();
         long contentLength = Files.size(content);
@@ -92,7 +60,7 @@ public class S3RequestVerifier {
         }
     }
 
-    private void verifyHeaders() {
+    public void verifyHeaders() {
         try {
             URL url = new URL(s3Request.getUrl());
             String authorizationHeader = s3Request.getHeader("authorization");
@@ -107,7 +75,7 @@ public class S3RequestVerifier {
             AWS4SignerForAuthorizationHeader signer = new AWS4SignerForAuthorizationHeader(url, method, serviceName, regionName);
             String awsAccessKey = authorization.getAwsAccessKey();
             String awsSecretKey = context.getSecretKey(awsAccessKey);
-
+            aws4SignerForChunkedUpload = new AWS4SignerForChunkedUpload(url, method, serviceName, regionName);
             if (isBlank(awsSecretKey)) {
                 throw new S3Exception(ErrorCode.INVALID_ACCESS_KEY_ID);
             }
@@ -138,6 +106,8 @@ public class S3RequestVerifier {
                 throw new S3Exception(ErrorCode.REQUEST_TIME_TOO_SKEWED);
             }
             String computedHeader = signer.computeSignature(headers, queryParams, bodyHash, awsAccessKey, awsSecretKey, date);
+            headers.put("x-amz-content-sha256",STREAMING_BODY_SHA256);
+            aws4SignerForChunkedUpload.computeSignature(headers, queryParams, STREAMING_BODY_SHA256, awsAccessKey, awsSecretKey, date);
             logger.trace("fullURL=" + fullURL);
             logger.trace("headers=" + headers);
             logger.trace("parameters=" + queryParams);
@@ -158,5 +128,12 @@ public class S3RequestVerifier {
         } catch (ParseException e) {
             throw new S3Exception(ErrorCode.AUTHORIZATION_HEADER_MALFORMED);
         }
+    }
+
+    public AWS4SignerForChunkedUpload getAws4SignerForChunkedUpload() {
+        if(aws4SignerForChunkedUpload==null){
+            throw new IllegalStateException("Please call verifyHeaders first");
+        }
+        return aws4SignerForChunkedUpload;
     }
 }

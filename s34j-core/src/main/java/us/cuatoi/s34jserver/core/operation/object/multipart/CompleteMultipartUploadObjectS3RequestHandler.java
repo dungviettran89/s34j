@@ -6,7 +6,7 @@ import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
 import us.cuatoi.s34jserver.core.dto.CompleteMultipartUploadResultDTO;
 import us.cuatoi.s34jserver.core.dto.PartDTO;
-import us.cuatoi.s34jserver.core.helper.GsonHelper;
+import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
 import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
 import us.cuatoi.s34jserver.core.model.object.multipart.CompleteMultipartUploadObjectS3Request;
@@ -42,7 +42,7 @@ public class CompleteMultipartUploadObjectS3RequestHandler
         logger.info("Created " + objectFile);
 
         String eTag = calculateETag();
-        ObjectMetadata metadata = GsonHelper.fromJson(uploadMetadataFile, ObjectMetadata.class);
+        ObjectMetadata metadata = DTOHelper.fromJson(uploadMetadataFile, ObjectMetadata.class);
         metadata.seteTag(eTag);
         saveMetadata(metadata);
 

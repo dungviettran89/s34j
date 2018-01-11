@@ -2,7 +2,7 @@ package us.cuatoi.s34jserver.core.operation.object.multipart;
 
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.dto.InitiateMultipartUploadResultDTO;
-import us.cuatoi.s34jserver.core.helper.GsonHelper;
+import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.model.object.multipart.InitiateMultipartUploadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.multipart.InitiateMultipartUploadObjectS3Response;
 import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
@@ -22,7 +22,7 @@ public class InitiateMultipartUploadObjectS3RequestHandler extends MultipartUplo
         logger.info("Created " + uploadDir);
 
         ObjectMetadata metadata = createMetadata(null);
-        String metadataString = GsonHelper.toPrettyJson(metadata);
+        String metadataString = DTOHelper.toPrettyJson(metadata);
         Files.write(uploadMetadataFile, metadataString.getBytes("UTF-8"));
         logger.info("Updated " + uploadMetadataFile);
         logger.info("metadata=" + metadataString);

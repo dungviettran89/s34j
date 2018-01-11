@@ -3,7 +3,6 @@ package us.cuatoi.s34jserver.core;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.cuatoi.s34jserver.core.auth.S3RequestVerifier;
 import us.cuatoi.s34jserver.core.dto.ErrorResponseDTO;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
@@ -62,10 +61,7 @@ public class S3Handler {
                 .setServerId(context.getServerId());
         try {
             //Step 1: parse request
-            s3Request = new S3RequestParser(request,s3Request).fillAndDetect();
-            s3Request = s3Request.setServerId(context.getServerId());
-            //Step 2: verify request
-            new S3RequestVerifier(context, s3Request).verify();
+            s3Request = new S3RequestParserVerifier(context,request,s3Request).execute();
             //Step 3: execute request
             S3RequestHandler handler = getHandler(s3Request);
             if (handler != null) {

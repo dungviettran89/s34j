@@ -6,6 +6,7 @@ import us.cuatoi.s34jserver.core.S3Exception;
 import us.cuatoi.s34jserver.core.model.bucket.BucketS3Request;
 import us.cuatoi.s34jserver.core.model.S3Response;
 import us.cuatoi.s34jserver.core.operation.S3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.Verifier;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,6 +24,7 @@ public abstract class BucketS3RequestHandler<F extends BucketS3Request, T extend
         bucketDir = baseDir.resolve(bucketName);
         bucketMetadataDir = baseMetadataDir.resolve(bucketName);
         bucketUploadDir = baseUploadDir.resolve(bucketName);
+        Verifier.verifyBucketName(bucketName);
     }
 
     protected void verifyBucketExists() {
