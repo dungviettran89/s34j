@@ -6,6 +6,8 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 
+import static us.cuatoi.s34jserver.core.helper.LogHelper.traceMultiline;
+
 
 /**
  * Sample AWS4 signer demonstrating how to sign 'chunked' uploads
@@ -105,7 +107,7 @@ public class AWS4SignerForChunkedUpload extends AWS4SignerBase {
                 canonicalizedQueryParameters, canonicalizedHeaderNames,
                 canonicalizedHeaders, bodyHash);
         logger.trace("--------- Canonical request --------");
-        logger.trace(canonicalRequest);
+        traceMultiline(logger, canonicalRequest);
         logger.trace("------------------------------------");
 
         // construct the string to be signed
@@ -113,7 +115,7 @@ public class AWS4SignerForChunkedUpload extends AWS4SignerBase {
         this.scope = dateStamp + "/" + regionName + "/" + serviceName + "/" + TERMINATOR;
         String stringToSign = getStringToSign(SCHEME, ALGORITHM, dateTimeStamp, scope, canonicalRequest);
         logger.trace("--------- String to sign -----------");
-        logger.trace(stringToSign);
+        traceMultiline(logger, stringToSign);
         logger.trace("------------------------------------");
 
         // compute the signing key

@@ -1,10 +1,13 @@
 package us.cuatoi.s34jserver.core.auth;
 
 import us.cuatoi.s34jserver.core.auth.util.BinaryUtils;
+import us.cuatoi.s34jserver.core.helper.LogHelper;
 
 import java.net.URL;
 import java.util.Date;
 import java.util.Map;
+
+import static org.apache.commons.lang3.StringUtils.split;
 
 /**
  * Sample AWS4 signer demonstrating how to sign requests to Amazon S3 using an
@@ -106,7 +109,7 @@ public class AWS4SignerForAuthorizationHeader extends AWS4SignerBase {
                 canonicalizedQueryParameters, canonicalizedHeaderNames,
                 canonicalizedHeaders, bodyHash);
         logger.trace("--------- Canonical request --------");
-        logger.trace(canonicalRequest);
+        LogHelper.traceMultiline(logger, canonicalRequest);
         logger.trace("------------------------------------");
         
         // construct the string to be signed
@@ -114,7 +117,7 @@ public class AWS4SignerForAuthorizationHeader extends AWS4SignerBase {
         String scope =  dateStamp + "/" + regionName + "/" + serviceName + "/" + TERMINATOR;
         String stringToSign = getStringToSign(SCHEME, ALGORITHM, dateTimeStamp, scope, canonicalRequest);
         logger.trace("--------- String to sign -----------");
-        logger.trace(stringToSign);
+        LogHelper.traceMultiline(logger, stringToSign);
         logger.trace("------------------------------------");
         
         // compute the signing key
@@ -139,4 +142,5 @@ public class AWS4SignerForAuthorizationHeader extends AWS4SignerBase {
 
         return authorizationHeader;
     }
+
 }
