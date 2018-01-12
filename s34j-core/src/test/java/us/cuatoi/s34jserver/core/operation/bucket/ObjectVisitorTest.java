@@ -63,8 +63,16 @@ public class ObjectVisitorTest {
     public void testVisitWithDelimiterAndPrefixAndStartAfter() throws Exception {
         ObjectVisitor v1 = test(1, "src/main/java/us/cuatoi/s34jserver/core/operation/",
                 null, "/", null);
-        test(1, "src/main/java/us/cuatoi/s34jserver/core/operation/",
+        System.out.println(v1.getNextContinuationToken());
+        v1 = test(1, "src/main/java/us/cuatoi/s34jserver/core/operation/",
                 null, "/", v1.getNextContinuationToken());
+        System.out.println(v1.getNextContinuationToken());
+        v1 = test(1, "src/main/java/us/cuatoi/s34jserver/core/operation/",
+                null, "/", v1.getNextContinuationToken());
+        System.out.println(v1.getNextContinuationToken());
+        v1 = test(1, "src/main/java/us/cuatoi/s34jserver/core/operation/",
+                null, "/", v1.getNextContinuationToken());
+        System.out.println(v1.getNextContinuationToken());
     }
 
     private ObjectVisitor test(int maxKeys, String prefix, String startAfter, String delimiter, String continuationToken) throws IOException {
@@ -88,10 +96,10 @@ public class ObjectVisitorTest {
     private void verify(ObjectVisitor visitor) {
         assertTrue("Should return less then max keys", visitor.getObjects().size() <= visitor.getMaxKeys());
         visitor.getObjects().forEach((p) -> {
-            logger.debug("FOUND: " + p);
+            logger.trace("FOUND: " + p);
         });
         visitor.getPrefixes().forEach((p) -> {
-            logger.debug("PREFIX: " + p);
+            logger.trace("PREFIX: " + p);
         });
         logger.debug("TRUNCATED:" + visitor.isTruncated());
         logger.debug("NextContinuationToken:" + visitor.getNextContinuationToken());

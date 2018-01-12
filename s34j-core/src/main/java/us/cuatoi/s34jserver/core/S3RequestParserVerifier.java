@@ -1,5 +1,6 @@
 package us.cuatoi.s34jserver.core;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
@@ -75,7 +76,9 @@ public class S3RequestParserVerifier {
                     signatureLine = replace(signatureLine, "\r", "");
                     signatureLine = replace(signatureLine, "\n", "");
                     int indexOfSignature = indexOf(signatureLine, CHUNK_SIGNATURE);
-                    if (isBlank(signatureLine)) continue;
+                    if (isBlank(signatureLine)) {
+                        continue;
+                    }
                     if (indexOfSignature <= 0) {
                         throw new S3Exception(ErrorCode.AUTHORIZATION_HEADER_MALFORMED);
                     }
@@ -83,14 +86,15 @@ public class S3RequestParserVerifier {
                     int chunkSize = Integer.parseUnsignedInt(substring(signatureLine, 0, indexOfSignature), 16);
                     String signature = substring(signatureLine, indexOfSignature + length(CHUNK_SIGNATURE));
                     byte[] data = new byte[chunkSize];
-                    for (int i = 0; i < chunkSize; i++) {
-                        data[i] = (byte) is.read();
-                    }
+                    IOUtils.readFully(is, data);
                     String computedSignature = signer.generateChunkSignature(data);
                     logger.trace("signature        =" + signature);
                     logger.trace("computedSignature=" + computedSignature);
                     if (!equalsIgnoreCase(signature, computedSignature)) {
                         throw new S3Exception(ErrorCode.SIGNATURE_DOES_NOT_MATCH);
+                    }
+                    if (chunkSize == 0) {
+                        break;
                     }
                     os.write(data);
                 }

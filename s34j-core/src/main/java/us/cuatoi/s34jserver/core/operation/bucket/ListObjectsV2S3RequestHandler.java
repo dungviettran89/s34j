@@ -34,24 +34,24 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
 
     public ListObjectsV2S3RequestHandler(S3Context context, ListObjectsV2S3Request s3Request) {
         super(context, s3Request);
-        delimiter = s3Request.getHeader("delimiter");
-        encodingType = s3Request.getHeader("encoding-type");
-        maxKeys = parseLong(s3Request.getHeader("max-keys"), 1000);
-        prefix = s3Request.getHeader("prefix");
-        continuationToken = s3Request.getHeader("continuation-token");
-        fetchOwner = s3Request.getHeader("fetch-owner");
-        startAfter = s3Request.getHeader("start-after");
+        delimiter = s3Request.getQueryParameter("delimiter");
+        encodingType = s3Request.getQueryParameter("encoding-type");
+        maxKeys = parseLong(s3Request.getQueryParameter("max-keys"), 1000);
+        prefix = s3Request.getQueryParameter("prefix");
+        continuationToken = s3Request.getQueryParameter("continuation-token");
+        fetchOwner = s3Request.getQueryParameter("fetch-owner");
+        startAfter = s3Request.getQueryParameter("start-after");
     }
 
     @Override
     public ListObjectsV2S3Response handle() throws IOException {
-        logger.trace("delimiter=" + delimiter);
-        logger.trace("encodingType=" + encodingType);
-        logger.trace("maxKeys=" + maxKeys);
-        logger.trace("prefix=" + prefix);
-        logger.trace("continuationToken=" + continuationToken);
-        logger.trace("fetchOwner=" + fetchOwner);
-        logger.trace("startAfter=" + startAfter);
+        logger.debug("delimiter=" + delimiter);
+        logger.debug("encodingType=" + encodingType);
+        logger.debug("maxKeys=" + maxKeys);
+        logger.debug("prefix=" + prefix);
+        logger.debug("continuationToken=" + continuationToken);
+        logger.debug("fetchOwner=" + fetchOwner);
+        logger.debug("startAfter=" + startAfter);
 
         ObjectVisitor visitor = new ObjectVisitor(bucketDir)
                 .setDelimiter(delimiter)
@@ -68,13 +68,15 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
         dto.setStartAfter(prefix);
         dto.setTruncated(visitor.isTruncated());
         dto.setKeyCount(visitor.getObjects().size());
+        dto.setContinuationToken(continuationToken);
+        dto.setNextContinuationToken(visitor.getNextContinuationToken());
         for (String prefix : visitor.getPrefixes()) {
             CommonPrefixesDTO cpd = new CommonPrefixesDTO();
             cpd.setPrefix(prefix);
             dto.getCommonPrefixes().add(cpd);
         }
         for (Path path : visitor.getObjects()) {
-            logger.debug("Found :" + path);
+            logger.trace("Found: " + path);
             ContentsDTO cd = new ContentsDTO();
             cd.setKey(path.toString());
             cd.setStorageClass(S3Constants.STORAGE_CLASS);
@@ -84,7 +86,7 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
             cd.seteTag(getETag(path));
             dto.getContents().add(cd);
         }
-
+        logger.debug("count=" + dto.getContents().size());
         return (ListObjectsV2S3Response) new ListObjectsV2S3Response(s3Request).setContent(dto);
     }
 

@@ -94,7 +94,7 @@ public abstract class ObjectS3RequestHandler<F extends ObjectS3Request, T extend
         }
         String metadataString = DTOHelper.toPrettyJson(metadata);
         Files.write(objectMetadataFile, metadataString.getBytes("UTF-8"));
-        logger.info("Updated " + objectMetadataFile);
+        logger.debug("Updated " + objectMetadataFile);
         LogHelper.infoMultiline(logger, "Metadata=" + metadataString);
     }
 

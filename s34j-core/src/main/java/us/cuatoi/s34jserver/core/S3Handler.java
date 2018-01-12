@@ -38,7 +38,7 @@ import java.util.Enumeration;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static us.cuatoi.s34jserver.core.helper.LogHelper.debugMultiline;
+import static us.cuatoi.s34jserver.core.helper.LogHelper.traceMultiline;
 
 public class S3Handler {
 
@@ -62,7 +62,7 @@ public class S3Handler {
                 .setServerId(context.getServerId());
         try {
             //Step 1: parse request
-            s3Request = new S3RequestParserVerifier(context,request,s3Request).execute();
+            s3Request = new S3RequestParserVerifier(context, request, s3Request).execute();
             //Step 3: execute request
             S3RequestHandler handler = getHandler(s3Request);
             if (handler != null) {
@@ -112,14 +112,16 @@ public class S3Handler {
             return new GetObjectS3RequestHandler(context, (GetObjectS3Request) s3Request);
         } else if (s3Request instanceof AbortMultipartUploadObjectS3Request) {
             return new AbortMultipartUploadObjectS3RequestHandler(context, (AbortMultipartUploadObjectS3Request) s3Request);
-        }else if (s3Request instanceof ListObjectsV2S3Request) {
+        } else if (s3Request instanceof ListObjectsV2S3Request) {
             return new ListObjectsV2S3RequestHandler(context, (ListObjectsV2S3Request) s3Request);
+        } else if (s3Request instanceof DeleteMultipleObjectsS3Request) {
+            return new DeleteMultipleObjectsS3RequestHandler(context, (DeleteMultipleObjectsS3Request) s3Request);
         }
         return null;
     }
 
     private void returnResponse(S3Response s3Response) throws IOException {
-        debugMultiline( logger, "Response=" + s3Response);
+        traceMultiline(logger, "Response=" + s3Response);
 
         response.setStatus(s3Response.getStatusCode());
         s3Response.getHeaders().forEach((k, v) -> {
@@ -135,7 +137,7 @@ public class S3Handler {
         } else if (s3Response.getContent() != null) {
             response.setContentType(S3Constants.CONTENT_TYPE);
             response.getWriter().write(s3Response.getContent().toString());
-            logger.info("Content=" + s3Response.getContent().toString());
+            logger.debug("Content=" + s3Response.getContent().toString());
         }
         logger.debug("-------- END " + debugInfo() + " ----------------------");
     }

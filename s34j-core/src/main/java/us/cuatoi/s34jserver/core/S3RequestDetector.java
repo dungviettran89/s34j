@@ -1,6 +1,7 @@
 package us.cuatoi.s34jserver.core;
 
 import us.cuatoi.s34jserver.core.dto.CompleteMultipartUploadDTO;
+import us.cuatoi.s34jserver.core.dto.DeleteDTO;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
@@ -48,6 +49,9 @@ public class S3RequestDetector {
                 return new ListMultipartUploadsBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "head") && noQueryParams) {
                 return new HeadBucketS3Request(s3Request).setBucketName(bucketName);
+            } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("delete") != null) {
+                DeleteDTO dto = DTOHelper.parseXmlContent(s3Request.getContent(), new DeleteDTO());
+                return new DeleteMultipleObjectsS3Request(s3Request).setDto(dto).setBucketName(bucketName);
             }
         } else {
             int secondSlash = indexOf(uri, '/', 2);

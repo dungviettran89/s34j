@@ -18,6 +18,10 @@ public class ListBucketResultDTO extends GenericDTO {
     private boolean truncated;
     @Key("StartAfter")
     private String startAfter;
+    @Key("ContinuationToken")
+    private String continuationToken;
+    @Key("NextContinuationToken")
+    private String nextContinuationToken;
     @Key("Contents")
     private List<ContentsDTO> contents = new ArrayList<>();
     @Key("CommonPrefixesDTO")
@@ -89,5 +93,21 @@ public class ListBucketResultDTO extends GenericDTO {
 
     public void setCommonPrefixes(List<CommonPrefixesDTO> commonPrefixes) {
         this.commonPrefixes = commonPrefixes;
+    }
+
+    public String getContinuationToken() {
+        return continuationToken;
+    }
+
+    public void setContinuationToken(String continuationToken) {
+        this.continuationToken = continuationToken;
+    }
+
+    public String getNextContinuationToken() {
+        return nextContinuationToken;
+    }
+
+    public void setNextContinuationToken(String nextContinuationToken) {
+        this.nextContinuationToken = nextContinuationToken;
     }
 }
