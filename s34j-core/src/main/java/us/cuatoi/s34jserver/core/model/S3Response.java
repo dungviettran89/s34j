@@ -14,7 +14,7 @@ public class S3Response {
     /*  Constructors    */
     public S3Response(S3Request request) {
         setHeader("x-amz-request-id", request.getRequestId());
-        setHeader("x-amz-id-2x-amz-id-2x-amz-id-2x-amz-id-2", request.getRequestId());
+        setHeader("x-amz-id-2", request.getRequestId() + "-" + System.currentTimeMillis());
         setHeader("Server", request.getServerId());
     }
 
