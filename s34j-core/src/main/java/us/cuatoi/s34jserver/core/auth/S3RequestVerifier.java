@@ -106,7 +106,6 @@ public class S3RequestVerifier {
                 throw new S3Exception(ErrorCode.REQUEST_TIME_TOO_SKEWED);
             }
             String computedHeader = signer.computeSignature(headers, queryParams, bodyHash, awsAccessKey, awsSecretKey, date);
-            headers.put("x-amz-content-sha256",STREAMING_BODY_SHA256);
             aws4SignerForChunkedUpload.computeSignature(headers, queryParams, STREAMING_BODY_SHA256, awsAccessKey, awsSecretKey, date);
             logger.trace("fullURL=" + fullURL);
             logger.trace("headers=" + headers);

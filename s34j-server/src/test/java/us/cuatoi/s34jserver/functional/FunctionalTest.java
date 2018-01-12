@@ -21,6 +21,8 @@ import io.minio.messages.*;
 import io.minio.policy.PolicyType;
 import okhttp3.*;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -46,6 +48,7 @@ public class FunctionalTest {
     private static final Random random = new Random(new SecureRandom().nextLong());
     private static final String customContentType = "application/javascript";
     private static final String nullContentType = null;
+    public static final Logger logger = LoggerFactory.getLogger(FunctionalTest.class);
     private static String bucketName = getRandomName();
     private static boolean mintEnv = false;
     private static Path dataFile1Mb;
@@ -335,6 +338,7 @@ public class FunctionalTest {
                     e.toString() + " >>> " + Arrays.toString(e.getStackTrace()));
             throw e;
         }
+        logger.info("============FINISHED=======================");
     }
 
     /**
@@ -359,6 +363,7 @@ public class FunctionalTest {
                     e.toString() + " >>> " + Arrays.toString(e.getStackTrace()));
             throw e;
         }
+        logger.info("============FINISHED=======================");
     }
 
     /**
@@ -2413,11 +2418,8 @@ public class FunctionalTest {
         }
 
         listBuckets_test();
-
         bucketExists_test();
-
         removeBucket_test();
-
         setup();
 
         putObject_test1();

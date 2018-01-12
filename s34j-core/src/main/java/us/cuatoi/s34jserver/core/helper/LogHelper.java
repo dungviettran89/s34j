@@ -16,4 +16,10 @@ public class LogHelper {
             logger.trace(line);
         }
     }
+
+    public static void debugMultiline(Logger logger, String message) {
+        for (String line : split(message, '\n')) {
+            logger.debug(line);
+        }
+    }
 }

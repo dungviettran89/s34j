@@ -38,6 +38,7 @@ import java.util.Enumeration;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static us.cuatoi.s34jserver.core.helper.LogHelper.debugMultiline;
 
 public class S3Handler {
 
@@ -116,7 +117,7 @@ public class S3Handler {
     }
 
     private void returnResponse(S3Response s3Response) throws IOException {
-        logger.debug("Response=" + s3Response);
+        debugMultiline( logger, "Response=" + s3Response);
 
         response.setStatus(s3Response.getStatusCode());
         s3Response.getHeaders().forEach((k, v) -> {
@@ -132,7 +133,7 @@ public class S3Handler {
         } else if (s3Response.getContent() != null) {
             response.setContentType(S3Constants.CONTENT_TYPE);
             response.getWriter().write(s3Response.getContent().toString());
-            logger.debug("Content=" + s3Response.getContent().toString());
+            logger.info("Content=" + s3Response.getContent().toString());
         }
         logger.debug("-------- END " + debugInfo() + " ----------------------");
     }

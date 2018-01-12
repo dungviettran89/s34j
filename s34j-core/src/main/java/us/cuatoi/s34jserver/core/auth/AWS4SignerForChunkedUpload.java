@@ -90,7 +90,7 @@ public class AWS4SignerForChunkedUpload extends AWS4SignerBase {
         String hostHeader = endpointUrl.getHost();
         int port = endpointUrl.getPort();
         if (port > -1) {
-            hostHeader.concat(":" + Integer.toString(port));
+            hostHeader = hostHeader.concat(":" + Integer.toString(port));
         }
         headers.put("Host", hostHeader);
 
@@ -228,9 +228,6 @@ public class AWS4SignerForChunkedUpload extends AWS4SignerBase {
         // sig-extension
         String chunkSignature = generateChunkSignature(dataToChunk, nonsigExtension);
 
-        // cache the signature to include with the next chunk's signature computation
-        lastComputedSignature = chunkSignature;
-
         // construct the actual chunk, comprised of the non-signed extensions, the
         // 'headers' we just signed and their signature, plus a newline then copy
         // that plus the user's data to a payload to be written to the request stream
@@ -266,8 +263,13 @@ public class AWS4SignerForChunkedUpload extends AWS4SignerBase {
                         lastComputedSignature + "\n" +
                         BinaryUtils.toHex(AWS4SignerBase.hash(nonsigExtension)) + "\n" +
                         BinaryUtils.toHex(AWS4SignerBase.hash(dataToChunk));
-
+        logger.trace("------------chunkStringToSign-------------");
+        traceMultiline(logger, chunkStringToSign);
+        logger.trace("------------------------------------------");
         // compute the V4 signature for the chunk
-        return BinaryUtils.toHex(AWS4SignerBase.sign(chunkStringToSign, signingKey, "HmacSHA256"));
+        String chunkSignature = BinaryUtils.toHex(AWS4SignerBase.sign(chunkStringToSign, signingKey, "HmacSHA256"));
+        // cache the signature to include with the next chunk's signature computation
+        lastComputedSignature = chunkSignature;
+        return chunkSignature;
     }
 }
