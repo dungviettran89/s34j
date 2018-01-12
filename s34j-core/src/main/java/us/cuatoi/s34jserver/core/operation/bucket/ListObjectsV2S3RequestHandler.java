@@ -45,13 +45,13 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
 
     @Override
     public ListObjectsV2S3Response handle() throws IOException {
-        logger.debug("delimiter=" + delimiter);
-        logger.debug("encodingType=" + encodingType);
-        logger.debug("maxKeys=" + maxKeys);
-        logger.debug("prefix=" + prefix);
-        logger.debug("continuationToken=" + continuationToken);
-        logger.debug("fetchOwner=" + fetchOwner);
-        logger.debug("startAfter=" + startAfter);
+        logger.trace("delimiter=" + delimiter);
+        logger.trace("encodingType=" + encodingType);
+        logger.trace("maxKeys=" + maxKeys);
+        logger.trace("prefix=" + prefix);
+        logger.trace("continuationToken=" + continuationToken);
+        logger.trace("fetchOwner=" + fetchOwner);
+        logger.trace("startAfter=" + startAfter);
 
         ObjectVisitor visitor = new ObjectVisitor(bucketDir)
                 .setDelimiter(delimiter)
@@ -74,21 +74,22 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
             dto.getCommonPrefixes().add(cpd);
         }
         for (Path path : visitor.getObjects()) {
+            logger.debug("Found :" + path);
             ContentsDTO cd = new ContentsDTO();
             cd.setKey(path.toString());
-            cd.setSize(getSize(path));
             cd.setStorageClass(S3Constants.STORAGE_CLASS);
-            cd.setLastModified(getLastModified(path));
-            cd.seteTag(getETag(path));
             cd.setOwner(getOwner(path));
+            cd.setLastModified(getLastModified(path));
+            cd.setSize(getSize(path));
+            cd.seteTag(getETag(path));
             dto.getContents().add(cd);
         }
 
         return (ListObjectsV2S3Response) new ListObjectsV2S3Response(s3Request).setContent(dto);
     }
 
-    private Long getSize(Path path) throws IOException {
-        return Files.isRegularFile(path) ? Files.size(path) : null;
+    private long getSize(Path path) throws IOException {
+        return Files.size(bucketDir.resolve(path));
     }
 
     private OwnerDTO getOwner(Path path) {
@@ -102,7 +103,7 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
     }
 
     private String getLastModified(Path path) throws IOException {
-        BasicFileAttributes attribute = Files.readAttributes(path, BasicFileAttributes.class);
+        BasicFileAttributes attribute = Files.readAttributes(bucketDir.resolve(path), BasicFileAttributes.class);
         return EXPIRATION_DATE_FORMAT.print(attribute.lastModifiedTime().toMillis());
     }
 

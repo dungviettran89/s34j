@@ -36,7 +36,7 @@ class ObjectVisitor extends SimpleFileVisitor<Path> {
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         dir = normalize(dir);
         String dirName = getName(dir);
-        logger.debug("Checking dir : " + dirName);
+        logger.trace("Checking dir : " + dirName);
 
         //check prefix
         if (isNotBlank(prefix)) {
@@ -57,7 +57,7 @@ class ObjectVisitor extends SimpleFileVisitor<Path> {
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         file = normalize(file);
         String fileName = getName(file);
-        logger.debug("Checking file: " + fileName);
+        logger.trace("Checking file: " + fileName);
 
         if (isNotBlank(prefix)) {
             if (indexOf(fileName, prefix) != 0) {
