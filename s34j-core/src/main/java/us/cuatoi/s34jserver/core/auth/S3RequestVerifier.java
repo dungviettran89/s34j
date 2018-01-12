@@ -1,6 +1,6 @@
 package us.cuatoi.s34jserver.core.auth;
 
-import com.google.common.hash.Hashing;
+import com.google.common.io.BaseEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -28,6 +28,7 @@ import java.util.List;
 import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34jserver.core.ErrorCode.MISSING_SECURITY_HEADER;
 import static us.cuatoi.s34jserver.core.auth.AWS4SignerForChunkedUpload.STREAMING_BODY_SHA256;
+import static us.cuatoi.s34jserver.core.helper.PathHelper.md5HashFileToByte;
 
 public class S3RequestVerifier {
     private S3Context context;
@@ -45,16 +46,19 @@ public class S3RequestVerifier {
     public void verifySingleChunk() throws IOException {
         String providedSha256 = s3Request.getHeader("x-amz-content-sha256");
         Path content = s3Request.getContent();
+        logger.trace("Checking " + content);
         long contentLength = Files.size(content);
-        String computedSha256 = contentLength > 0 ?
-                com.google.common.io.Files.asByteSource(content.toFile()).hash(Hashing.sha256()).toString() :
-                AWS4SignerBase.EMPTY_BODY_SHA256;
+        String computedSha256 = contentLength > 0 ? PathHelper.sha256HashFile(content) : AWS4SignerBase.EMPTY_BODY_SHA256;
+        logger.trace("computedSha256:" + computedSha256);
+        logger.trace("providedSha256:" + providedSha256);
         if (!equalsIgnoreCase(computedSha256, providedSha256)) {
             throw new S3Exception(ErrorCode.BAD_DIGEST);
         }
         String providedMd5 = s3Request.getHeader("content-md5");
         if (contentLength > 0 && isNotBlank(providedMd5)) {
-            String computedMd5 = PathHelper.md5HashFile(content);
+            String computedMd5 = BaseEncoding.base64().encode(md5HashFileToByte(content));
+            logger.trace("providedMd5:" + providedMd5);
+            logger.trace("computedMd5:" + computedMd5);
             if (!equalsIgnoreCase(providedMd5, computedMd5)) {
                 throw new S3Exception(ErrorCode.INVALID_DIGEST);
             }
@@ -131,7 +135,7 @@ public class S3RequestVerifier {
     }
 
     public AWS4SignerForChunkedUpload getAws4SignerForChunkedUpload() {
-        if(aws4SignerForChunkedUpload==null){
+        if (aws4SignerForChunkedUpload == null) {
             throw new IllegalStateException("Please call verifyHeaders first");
         }
         return aws4SignerForChunkedUpload;

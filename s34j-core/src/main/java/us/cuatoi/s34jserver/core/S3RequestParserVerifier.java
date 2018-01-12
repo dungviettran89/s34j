@@ -96,6 +96,7 @@ public class S3RequestParserVerifier {
                 }
             }
         }
+        logger.trace("Saved to " + content);
     }
 
     private long readContentLength() {
