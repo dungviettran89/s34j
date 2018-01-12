@@ -33,3 +33,7 @@ dependencies {
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompile('io.minio:minio:3.0.10')
 }
+
+springBoot {
+	executable = true
+}

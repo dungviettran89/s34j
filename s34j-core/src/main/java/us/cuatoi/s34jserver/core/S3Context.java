@@ -1,21 +1,22 @@
 package us.cuatoi.s34jserver.core;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
-public class S3Context {
+public abstract class S3Context {
 
-    private Path basePath = Paths.get("data");
+    private final Path basePath;
     private String region = "us-central-1";
     private String serverId = "s34j";
+
+    protected S3Context(Path basePath) {
+        this.basePath = basePath;
+    }
 
     public String getServerId() {
         return serverId;
     }
 
-    public String getSecretKey(String accessKey) {
-        return "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
-    }
+    public  abstract String getSecretKey(String accessKey);
 
     public Path getBasePath() {
         return basePath;
@@ -23,11 +24,6 @@ public class S3Context {
 
     public String getRegion() {
         return region;
-    }
-
-    public S3Context setBasePath(Path basePath) {
-        this.basePath = basePath;
-        return this;
     }
 
     public S3Context setRegion(String region) {
