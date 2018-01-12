@@ -4,10 +4,7 @@ import us.cuatoi.s34jserver.core.dto.CompleteMultipartUploadDTO;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
-import us.cuatoi.s34jserver.core.model.bucket.GetLocationBucketS3Request;
-import us.cuatoi.s34jserver.core.model.bucket.HeadBucketS3Request;
-import us.cuatoi.s34jserver.core.model.bucket.ListMultipartUploadsBucketS3Request;
-import us.cuatoi.s34jserver.core.model.bucket.PutBucketS3Request;
+import us.cuatoi.s34jserver.core.model.bucket.*;
 import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.GetObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.HeadObjectS3Request;
@@ -18,8 +15,6 @@ import us.cuatoi.s34jserver.core.model.object.multipart.InitiateMultipartUploadO
 import us.cuatoi.s34jserver.core.model.object.multipart.UploadPartObjectS3Request;
 
 import static org.apache.commons.lang3.StringUtils.*;
-import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
-import static org.apache.commons.lang3.StringUtils.substring;
 
 public class S3RequestDetector {
 
@@ -47,6 +42,8 @@ public class S3RequestDetector {
                 return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "get") && s3Request.getQueryParameter("uploads") != null) {
                 return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
+            } else if (equalsIgnoreCase(method, "get") && equalsIgnoreCase(s3Request.getQueryParameter("list-type"), "2")) {
+                return new ListObjectsV2S3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "delete") && noQueryParams) {
                 return new ListMultipartUploadsBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "head") && noQueryParams) {

@@ -25,4 +25,5 @@ public class S3Constants {
             DateTimeFormat.forPattern("EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'").withZoneUTC().withLocale(Locale.US);
     public static final String METADATA_JSON = "metadata.json";
     public static final String CHUNK_SIGNATURE = ";chunk-signature=";
+    public static final String STORAGE_CLASS = "STANDARD";
 }

@@ -36,7 +36,7 @@ public abstract class MultipartUploadObjectS3RequestHandler<F extends ObjectS3Re
     }
 
     @VisibleForTesting
-    protected static String generateNewId() {
+    public static String generateNewId() {
         UUID uuid = UUID.randomUUID();
         ByteBuffer buffer = ByteBuffer.wrap(new byte[24]);
         buffer.putLong(System.currentTimeMillis());

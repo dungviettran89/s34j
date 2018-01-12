@@ -22,7 +22,7 @@ public abstract class S3RequestHandler<F extends S3Request, T extends S3Response
     public S3RequestHandler(S3Context context, F s3Request) {
         this.context = context;
         this.s3Request = s3Request;
-        baseDir = context.getPath();
+        baseDir = context.getBasePath();
         workDir = baseDir.resolve(S3Constants.WORK_DIR);
         baseMetadataDir = workDir.resolve(S3Constants.METADATA_DIR);
         baseUploadDir = workDir.resolve(S3Constants.UPLOAD_DIR);

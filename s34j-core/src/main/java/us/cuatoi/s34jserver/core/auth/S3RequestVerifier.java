@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
+import us.cuatoi.s34jserver.core.helper.PathHelper;
 import us.cuatoi.s34jserver.core.model.S3Request;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class S3RequestVerifier {
         }
         String providedMd5 = s3Request.getHeader("content-md5");
         if (contentLength > 0 && isNotBlank(providedMd5)) {
-            String computedMd5 = com.google.common.io.Files.asByteSource(content.toFile()).hash(Hashing.md5()).toString();
+            String computedMd5 = PathHelper.md5HashFile(content);
             if (!equalsIgnoreCase(providedMd5, computedMd5)) {
                 throw new S3Exception(ErrorCode.INVALID_DIGEST);
             }

@@ -24,7 +24,6 @@ public class S34jServerApplicationFunctionTestMain {
             }
         }).start();
         SpringApplication.run(S34jServerApplication.class, args);
-
     }
 
     private static void sleep(int millis) {

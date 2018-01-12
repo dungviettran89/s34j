@@ -67,32 +67,33 @@ public class S3RequestParserVerifier {
         s3Request.setContent(content);
         AWS4SignerForChunkedUpload signer = verifier.getAws4SignerForChunkedUpload();
         try (OutputStream os = Files.newOutputStream(content)) {
-            ServletInputStream is = request.getInputStream();
-            while (!is.isFinished()) {
-                byte[] signatureData = new byte[256];
-                int signatureLength = is.readLine(signatureData, 0, 256);
-                String signatureLine = new String(signatureData, 0, signatureLength);
-                signatureLine = replace(signatureLine, "\r", "");
-                signatureLine = replace(signatureLine, "\n", "");
-                int indexOfSignature = indexOf(signatureLine, CHUNK_SIGNATURE);
-                if (isBlank(signatureLine)) continue;
-                if (indexOfSignature <= 0) {
-                    throw new S3Exception(ErrorCode.AUTHORIZATION_HEADER_MALFORMED);
+            try (ServletInputStream is = request.getInputStream()) {
+                while (!is.isFinished()) {
+                    byte[] signatureData = new byte[256];
+                    int signatureLength = is.readLine(signatureData, 0, 256);
+                    String signatureLine = new String(signatureData, 0, signatureLength);
+                    signatureLine = replace(signatureLine, "\r", "");
+                    signatureLine = replace(signatureLine, "\n", "");
+                    int indexOfSignature = indexOf(signatureLine, CHUNK_SIGNATURE);
+                    if (isBlank(signatureLine)) continue;
+                    if (indexOfSignature <= 0) {
+                        throw new S3Exception(ErrorCode.AUTHORIZATION_HEADER_MALFORMED);
+                    }
+                    logger.trace("Signature Line:" + signatureLine);
+                    int chunkSize = Integer.parseUnsignedInt(substring(signatureLine, 0, indexOfSignature), 16);
+                    String signature = substring(signatureLine, indexOfSignature + length(CHUNK_SIGNATURE));
+                    byte[] data = new byte[chunkSize];
+                    for (int i = 0; i < chunkSize; i++) {
+                        data[i] = (byte) is.read();
+                    }
+                    String computedSignature = signer.generateChunkSignature(data);
+                    logger.trace("signature        =" + signature);
+                    logger.trace("computedSignature=" + computedSignature);
+                    if (!equalsIgnoreCase(signature, computedSignature)) {
+                        throw new S3Exception(ErrorCode.SIGNATURE_DOES_NOT_MATCH);
+                    }
+                    os.write(data);
                 }
-                logger.trace("Signature Line:" + signatureLine);
-                int chunkSize = Integer.parseUnsignedInt(substring(signatureLine, 0, indexOfSignature), 16);
-                String signature = substring(signatureLine, indexOfSignature + length(CHUNK_SIGNATURE));
-                byte[] data = new byte[chunkSize];
-                for (int i = 0; i < chunkSize; i++) {
-                    data[i] = (byte) is.read();
-                }
-                String computedSignature = signer.generateChunkSignature(data);
-                logger.trace("signature        =" + signature);
-                logger.trace("computedSignature=" + computedSignature);
-                if (!equalsIgnoreCase(signature, computedSignature)) {
-                    throw new S3Exception(ErrorCode.SIGNATURE_DOES_NOT_MATCH);
-                }
-                os.write(data);
             }
         }
     }

@@ -1,7 +1,6 @@
 package us.cuatoi.s34jserver.core.operation.object;
 
 import com.google.common.collect.Lists;
-import com.google.common.hash.Hashing;
 import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
@@ -21,8 +20,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
-import static org.apache.commons.lang3.StringUtils.split;
 import static org.apache.commons.lang3.StringUtils.startsWith;
+import static us.cuatoi.s34jserver.core.helper.PathHelper.md5HashFile;
 
 public abstract class ObjectS3RequestHandler<F extends ObjectS3Request, T extends S3Response>
         extends BucketS3RequestHandler<F, T> {
@@ -61,7 +60,7 @@ public abstract class ObjectS3RequestHandler<F extends ObjectS3Request, T extend
 
     @SuppressWarnings("deprecation")
     protected String calculateETag(Path file) throws IOException {
-        return com.google.common.io.Files.asByteSource(file.toFile()).hash(Hashing.md5()).toString();
+        return md5HashFile(file);
     }
 
     protected void verifyObjectExists() {
