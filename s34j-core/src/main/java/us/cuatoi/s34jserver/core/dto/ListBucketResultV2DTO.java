@@ -5,7 +5,7 @@ import com.google.api.client.util.Key;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListBucketResultDTO extends GenericDTO {
+public class ListBucketResultV2DTO extends GenericDTO {
     @Key("Name")
     private String name;
     @Key("Prefix")
@@ -27,7 +27,7 @@ public class ListBucketResultDTO extends GenericDTO {
     @Key("CommonPrefixesDTO")
     private List<CommonPrefixesDTO> commonPrefixes = new ArrayList<>();
 
-    public ListBucketResultDTO() {
+    public ListBucketResultV2DTO() {
         super.name = "ListBucketResult";
     }
 

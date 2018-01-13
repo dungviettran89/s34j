@@ -29,6 +29,7 @@ public class ObjectVisitor {
     private List<Path> objects = new ArrayList<>();
     private List<String> prefixes = new ArrayList<>();
     private String nextContinuationToken;
+    private String nextMarker;
 
     /* Constructors */
     public ObjectVisitor(Path baseDir) {
@@ -133,6 +134,7 @@ public class ObjectVisitor {
         if (objects.size() < maxKeys) {
             logger.trace("Found: " + fileName);
             objects.add(file);
+            nextMarker = fileName;
         } else {
             if (isBlank(nextContinuationToken)) {
                 nextContinuationToken = fileName;
@@ -191,5 +193,13 @@ public class ObjectVisitor {
             }
         }
         return false;
+    }
+
+    public String getNextMarker() {
+        return nextMarker;
+    }
+
+    public void setNextMarker(String nextMarker) {
+        this.nextMarker = nextMarker;
     }
 }

@@ -4,9 +4,10 @@ import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.dto.CommonPrefixesDTO;
 import us.cuatoi.s34jserver.core.dto.ContentsDTO;
-import us.cuatoi.s34jserver.core.dto.ListBucketResultDTO;
+import us.cuatoi.s34jserver.core.dto.ListBucketResultV2DTO;
 import us.cuatoi.s34jserver.core.dto.OwnerDTO;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
+import us.cuatoi.s34jserver.core.helper.PathHelper;
 import us.cuatoi.s34jserver.core.model.bucket.ListObjectsV2S3Request;
 import us.cuatoi.s34jserver.core.model.bucket.ListObjectsV2S3Response;
 import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
@@ -15,9 +16,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 
-import static us.cuatoi.s34jserver.core.S3Constants.EXPIRATION_DATE_FORMAT;
 import static us.cuatoi.s34jserver.core.S3Constants.METADATA_JSON;
 import static us.cuatoi.s34jserver.core.helper.NumberHelper.parseLong;
 import static us.cuatoi.s34jserver.core.helper.PathHelper.md5HashFile;
@@ -61,7 +60,7 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
                 .setStartAfter(startAfter)
                 .visit();
 
-        ListBucketResultDTO dto = new ListBucketResultDTO();
+        ListBucketResultV2DTO dto = new ListBucketResultV2DTO();
         dto.setName(bucketName);
         dto.setMaxKeys(maxKeys);
         dto.setPrefix(prefix);
@@ -81,17 +80,15 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
             cd.setKey(path.toString());
             cd.setStorageClass(S3Constants.STORAGE_CLASS);
             cd.setOwner(getOwner(path));
-            cd.setLastModified(getLastModified(path));
-            cd.setSize(getSize(path));
-            cd.seteTag(getETag(path));
+            cd.setLastModified(PathHelper.getLastModifiedString(path));
+            cd.setSize(Files.size(path));
+            cd.seteTag(getObjectETag(path));
             dto.getContents().add(cd);
         }
-        logger.debug("count=" + dto.getContents().size());
+        logger.debug("KeyCount=" + dto.getKeyCount());
+        logger.debug("NextContinuationToken=" + dto.getNextContinuationToken());
+        logger.debug("Truncated=" + dto.isTruncated());
         return (ListObjectsV2S3Response) new ListObjectsV2S3Response(s3Request).setContent(dto);
-    }
-
-    private long getSize(Path path) throws IOException {
-        return Files.size(path);
     }
 
     private OwnerDTO getOwner(Path path) {
@@ -102,25 +99,6 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
             return od;
         }
         return null;
-    }
-
-    private String getLastModified(Path path) throws IOException {
-        BasicFileAttributes attribute = Files.readAttributes(path, BasicFileAttributes.class);
-        return EXPIRATION_DATE_FORMAT.print(attribute.lastModifiedTime().toMillis());
-    }
-
-    private String getETag(Path path) throws IOException {
-        String eTag;
-        Path metadataFile = bucketMetadataDir.resolve(bucketDir.relativize(path)).resolve(METADATA_JSON);
-        if (Files.exists(metadataFile)) {
-            ObjectMetadata metadata = DTOHelper.fromJson(metadataFile, ObjectMetadata.class);
-            eTag = metadata.geteTag();
-        } else {
-            eTag = md5HashFile(path);
-            ObjectMetadata metadata = new ObjectMetadata().seteTag(eTag);
-            Files.write(metadataFile, DTOHelper.toPrettyJson(metadata).getBytes(StandardCharsets.UTF_8));
-        }
-        return eTag;
     }
 
 }

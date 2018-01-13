@@ -10,6 +10,7 @@ import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import static us.cuatoi.s34jserver.core.helper.LogHelper.debugMultiline;
 import static us.cuatoi.s34jserver.core.helper.LogHelper.infoMultiline;
 
 public class InitiateMultipartUploadObjectS3RequestHandler extends MultipartUploadObjectS3RequestHandler<InitiateMultipartUploadObjectS3Request, InitiateMultipartUploadObjectS3Response> {
@@ -27,7 +28,7 @@ public class InitiateMultipartUploadObjectS3RequestHandler extends MultipartUplo
         String metadataString = DTOHelper.toPrettyJson(metadata);
         Files.write(uploadMetadataFile, metadataString.getBytes("UTF-8"));
         logger.info("Updated " + uploadMetadataFile);
-        infoMultiline(logger, "Metadata: " + metadataString);
+        debugMultiline(logger, "Metadata: " + metadataString);
 
         InitiateMultipartUploadResultDTO content = new InitiateMultipartUploadResultDTO();
         content.setBucket(bucketName);

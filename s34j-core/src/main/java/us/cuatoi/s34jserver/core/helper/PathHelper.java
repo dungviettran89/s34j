@@ -8,11 +8,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static us.cuatoi.s34jserver.core.S3Constants.EXPIRATION_DATE_FORMAT;
 
 public class PathHelper {
 
@@ -55,5 +58,14 @@ public class PathHelper {
     public static String sha256HashFile(Path content) throws IOException {
         byte[] bytes = hash(content, "SHA-256");
         return BaseEncoding.base16().encode(bytes).toLowerCase();
+    }
+
+    public static String getLastModifiedString(Path path) throws IOException {
+        return EXPIRATION_DATE_FORMAT.print(Files.getLastModifiedTime(path).toMillis());
+    }
+
+    public static String getCreationTimeString(Path path) throws IOException {
+        BasicFileAttributes attribute = Files.readAttributes(path, BasicFileAttributes.class);
+        return EXPIRATION_DATE_FORMAT.print(attribute.creationTime().toMillis());
     }
 }

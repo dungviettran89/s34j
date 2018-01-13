@@ -11,9 +11,8 @@ import us.cuatoi.s34jserver.core.model.GetBucketsS3Response;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
 
-import static us.cuatoi.s34jserver.core.S3Constants.EXPIRATION_DATE_FORMAT;
+import static us.cuatoi.s34jserver.core.helper.PathHelper.getCreationTimeString;
 
 public class GetBucketsS3RequestHandler extends S3RequestHandler<GetBucketsS3Request, GetBucketsS3Response> {
     public GetBucketsS3RequestHandler(S3Context context, GetBucketsS3Request s3Request) {
@@ -26,10 +25,9 @@ public class GetBucketsS3RequestHandler extends S3RequestHandler<GetBucketsS3Req
         Files.list(baseDir).forEach((p) -> {
             try {
                 Verifier.verifyBucketName(p.getFileName().toString());
-                BasicFileAttributes attribute = Files.readAttributes(p, BasicFileAttributes.class);
                 BucketDTO br = new BucketDTO();
                 br.setName(p.getFileName().toString());
-                br.setCreationDate(EXPIRATION_DATE_FORMAT.print(attribute.creationTime().toMillis()));
+                br.setCreationDate(getCreationTimeString(p));
                 b.getBucketList().add(br);
             } catch (S3Exception ex) {
                 logger.debug("Ignored:" + p.getFileName().toString());

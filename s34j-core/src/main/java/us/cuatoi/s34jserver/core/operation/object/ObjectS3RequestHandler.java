@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
+import static java.nio.file.Files.getLastModifiedTime;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static org.apache.commons.lang3.StringUtils.startsWith;
 import static us.cuatoi.s34jserver.core.helper.PathHelper.md5HashFile;
@@ -106,8 +107,7 @@ public abstract class ObjectS3RequestHandler<F extends ObjectS3Request, T extend
             metadata.getHeaders().forEach(response::setHeader);
             metadata.getMetadata().forEach(response::setHeader);
         }
-        BasicFileAttributes attribute = Files.readAttributes(objectFile, BasicFileAttributes.class);
-        response.setHeader("Last-Modified", S3Constants.HTTP_HEADER_DATE_FORMAT.print(attribute.lastModifiedTime().toMillis()));
+        response.setHeader("Last-Modified", S3Constants.HTTP_HEADER_DATE_FORMAT.print(getLastModifiedTime(objectFile).toMillis()));
         response.setHeader("Content-Length", String.valueOf(Files.size(objectFile)));
         return response;
     }
