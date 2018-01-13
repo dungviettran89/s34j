@@ -1,97 +1,181 @@
 package us.cuatoi.s34jserver.core.operation.bucket;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.length;
+import static org.apache.commons.lang3.StringUtils.substring;
 
-class ObjectVisitor extends SimpleFileVisitor<Path> {
+public class ObjectVisitor {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Path baseDir;
     private String delimiter;
     private long maxKeys = 1000;
     private String prefix;
     private String continuationToken;
     private String startAfter;
-    private Logger logger = LoggerFactory.getLogger(getClass());
+
 
     private boolean isTruncated = false;
     private List<Path> objects = new ArrayList<>();
     private List<String> prefixes = new ArrayList<>();
     private String nextContinuationToken;
 
+    /* Constructors */
     public ObjectVisitor(Path baseDir) {
         this.baseDir = baseDir;
     }
 
-    @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        dir = normalize(dir);
-        String dirName = getName(dir);
-        logger.trace("Checking dir : " + dirName);
-
-        //check prefix
-        if (isNotBlank(prefix)) {
-            boolean prefixContains = contains(prefix, dirName);
-            boolean startWithPrefix = indexOf(dirName, prefix) == 0;
-            if (!prefixContains && !startWithPrefix) {
-                return FileVisitResult.SKIP_SUBTREE;
-            }
-        }
-
-        if (handleDelimiter(dirName)) return FileVisitResult.SKIP_SUBTREE;
-
-
-        return isTruncated ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
+    /* Getters */
+    public boolean isTruncated() {
+        return isTruncated;
     }
 
-    @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        file = normalize(file);
-        String fileName = getName(file);
-        logger.trace("Checking file: " + fileName);
+    public List<Path> getObjects() {
+        return objects;
+    }
 
-        if (isNotBlank(prefix)) {
-            if (indexOf(fileName, prefix) != 0) {
-                return FileVisitResult.CONTINUE;
-            }
-            if (compare(fileName.substring(0, prefix.length()), prefix) > 0) {
-                return FileVisitResult.SKIP_SIBLINGS;
-            }
+    public List<String> getPrefixes() {
+        return prefixes;
+    }
+
+    public String getNextContinuationToken() {
+        return nextContinuationToken;
+    }
+
+    public String getDelimiter() {
+        return delimiter;
+    }
+
+    public long getMaxKeys() {
+        return maxKeys;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public String getContinuationToken() {
+        return continuationToken;
+    }
+
+    public String getStartAfter() {
+        return startAfter;
+    }
+
+    /* Setters */
+    public ObjectVisitor setDelimiter(String delimiter) {
+        this.delimiter = delimiter;
+        return this;
+    }
+
+    public ObjectVisitor setMaxKeys(long maxKeys) {
+        this.maxKeys = maxKeys;
+        return this;
+    }
+
+    public ObjectVisitor setPrefix(String prefix) {
+        this.prefix = prefix;
+        return this;
+    }
+
+    public ObjectVisitor setContinuationToken(String continuationToken) {
+        this.continuationToken = continuationToken;
+        return this;
+    }
+
+    public ObjectVisitor setStartAfter(String startAfter) {
+        this.startAfter = startAfter;
+        return this;
+    }
+
+    /* Functions */
+    public ObjectVisitor visit() throws IOException {
+        visit(baseDir);
+        isTruncated = isNotBlank(nextContinuationToken);
+        return this;
+    }
+
+    private void visit(Path path) throws IOException {
+        if (Files.isDirectory(path)) {
+            visitDir(path);
+        } else {
+            visitFile(path);
         }
+    }
+
+    private void visitFile(Path file) {
+        String fileName = getName(file);
+
+        if (handlePrefix(fileName)) return;
 
         if (isNotBlank(continuationToken)) {
             if (compare(fileName, continuationToken) < 0) {
-                return FileVisitResult.CONTINUE;
+                logger.trace("Skip due to continuationToken: " + fileName);
+                return;
             }
         } else if (isNotBlank(startAfter)) {
             if (compare(fileName, startAfter) <= 0) {
-                return FileVisitResult.CONTINUE;
+                logger.trace("Skip due to startAfter: " + fileName);
+                return;
             }
         }
 
-        if (isTruncated) {
+        if (objects.size() < maxKeys) {
+            logger.trace("Found: " + fileName);
+            objects.add(file);
+        } else {
             if (isBlank(nextContinuationToken)) {
                 nextContinuationToken = fileName;
             }
-            return FileVisitResult.SKIP_SIBLINGS;
+            logger.trace("Skip due to truncated: " + fileName);
         }
+    }
 
-        if (handleDelimiter(fileName)) return FileVisitResult.SKIP_SIBLINGS;
+    private void visitDir(Path dir) throws IOException {
+        String dirName = getName(dir);
 
-        if (objects.size() < maxKeys) {
-            objects.add(file);
+        //check prefix
+        if (handlePrefix(dirName)) return;
+        if (handleDelimiter(dirName)) {
+            logger.trace("Skip due to delimiter: " + dirName);
+            return;
         }
-        isTruncated = objects.size() >= maxKeys;
-        return FileVisitResult.CONTINUE;
+        if (isTruncated) {
+            logger.trace("Skip due to truncated: " + dirName);
+            return;
+        }
+        List<Path> sortedChilds = Files.list(dir)
+                .sorted((p1, p2) -> StringUtils.compare(p1.toString(), p2.toString()))
+                .collect(Collectors.toList());
+        for (Path child : sortedChilds) {
+            visit(child);
+        }
+    }
+
+    private boolean handlePrefix(String dirName) {
+        if (isNotBlank(prefix)) {
+            boolean notContainsPrefix = !contains(dirName, prefix);
+            boolean notPrefixContains = !contains(prefix, dirName);
+            if (notContainsPrefix && notPrefixContains) {
+                logger.trace("Skip due to prefix: " + dirName);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getName(Path dir) {
+        return replace(baseDir.relativize(dir).toString(), "\\", "/");
     }
 
     private boolean handleDelimiter(String fileName) {
@@ -107,87 +191,5 @@ class ObjectVisitor extends SimpleFileVisitor<Path> {
             }
         }
         return false;
-    }
-
-    private String getName(Path dir) {
-        return replace(dir.toString(), "\\", "/");
-    }
-
-    private Path normalize(Path file) {
-        return baseDir.relativize(file).normalize();
-    }
-
-    public ObjectVisitor setDelimiter(String delimiter) {
-        this.delimiter = delimiter;
-        return this;
-    }
-
-    public String getDelimiter() {
-        return delimiter;
-    }
-
-    public ObjectVisitor setMaxKeys(long maxKeys) {
-        this.maxKeys = maxKeys;
-        return this;
-    }
-
-    public long getMaxKeys() {
-        return maxKeys;
-    }
-
-    public ObjectVisitor setPrefix(String prefix) {
-        this.prefix = prefix;
-        return this;
-    }
-
-    public String getPrefix() {
-        return prefix;
-    }
-
-    public ObjectVisitor setContinuationToken(String continuationToken) {
-        this.continuationToken = continuationToken;
-        return this;
-    }
-
-    public String getContinuationToken() {
-        return continuationToken;
-    }
-
-    public ObjectVisitor setStartAfter(String startAfter) {
-        this.startAfter = startAfter;
-        return this;
-    }
-
-    public String getStartAfter() {
-        return startAfter;
-    }
-
-    public Logger getLogger() {
-        return logger;
-    }
-
-    public boolean isTruncated() {
-        return isTruncated;
-    }
-
-    public List<Path> getObjects() {
-        return objects;
-    }
-
-    public List<String> getPrefixes() {
-        return prefixes;
-    }
-
-    public ObjectVisitor visit() throws IOException {
-        Files.walkFileTree(baseDir, this);
-        return this;
-    }
-
-    public String getNextContinuationToken() {
-        return nextContinuationToken;
-    }
-
-    public void setNextContinuationToken(String nextContinuationToken) {
-        this.nextContinuationToken = nextContinuationToken;
     }
 }

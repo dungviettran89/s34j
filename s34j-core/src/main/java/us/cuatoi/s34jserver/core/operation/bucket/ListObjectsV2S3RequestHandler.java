@@ -65,7 +65,7 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
         dto.setName(bucketName);
         dto.setMaxKeys(maxKeys);
         dto.setPrefix(prefix);
-        dto.setStartAfter(prefix);
+        dto.setStartAfter(startAfter);
         dto.setTruncated(visitor.isTruncated());
         dto.setKeyCount(visitor.getObjects().size());
         dto.setContinuationToken(continuationToken);
@@ -91,7 +91,7 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
     }
 
     private long getSize(Path path) throws IOException {
-        return Files.size(bucketDir.resolve(path));
+        return Files.size(path);
     }
 
     private OwnerDTO getOwner(Path path) {
@@ -105,13 +105,13 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
     }
 
     private String getLastModified(Path path) throws IOException {
-        BasicFileAttributes attribute = Files.readAttributes(bucketDir.resolve(path), BasicFileAttributes.class);
+        BasicFileAttributes attribute = Files.readAttributes(path, BasicFileAttributes.class);
         return EXPIRATION_DATE_FORMAT.print(attribute.lastModifiedTime().toMillis());
     }
 
     private String getETag(Path path) throws IOException {
         String eTag;
-        Path metadataFile = bucketMetadataDir.resolve(path).resolve(METADATA_JSON);
+        Path metadataFile = bucketMetadataDir.resolve(bucketDir.relativize(path)).resolve(METADATA_JSON);
         if (Files.exists(metadataFile)) {
             ObjectMetadata metadata = DTOHelper.fromJson(metadataFile, ObjectMetadata.class);
             eTag = metadata.geteTag();

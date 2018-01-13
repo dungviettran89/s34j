@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 public class ObjectVisitorTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final Path baseDir = new File("").getAbsoluteFile().toPath();
+    private final Path baseDir = new File("").toPath();
 
     public ObjectVisitorTest() {
         logger.info("Base dir: " + baseDir);
@@ -102,6 +102,7 @@ public class ObjectVisitorTest {
             logger.trace("PREFIX: " + p);
         });
         logger.debug("TRUNCATED:" + visitor.isTruncated());
+        logger.debug("Objects:" + visitor.getObjects());
         logger.debug("NextContinuationToken:" + visitor.getNextContinuationToken());
     }
 
