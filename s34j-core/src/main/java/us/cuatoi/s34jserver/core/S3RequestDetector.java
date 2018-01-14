@@ -42,7 +42,7 @@ public class S3RequestDetector {
             } else if (equalsIgnoreCase(method, "get") && s3Request.getQueryParameter("location") != null) {
                 return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "get") && s3Request.getQueryParameter("uploads") != null) {
-                return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
+                return new ListMultipartUploadsBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "get") && isBlank(s3Request.getQueryParameter("list-type"))) {
                 return new ListObjectsV1S3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "get") && equalsIgnoreCase(s3Request.getQueryParameter("list-type"), "2")) {
