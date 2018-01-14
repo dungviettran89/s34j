@@ -48,7 +48,7 @@ public class S3RequestDetector {
             } else if (equalsIgnoreCase(method, "get") && equalsIgnoreCase(s3Request.getQueryParameter("list-type"), "2")) {
                 return new ListObjectsV2S3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "delete") && noQueryParams) {
-                return new ListMultipartUploadsBucketS3Request(s3Request).setBucketName(bucketName);
+                return new DeleteBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "head") && noQueryParams) {
                 return new HeadBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("delete") != null) {
