@@ -112,8 +112,8 @@ public class S3Handler {
             return new GetObjectS3RequestHandler(context, (GetObjectS3Request) s3Request);
         } else if (s3Request instanceof AbortMultipartUploadObjectS3Request) {
             return new AbortMultipartUploadObjectS3RequestHandler(context, (AbortMultipartUploadObjectS3Request) s3Request);
-        } else if (s3Request instanceof ListObjectsS3Request) {
-            return new ListObjectsS3RequestHandler(context, (ListObjectsS3Request) s3Request);
+        } else if (s3Request instanceof ListObjectsV1S3Request) {
+            return new ListObjectsV1S3RequestHandler(context, (ListObjectsV1S3Request) s3Request);
         } else if (s3Request instanceof ListObjectsV2S3Request) {
             return new ListObjectsV2S3RequestHandler(context, (ListObjectsV2S3Request) s3Request);
         } else if (s3Request instanceof DeleteMultipleObjectsS3Request) {

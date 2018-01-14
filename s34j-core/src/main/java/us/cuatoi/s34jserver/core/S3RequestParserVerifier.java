@@ -86,7 +86,9 @@ public class S3RequestParserVerifier {
                     int chunkSize = Integer.parseUnsignedInt(substring(signatureLine, 0, indexOfSignature), 16);
                     String signature = substring(signatureLine, indexOfSignature + length(CHUNK_SIGNATURE));
                     byte[] data = new byte[chunkSize];
-                    IOUtils.readFully(is, data);
+                    if (chunkSize > 0) {
+                        IOUtils.readFully(is, data);
+                    }
                     String computedSignature = signer.generateChunkSignature(data);
                     logger.trace("signature        =" + signature);
                     logger.trace("computedSignature=" + computedSignature);

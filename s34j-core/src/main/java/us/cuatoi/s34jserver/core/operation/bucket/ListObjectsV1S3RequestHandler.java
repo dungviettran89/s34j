@@ -3,8 +3,8 @@ package us.cuatoi.s34jserver.core.operation.bucket;
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.dto.*;
-import us.cuatoi.s34jserver.core.model.bucket.ListObjectsS3Request;
-import us.cuatoi.s34jserver.core.model.bucket.ListObjectsS3Response;
+import us.cuatoi.s34jserver.core.model.bucket.ListObjectsV1S3Request;
+import us.cuatoi.s34jserver.core.model.bucket.ListObjectsV1S3Response;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import static us.cuatoi.s34jserver.core.helper.NumberHelper.parseLong;
 import static us.cuatoi.s34jserver.core.helper.PathHelper.getLastModifiedString;
 
-public class ListObjectsS3RequestHandler extends BucketS3RequestHandler<ListObjectsS3Request,ListObjectsS3Response> {
+public class ListObjectsV1S3RequestHandler extends BucketS3RequestHandler<ListObjectsV1S3Request,ListObjectsV1S3Response> {
 
     private final String delimiter;
     private final String encodingType;
@@ -21,17 +21,17 @@ public class ListObjectsS3RequestHandler extends BucketS3RequestHandler<ListObje
     private final long maxKeys;
     private final String prefix;
 
-    public ListObjectsS3RequestHandler(S3Context context, ListObjectsS3Request s3Request) {
+    public ListObjectsV1S3RequestHandler(S3Context context, ListObjectsV1S3Request s3Request) {
         super(context, s3Request);
         delimiter = s3Request.getQueryParameter("delimiter");
-        encodingType = s3Request.getQueryParameter("encodingtype");
+        encodingType = s3Request.getQueryParameter("encoding-type");
         marker = s3Request.getQueryParameter("marker");
         maxKeys = parseLong(s3Request.getQueryParameter("max-keys"), 1000);
         prefix = s3Request.getQueryParameter("prefix");
     }
 
     @Override
-    public ListObjectsS3Response handle() throws IOException {
+    public ListObjectsV1S3Response handle() throws IOException {
         logger.debug("delimiter=" + delimiter);
         logger.debug("encodingType=" + encodingType);
         logger.debug("maxKeys=" + maxKeys);
@@ -73,6 +73,6 @@ public class ListObjectsS3RequestHandler extends BucketS3RequestHandler<ListObje
         logger.debug("Size=" + dto.getContents().size());
         logger.debug("NextMarker=" + dto.getNextMarker());
         logger.debug("Truncated=" + dto.isTruncated());
-        return (ListObjectsS3Response) new ListObjectsS3Response(s3Request).setContent(dto);
+        return (ListObjectsV1S3Response) new ListObjectsV1S3Response(s3Request).setContent(dto);
     }
 }

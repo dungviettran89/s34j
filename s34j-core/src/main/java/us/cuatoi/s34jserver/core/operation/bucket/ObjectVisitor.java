@@ -23,6 +23,7 @@ public class ObjectVisitor {
     private String prefix;
     private String continuationToken;
     private String startAfter;
+    private String suffix;
 
 
     private boolean isTruncated = false;
@@ -131,6 +132,13 @@ public class ObjectVisitor {
             }
         }
 
+        if (isNotBlank(suffix)) {
+            if (!endsWith(fileName, suffix)) {
+                logger.trace("Skip due to suffix: " + fileName);
+                return;
+            }
+        }
+
         if (objects.size() < maxKeys) {
             logger.trace("Found: " + fileName);
             objects.add(file);
@@ -183,9 +191,13 @@ public class ObjectVisitor {
     private boolean handleDelimiter(String fileName) {
         if (isNotBlank(delimiter)) {
             String prefixToCheck = trimToEmpty(prefix);
-            int indexOfDelimiter = indexOf(fileName, delimiter, prefixToCheck.length());
+            String fileNameToCheck = fileName;
+            if (isNotBlank(suffix) && endsWith(fileNameToCheck, suffix)) {
+                fileNameToCheck = substring(fileName, 0, length(fileNameToCheck) - length(suffix));
+            }
+            int indexOfDelimiter = indexOf(fileNameToCheck, delimiter, prefixToCheck.length());
             if (indexOfDelimiter >= 0) {
-                String pathPrefix = substring(fileName, 0, indexOfDelimiter + length(delimiter));
+                String pathPrefix = substring(fileNameToCheck, 0, indexOfDelimiter + length(delimiter));
                 if (!prefixes.contains(pathPrefix)) {
                     prefixes.add(pathPrefix);
                 }
@@ -201,5 +213,14 @@ public class ObjectVisitor {
 
     public void setNextMarker(String nextMarker) {
         this.nextMarker = nextMarker;
+    }
+
+    public String getSuffix() {
+        return suffix;
+    }
+
+    public ObjectVisitor setSuffix(String suffix) {
+        this.suffix = suffix;
+        return this;
     }
 }

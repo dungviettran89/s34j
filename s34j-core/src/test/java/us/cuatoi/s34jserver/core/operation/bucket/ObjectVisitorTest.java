@@ -21,26 +21,26 @@ public class ObjectVisitorTest {
 
     @Test
     public void testVisit() throws Exception {
-        test(3, null, null, null, null);
+        test(3, null, null, null, null, null);
     }
 
     @Test
     public void testVisitWithPrefix() throws Exception {
-        test(3, "src/main/java/us/cuatoi/s34jserver/core/operation/bucket", null, null, null);
+        test(3, "src/main/java/us/cuatoi/s34jserver/core/operation/bucket", null, null, null, null);
     }
 
     @Test
     public void testVisitWithPrefixAndStartAfter() throws Exception {
         test(3,
                 "src/main/java/us/cuatoi/s34jserver/core/operation/bucket",
-                "src/main/java/us/cuatoi/s34jserver/core/operation/bucket/GetLocationBucketS3RequestHandler.java", null, null);
+                "src/main/java/us/cuatoi/s34jserver/core/operation/bucket/GetLocationBucketS3RequestHandler.java", null, null, null);
     }
 
     @Test
     public void testVisitWithStartAfter() throws Exception {
         test(3,
                 null,
-                "src/main/java/us/cuatoi/s34jserver/core/operation/bucket/GetLocationBucketS3RequestHandler.java", null, null);
+                "src/main/java/us/cuatoi/s34jserver/core/operation/bucket/GetLocationBucketS3RequestHandler.java", null, null, null);
     }
 
     @Test
@@ -48,7 +48,12 @@ public class ObjectVisitorTest {
         test(3,
                 null,
                 null,
-                "/", null);
+                "/", null, null);
+    }
+
+    @Test
+    public void testVisitWithSuffix() throws Exception {
+        test(3, null, null, null, null, "DTO.java");
     }
 
     @Test
@@ -56,26 +61,26 @@ public class ObjectVisitorTest {
         test(3,
                 "src/main/java/us/cuatoi/s34jserver/core/operation/",
                 null,
-                "/", null);
+                "/", null, null);
     }
 
     @Test
     public void testVisitWithDelimiterAndPrefixAndStartAfter() throws Exception {
         ObjectVisitor v1 = test(1, "src/main/java/us/cuatoi/s34jserver/core/operation/",
-                null, "/", null);
+                null, "/", null, null);
         System.out.println(v1.getNextContinuationToken());
         v1 = test(1, "src/main/java/us/cuatoi/s34jserver/core/operation/",
-                null, "/", v1.getNextContinuationToken());
+                null, "/", v1.getNextContinuationToken(), null);
         System.out.println(v1.getNextContinuationToken());
         v1 = test(1, "src/main/java/us/cuatoi/s34jserver/core/operation/",
-                null, "/", v1.getNextContinuationToken());
+                null, "/", v1.getNextContinuationToken(), null);
         System.out.println(v1.getNextContinuationToken());
         v1 = test(1, "src/main/java/us/cuatoi/s34jserver/core/operation/",
-                null, "/", v1.getNextContinuationToken());
+                null, "/", v1.getNextContinuationToken(), null);
         System.out.println(v1.getNextContinuationToken());
     }
 
-    private ObjectVisitor test(int maxKeys, String prefix, String startAfter, String delimiter, String continuationToken) throws IOException {
+    private ObjectVisitor test(int maxKeys, String prefix, String startAfter, String delimiter, String continuationToken, String suffix) throws IOException {
         logger.debug("=========================================");
         logger.debug("maxKeys=" + maxKeys);
         logger.debug("prefix=" + prefix);
@@ -87,6 +92,7 @@ public class ObjectVisitorTest {
                 .setStartAfter(startAfter)
                 .setDelimiter(delimiter)
                 .setContinuationToken(continuationToken)
+                .setSuffix(suffix)
                 .visit();
         verify(visitor);
         logger.debug("=========================================");

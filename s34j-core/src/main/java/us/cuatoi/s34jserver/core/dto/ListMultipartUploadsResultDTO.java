@@ -19,7 +19,7 @@ public class ListMultipartUploadsResultDTO extends GenericDTO {
     @Key("NextUploadIdMarker")
     private String nextUploadIdMarker;
     @Key("MaxUploads")
-    private int maxUploads;
+    private long maxUploads;
     @Key("IsTruncated")
     private boolean isTruncated;
     @Key("CommonPrefixes")
@@ -77,11 +77,11 @@ public class ListMultipartUploadsResultDTO extends GenericDTO {
         this.nextUploadIdMarker = nextUploadIdMarker;
     }
 
-    public int getMaxUploads() {
+    public long getMaxUploads() {
         return maxUploads;
     }
 
-    public void setMaxUploads(int maxUploads) {
+    public void setMaxUploads(long maxUploads) {
         this.maxUploads = maxUploads;
     }
 
