@@ -85,6 +85,20 @@ public class S3RequestVerifier {
                 logger.debug("Constructed authorizationHeader based on Query String:" + authorizationHeader);
             }
         }
+        if (isBlank(authorizationHeader) && equalsIgnoreCase(s3Request.getMethod(), "post")) {
+            String algorithm = s3Request.getFormParameter("x-amz-algorithm");
+            String credential = s3Request.getFormParameter("x-amz-credential");
+            String date = s3Request.getFormParameter("x-amz-date");
+            String signedHeaders = "host";
+            String signature = s3Request.getFormParameter("x-amz-signature");
+            if (isNoneBlank(algorithm, credential, date, signature)) {
+                authorizationHeader = algorithm +
+                        " Credential=" + credential +
+                        ", SignedHeaders=" + signedHeaders +
+                        ", Signature=" + signature;
+                logger.debug("Constructed authorizationHeader based on Form Data:" + authorizationHeader);
+            }
+        }
         if (isBlank(authorizationHeader)) {
             logger.info("MISSING_SECURITY_HEADER authorizationHeader=" + authorizationHeader);
             throw new S3Exception(MISSING_SECURITY_HEADER);
@@ -94,6 +108,10 @@ public class S3RequestVerifier {
         if (isBlank(amzDateHeader)) {
             amzDateHeader = s3Request.getQueryParameter("X-Amz-Date");
         }
+        if (isBlank(amzDateHeader)) {
+            amzDateHeader = s3Request.getFormParameter("x-amz-date");
+        }
+        Date date = getRequestDate(amzDateHeader);
 
         AWS4Authorization authorization = new AWS4Authorization(authorizationHeader);
         String bodyHash = s3Request.getHeader("x-amz-content-sha256");
@@ -114,6 +132,21 @@ public class S3RequestVerifier {
             logger.info("INVALID_ACCESS_KEY_ID awsSecretKey=" + awsSecretKey);
             throw new S3Exception(ErrorCode.INVALID_ACCESS_KEY_ID);
         }
+
+        //Handle HTTP Post
+        if (equalsIgnoreCase(s3Request.getMethod(), "post") &&
+                contains(s3Request.getHeader("content-type"), "multipart/form-data")) {
+            String computedHTTPPostSignature = signer.signPOSTPolicy(awsSecretKey, date, s3Request.getFormParameter("policy"));
+            String providedHTTPPostSignature = s3Request.getFormParameter("x-amz-signature");
+            if (!equalsIgnoreCase(computedHTTPPostSignature, providedHTTPPostSignature)) {
+                logger.info("SIGNATURE_DOES_NOT_MATCH computedHTTPPostSignature=" + computedHTTPPostSignature);
+                logger.info("SIGNATURE_DOES_NOT_MATCH providedHTTPPostSignature=" + providedHTTPPostSignature);
+                throw new S3Exception(ErrorCode.SIGNATURE_DOES_NOT_MATCH);
+            }
+            return;
+        }
+
+        //Handle normal request
         HashMap<String, String> headers = new HashMap<>();
         for (String header : authorization.getSignedHeaders()) {
             if (!equalsAnyIgnoreCase(header, "host")) {
@@ -129,7 +162,6 @@ public class S3RequestVerifier {
                 queryParams.put(nvp.getName(), nvp.getValue());
             }
         }
-        Date date = getRequestDate(amzDateHeader);
         Date now = new Date();
         String expiresParams = s3Request.getQueryParameter("X-Amz-Expires");
         if (isNotBlank(expiresParams)) {
@@ -170,12 +202,14 @@ public class S3RequestVerifier {
     private Date getRequestDate(String amzDateHeader) {
         long dateHeader = s3Request.getDate();
         if (dateHeader <= 0 && isBlank(amzDateHeader)) {
+            logger.info("MISSING_SECURITY_HEADER amzDateHeader=" + amzDateHeader);
             throw new S3Exception(MISSING_SECURITY_HEADER);
         }
         try {
             return isBlank(amzDateHeader) ? new Date(dateHeader) :
                     AWS4Authorization.utcDateFormat(AWS4SignerBase.ISO8601BasicFormat).parse(amzDateHeader);
         } catch (ParseException e) {
+            logger.info("AUTHORIZATION_HEADER_MALFORMED amzDateHeader=" + amzDateHeader);
             throw new S3Exception(AUTHORIZATION_HEADER_MALFORMED);
         }
     }

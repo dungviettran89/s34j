@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class S3Request {
     private String requestId;
@@ -20,6 +21,7 @@ public class S3Request {
     private Path content;
     private Map<String, String> headers = new HashMap<>();
     private Map<String, String> queryParameters = new HashMap<>();
+    private Map<String, String> formParameters = new HashMap<>();
 
     public S3Request() {
     }
@@ -69,6 +71,10 @@ public class S3Request {
 
     public Map<String, String> getQueryParameters() {
         return queryParameters;
+    }
+
+    public Map<String, String> getFormParameters() {
+        return formParameters;
     }
 
     /**
@@ -124,6 +130,10 @@ public class S3Request {
         return this;
     }
 
+    public void setFormParameters(Map<String, String> formParameters) {
+        this.formParameters = formParameters;
+    }
+
     /**
      * Utilities
      */
@@ -143,6 +153,20 @@ public class S3Request {
 
     public String getQueryParameter(String key) {
         return this.queryParameters.get(key);
+    }
+
+    public S3Request setFormParameter(String key, String value) {
+        this.formParameters.put(key, value);
+        return this;
+    }
+
+    public String getQueryOrFormParameter(String key) {
+        String value = this.queryParameters.get(key);
+        return isNotBlank(value) ? value : this.formParameters.get(key);
+    }
+
+    public String getFormParameter(String key) {
+        return this.formParameters.get(key);
     }
 
     public String getFullUrl() {

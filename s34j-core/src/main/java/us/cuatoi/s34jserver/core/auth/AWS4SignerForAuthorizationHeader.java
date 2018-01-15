@@ -12,13 +12,13 @@ import static org.apache.commons.lang3.StringUtils.split;
 /**
  * Sample AWS4 signer demonstrating how to sign requests to Amazon S3 using an
  * 'Authorization' header.
- *
+ * <p>
  * Credit to Amazon S3
  */
 public class AWS4SignerForAuthorizationHeader extends AWS4SignerBase {
 
     public AWS4SignerForAuthorizationHeader(URL endpointUrl, String httpMethod,
-            String serviceName, String regionName) {
+                                            String serviceName, String regionName) {
         super(endpointUrl, httpMethod, serviceName, regionName);
     }
 
@@ -26,23 +26,18 @@ public class AWS4SignerForAuthorizationHeader extends AWS4SignerBase {
      * Computes an AWS4 signature for a request, ready for inclusion as an
      * 'Authorization' header.
      *
-     * @param headers
-     *            The request headers; 'Host' and 'X-Amz-Date' will be added to
-     *            this set.
-     * @param queryParameters
-     *            Any query parameters that will be added to the endpoint. The
-     *            parameters should be specified in canonical format.
-     * @param bodyHash
-     *            Precomputed SHA256 hash of the request body content; this
-     *            value should also be set as the header 'X-Amz-Content-SHA256'
-     *            for non-streaming uploads.
-     * @param awsAccessKey
-     *            The user's AWS Access Key.
-     * @param awsSecretKey
-     *            The user's AWS Secret Key.
+     * @param headers         The request headers; 'Host' and 'X-Amz-Date' will be added to
+     *                        this set.
+     * @param queryParameters Any query parameters that will be added to the endpoint. The
+     *                        parameters should be specified in canonical format.
+     * @param bodyHash        Precomputed SHA256 hash of the request body content; this
+     *                        value should also be set as the header 'X-Amz-Content-SHA256'
+     *                        for non-streaming uploads.
+     * @param awsAccessKey    The user's AWS Access Key.
+     * @param awsSecretKey    The user's AWS Secret Key.
      * @return The computed authorization string for the request. This value
-     *         needs to be set as the header 'Authorization' on the subsequent
-     *         HTTP request.
+     * needs to be set as the header 'Authorization' on the subsequent
+     * HTTP request.
      */
     public String computeSignature(Map<String, String> headers,
                                    Map<String, String> queryParameters,
@@ -55,26 +50,20 @@ public class AWS4SignerForAuthorizationHeader extends AWS4SignerBase {
     /**
      * Computes an AWS4 signature for a request, ready for inclusion as an
      * 'Authorization' header.
-     * 
-     * @param headers
-     *            The request headers; 'Host' and 'X-Amz-Date' will be added to
-     *            this set.
-     * @param queryParameters
-     *            Any query parameters that will be added to the endpoint. The
-     *            parameters should be specified in canonical format.
-     * @param bodyHash
-     *            Precomputed SHA256 hash of the request body content; this
-     *            value should also be set as the header 'X-Amz-Content-SHA256'
-     *            for non-streaming uploads.
-     * @param awsAccessKey
-     *            The user's AWS Access Key.
-     * @param awsSecretKey
-     *            The user's AWS Secret Key.
-     * @param now
-     *            Timestamp to generate upon
+     *
+     * @param headers         The request headers; 'Host' and 'X-Amz-Date' will be added to
+     *                        this set.
+     * @param queryParameters Any query parameters that will be added to the endpoint. The
+     *                        parameters should be specified in canonical format.
+     * @param bodyHash        Precomputed SHA256 hash of the request body content; this
+     *                        value should also be set as the header 'X-Amz-Content-SHA256'
+     *                        for non-streaming uploads.
+     * @param awsAccessKey    The user's AWS Access Key.
+     * @param awsSecretKey    The user's AWS Secret Key.
+     * @param now             Timestamp to generate upon
      * @return The computed authorization string for the request. This value
-     *         needs to be set as the header 'Authorization' on the subsequent
-     *         HTTP request.
+     * needs to be set as the header 'Authorization' on the subsequent
+     * HTTP request.
      */
     public String computeSignature(Map<String, String> headers,
                                    Map<String, String> queryParameters,
@@ -88,19 +77,19 @@ public class AWS4SignerForAuthorizationHeader extends AWS4SignerBase {
 
         String hostHeader = endpointUrl.getHost();
         int port = endpointUrl.getPort();
-        if ( port > -1 ) {
+        if (port > -1) {
             hostHeader = hostHeader.concat(":" + Integer.toString(port));
         }
         headers.put("Host", hostHeader);
-        
+
         // canonicalize the headers; we need the set of header names as well as the
         // names and values to go into the signature process
         String canonicalizedHeaderNames = getCanonicalizeHeaderNames(headers);
         String canonicalizedHeaders = getCanonicalizedHeaderString(headers);
-        
+
         // if any query string parameters have been supplied, canonicalize them
         String canonicalizedQueryParameters = getCanonicalizedQueryString(queryParameters);
-        
+
         // canonicalize the various components of the request
         String canonicalRequest = getCanonicalRequest(endpointUrl, httpMethod,
                 canonicalizedQueryParameters, canonicalizedHeaderNames,
@@ -108,15 +97,15 @@ public class AWS4SignerForAuthorizationHeader extends AWS4SignerBase {
         logger.trace("--------- Canonical request --------");
         LogHelper.traceMultiline(logger, canonicalRequest);
         logger.trace("------------------------------------");
-        
+
         // construct the string to be signed
         String dateStamp = dateStampFormat.format(now);
-        String scope =  dateStamp + "/" + regionName + "/" + serviceName + "/" + TERMINATOR;
+        String scope = dateStamp + "/" + regionName + "/" + serviceName + "/" + TERMINATOR;
         String stringToSign = getStringToSign(SCHEME, ALGORITHM, dateTimeStamp, scope, canonicalRequest);
         logger.trace("--------- String to sign -----------");
         LogHelper.traceMultiline(logger, stringToSign);
         logger.trace("------------------------------------");
-        
+
         // compute the signing key
         byte[] kSecret = (SCHEME + awsSecretKey).getBytes();
         byte[] kDate = sign(dateStamp, kSecret, "HmacSHA256");
@@ -124,7 +113,7 @@ public class AWS4SignerForAuthorizationHeader extends AWS4SignerBase {
         byte[] kService = sign(serviceName, kRegion, "HmacSHA256");
         byte[] kSigning = sign(TERMINATOR, kService, "HmacSHA256");
         byte[] signature = sign(stringToSign, kSigning, "HmacSHA256");
-        
+
         String credentialsAuthorizationHeader =
                 "Credential=" + awsAccessKey + "/" + scope;
         String signedHeadersAuthorizationHeader =
@@ -138,6 +127,25 @@ public class AWS4SignerForAuthorizationHeader extends AWS4SignerBase {
                 + signatureAuthorizationHeader;
 
         return authorizationHeader;
+    }
+
+    public String signPOSTPolicy(String awsSecretKey, Date date, String stringToSign) {
+        String dateStamp = dateStampFormat.format(date);
+        byte[] kSecret = (SCHEME + awsSecretKey).getBytes();
+        byte[] kDate = sign(dateStamp, kSecret, "HmacSHA256");
+        byte[] kRegion = sign(regionName, kDate, "HmacSHA256");
+        byte[] kService = sign(serviceName, kRegion, "HmacSHA256");
+        byte[] kSigning = sign(TERMINATOR, kService, "HmacSHA256");
+        byte[] signature = sign(stringToSign, kSigning, "HmacSHA256");
+        String signatureHex = BinaryUtils.toHex(signature);
+
+        logger.trace("signPOSTPolicy awsSecretKey=" + awsSecretKey);
+        logger.trace("signPOSTPolicy dateStamp=" + dateStamp);
+        logger.trace("signPOSTPolicy regionName=" + regionName);
+        logger.trace("signPOSTPolicy serviceName=" + serviceName);
+        logger.trace("signPOSTPolicy stringToSign=" + stringToSign);
+        logger.trace("signPOSTPolicy signatureHex=" + signatureHex);
+        return signatureHex;
     }
 
 }

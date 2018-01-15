@@ -53,12 +53,29 @@ public class S3RequestParserVerifier {
         return new S3RequestDetector(s3Request).detectRequest();
     }
 
-    private void parseContent() throws IOException {
+    private void parseContent() throws IOException, ServletException {
         String contentEncoding = s3Request.getHeader("content-encoding");
         if (equalsIgnoreCase("aws-chunked", contentEncoding)) {
             parseMultipleChunk();
+        } else if (isMultipartFormData()) {
+            parseMultiPartFormData();
         } else {
             parseSingleChunk();
+        }
+    }
+
+    private boolean isMultipartFormData() {
+        return equalsIgnoreCase(s3Request.getMethod(), "post") &&
+                contains(s3Request.getHeader("content-type"), "multipart/form-data");
+    }
+
+    private void parseMultiPartFormData() throws IOException, ServletException {
+        for (Part part : request.getParts()) {
+            if (!isBlank(part.getSubmittedFileName())) {
+                Path content = Files.createTempFile(s3Request.getRequestId() + ".", ".tmp");
+                Files.copy(part.getInputStream(), content, StandardCopyOption.REPLACE_EXISTING);
+                s3Request.setContent(content);
+            }
         }
     }
 
@@ -135,6 +152,16 @@ public class S3RequestParserVerifier {
         String fullURL = s3Request.getFullUrl();
         for (NameValuePair pair : URLEncodedUtils.parse(new URI(fullURL), UTF_8)) {
             s3Request.setQueryParameter(pair.getName(), pair.getValue());
+        }
+        if (isMultipartFormData()) {
+            for (Part part : request.getParts()) {
+                if (isBlank(part.getSubmittedFileName())) {
+                    String name = part.getName();
+                    String value = IOUtils.toString(part.getInputStream(), UTF_8);
+                    logger.trace("MutiPart Form Data: " + name + "=" + value);
+                    s3Request.setFormParameter(name, value);
+                }
+            }
         }
         verifier.verifyHeaders();
     }
