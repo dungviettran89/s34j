@@ -9,8 +9,10 @@ import us.cuatoi.s34jserver.core.auth.AWS4SignerForChunkedUpload;
 import us.cuatoi.s34jserver.core.auth.S3RequestVerifier;
 import us.cuatoi.s34jserver.core.model.S3Request;
 
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -27,10 +29,8 @@ import static us.cuatoi.s34jserver.core.S3Constants.CHUNK_SIGNATURE;
 
 public class S3RequestParserVerifier {
 
-    public static final int NEW_LINE_LENGTH = "\r\n".getBytes(StandardCharsets.UTF_8).length;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final S3Context context;
-    private final int maxDifferent = Integer.parseInt(System.getProperty("s34j.auth.request.maxDifferenceMinutes", "15")) * 60 * 1000;
     private final S3RequestVerifier verifier;
     private S3Request s3Request;
     private HttpServletRequest request;
@@ -48,7 +48,6 @@ public class S3RequestParserVerifier {
         if (!equalsIgnoreCase(request.getMethod(), "get")) {
             parseContent();
         }
-
 
         //Detect request type
         return new S3RequestDetector(s3Request).detectRequest();
@@ -122,7 +121,7 @@ public class S3RequestParserVerifier {
         verifier.verifySingleChunk();
     }
 
-    private void parseHeaders() throws URISyntaxException {
+    private void parseHeaders() throws URISyntaxException, IOException, ServletException {
         s3Request.setMethod(request.getMethod())
                 .setUri(request.getRequestURI())
                 .setUrl(request.getRequestURL().toString())

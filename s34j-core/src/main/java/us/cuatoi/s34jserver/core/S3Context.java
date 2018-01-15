@@ -4,6 +4,7 @@ import java.nio.file.Path;
 
 public abstract class S3Context {
 
+    public static final int MAX_DIFFERENT_IN_REQUEST_TIME = Integer.parseInt(System.getProperty("s34j.auth.request.maxDifferenceMinutes", "15")) * 60 * 1000;
     private final Path basePath;
     private String region = "us-central-1";
     private String serverId = "s34j";

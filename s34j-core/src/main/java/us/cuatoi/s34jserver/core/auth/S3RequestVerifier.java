@@ -48,18 +48,20 @@ public class S3RequestVerifier {
         Path content = s3Request.getContent();
         logger.trace("Checking " + content);
         long contentLength = Files.size(content);
-        String computedSha256 = contentLength > 0 ? PathHelper.sha256HashFile(content) : AWS4SignerBase.EMPTY_BODY_SHA256;
-        if (!equalsIgnoreCase(computedSha256, providedSha256)) {
-            logger.info("INVALID_DIGEST: providedSha256="+providedSha256);
-            logger.info("INVALID_DIGEST: computedSha256="+computedSha256);
-            throw new S3Exception(ErrorCode.INVALID_DIGEST);
+        if (isNotBlank(providedSha256)) {
+            String computedSha256 = contentLength > 0 ? PathHelper.sha256HashFile(content) : AWS4SignerBase.EMPTY_BODY_SHA256;
+            if (!equalsIgnoreCase(computedSha256, providedSha256)) {
+                logger.info("INVALID_DIGEST: providedSha256=" + providedSha256);
+                logger.info("INVALID_DIGEST: computedSha256=" + computedSha256);
+                throw new S3Exception(ErrorCode.INVALID_DIGEST);
+            }
         }
         String providedMd5 = s3Request.getHeader("content-md5");
         if (contentLength > 0 && isNotBlank(providedMd5)) {
             String computedMd5 = BaseEncoding.base64().encode(md5HashFileToByte(content));
             if (!equalsIgnoreCase(providedMd5, computedMd5)) {
-                logger.info("INVALID_DIGEST: providedMd5="+providedMd5);
-                logger.info("INVALID_DIGEST: computedMd5="+computedMd5);
+                logger.info("INVALID_DIGEST: providedMd5=" + providedMd5);
+                logger.info("INVALID_DIGEST: computedMd5=" + computedMd5);
                 throw new S3Exception(ErrorCode.INVALID_DIGEST);
             }
         }
@@ -69,7 +71,7 @@ public class S3RequestVerifier {
         URL url = newURLUnchecked(s3Request.getUrl());
 
         String authorizationHeader = s3Request.getHeader("authorization");
-        if(isBlank(authorizationHeader)){
+        if (isBlank(authorizationHeader)) {
             String algorithm = s3Request.getQueryParameter("X-Amz-Algorithm");
             String credential = s3Request.getQueryParameter("X-Amz-Credential");
             String date = s3Request.getQueryParameter("X-Amz-Date");
@@ -123,7 +125,7 @@ public class S3RequestVerifier {
         List<NameValuePair> nameValuePairs = URLEncodedUtils.parse(newURIUnchecked(fullURL), StandardCharsets.UTF_8);
         HashMap<String, String> queryParams = nameValuePairs.size() > 0 ? new HashMap<>() : null;
         for (NameValuePair nvp : nameValuePairs) {
-            if(!equalsIgnoreCase(nvp.getName(),"X-Amz-Signature")) {
+            if (!equalsIgnoreCase(nvp.getName(), "X-Amz-Signature")) {
                 queryParams.put(nvp.getName(), nvp.getValue());
             }
         }
@@ -138,9 +140,7 @@ public class S3RequestVerifier {
                 throw new S3Exception(ErrorCode.EXPIRED_TOKEN);
             }
         } else {
-            String expiresDefault = System.getProperty("s34j.auth.request.maxDifferenceMinutes", "15");
-            int expires = Integer.parseInt(expiresDefault) * 60 * 1000;
-            if (Math.abs(date.getTime() - now.getTime()) > expires) {
+            if (Math.abs(date.getTime() - now.getTime()) > S3Context.MAX_DIFFERENT_IN_REQUEST_TIME) {
                 logger.info("REQUEST_TIME_TOO_SKEWED currentDate=" + now);
                 logger.info("REQUEST_TIME_TOO_SKEWED requestDate=" + date);
                 throw new S3Exception(ErrorCode.REQUEST_TIME_TOO_SKEWED);
