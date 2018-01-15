@@ -1,8 +1,6 @@
 package us.cuatoi.s34jserver.core.operation.object;
 
 import com.google.gson.*;
-import us.cuatoi.s34jserver.core.ErrorCode;
-import us.cuatoi.s34jserver.core.S3Exception;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -44,27 +42,24 @@ class Policy {
             if (json.isJsonObject()) {
                 JsonObject object = json.getAsJsonObject();
                 for (String key : object.keySet()) {
-                    Condition condition = new Condition();
-                    condition.setOperator("eq");
-                    condition.setField("$" + key);
-                    condition.setValue(object.get(key).getAsString());
-                    return condition;
+                    return new Condition()
+                            .setOperator("eq")
+                            .setField("$" + key)
+                            .setValue(object.get(key).getAsString());
                 }
             } else if (json.isJsonArray()) {
                 JsonArray array = json.getAsJsonArray();
                 try {
-                    Condition condition = new Condition();
-                    condition.setOperator(array.get(0).getAsString());
-                    condition.setField(array.get(0).getAsString());
-                    condition.setLowerBound(array.get(1).getAsLong());
-                    condition.setUpperBound(array.get(2).getAsLong());
-                    return condition;
+                    return new Condition()
+                            .setOperator(array.get(0).getAsString())
+                            .setField(array.get(0).getAsString())
+                            .setLowerBound(array.get(1).getAsLong())
+                            .setUpperBound(array.get(2).getAsLong());
                 } catch (Exception ex) {
-                    Condition condition = new Condition();
-                    condition.setOperator(array.get(0).getAsString());
-                    condition.setField(array.get(1).getAsString());
-                    condition.setValue(array.get(2).getAsString());
-                    return condition;
+                    return new Condition()
+                            .setOperator(array.get(0).getAsString())
+                            .setField(array.get(1).getAsString())
+                            .setValue(array.get(2).getAsString());
                 }
             }
             return null;
@@ -82,40 +77,45 @@ class Policy {
             return field;
         }
 
-        public void setField(String field) {
+        public Condition setField(String field) {
             this.field = field;
+            return this;
         }
 
         public String getOperator() {
             return operator;
         }
 
-        public void setOperator(String operator) {
+        public Condition setOperator(String operator) {
             this.operator = operator;
+            return this;
         }
 
         public String getValue() {
             return value;
         }
 
-        public void setValue(String value) {
+        public Condition setValue(String value) {
             this.value = value;
+            return this;
         }
 
         public long getLowerBound() {
             return lowerBound;
         }
 
-        public void setLowerBound(long lowerBound) {
+        public Condition setLowerBound(long lowerBound) {
             this.lowerBound = lowerBound;
+            return this;
         }
 
         public long getUpperBound() {
             return upperBound;
         }
 
-        public void setUpperBound(long upperBound) {
+        public Condition setUpperBound(long upperBound) {
             this.upperBound = upperBound;
+            return this;
         }
     }
 }

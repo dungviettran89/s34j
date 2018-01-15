@@ -1,11 +1,13 @@
 package us.cuatoi.s34jserver.core.operation.object;
 
+import com.google.common.io.BaseEncoding;
 import org.apache.commons.lang3.StringUtils;
 import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
 import us.cuatoi.s34jserver.core.dto.PostResponseDTO;
+import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.model.object.PostObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.PostObjectS3Response;
 
@@ -14,6 +16,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.servlet.http.HttpServletResponse.SC_TEMPORARY_REDIRECT;
 import static org.apache.commons.lang3.StringUtils.*;
 
@@ -36,7 +39,6 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
     protected PostObjectS3Response handleObject() throws IOException {
         logger.debug("policy=" + policy);
         logger.debug("awsAccessKeyId=" + awsAccessKeyId);
-        logger.debug("key=" + key);
         logger.debug("successActionRedirect=" + successActionRedirect);
         logger.debug("successActionStatus=" + successActionStatus);
 
@@ -73,7 +75,9 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
     }
 
     private void verifyPolicy() throws IOException {
-        Policy policy = Policy.parse(this.policy);
+        String policyJson = new String(BaseEncoding.base64().decode(this.policy), UTF_8);
+        logger.trace("policyJson=" + policyJson);
+        Policy policy = Policy.parse(policyJson);
         long expire = S3Constants.EXPIRATION_DATE_FORMAT.parseDateTime(policy.getExpiration()).getMillis();
         if (expire < System.currentTimeMillis()) {
             throw new S3Exception(ErrorCode.EXPIRED_TOKEN);
@@ -83,6 +87,9 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
                 continue;
             } else if (equalsAnyIgnoreCase(condition.getOperator(), "eq", "start-with")) {
                 switch (condition.getField()) {
+                    case "$acl":
+                        verify(condition, s3Request.getFormParameter("acl"));
+                        break;
                     case "$key":
                         verify(condition, objectName);
                         break;
@@ -93,19 +100,29 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
                         verify(condition, successActionRedirect);
                         break;
                     case "$success_action_status":
-                        if (equalsIgnoreCase(condition.getOperator(), "eq")) {
-                            verify(condition, successActionStatus);
-                        }
+                        verify(condition.setOperator("eq"), successActionStatus);
                         break;
                     case "$x-amz-algorithm":
-                        if (equalsIgnoreCase(condition.getOperator(), "eq")) {
-                            verify(condition, "AWS4-HMAC-SHA256");
+                        verify(condition.setOperator("eq"), "AWS4-HMAC-SHA256");
+                        break;
+                    case "$x-amz-credential":
+                        verify(condition.setOperator("eq"), s3Request.getFormParameter("x-amz-credential"));
+                        break;
+                    case "$x-amz-date":
+                        verify(condition.setOperator("eq"), s3Request.getFormParameter("x-amz-date"));
+                        break;
+                    default:
+                        if (equalsAnyIgnoreCase(condition.getField(), STORED_HEADERS)) {
+                            verify(condition, s3Request.getFormParameter(condition.getField()));
+                        } else if (startsWith(condition.getField(), "x-amz-meta-")) {
+                            verify(condition, s3Request.getFormParameter(condition.getField()));
+                        } else if (startsWith(condition.getField(), "x-amz-")) {
+                            verify(condition.setOperator("eq"), s3Request.getFormParameter(condition.getField()));
                         }
                         break;
-                    case "$acl":
-                        verify(condition, s3Request.getFormParameter("acl"));
-                        break;
                 }
+                logger.trace("Verified " + condition.getField() + " "
+                        + condition.getOperator() + " " + condition.getValue());
             } else if (equalsAnyIgnoreCase(condition.getOperator(), "content-length-range")) {
                 long size = Files.size(s3Request.getContent());
                 long upperBound = condition.getUpperBound();
@@ -120,7 +137,9 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
                     logger.info("ENTITY_TOO_SMALL lowerBound=" + lowerBound);
                     throw new S3Exception(ErrorCode.ENTITY_TOO_SMALL);
                 }
+                logger.trace(String.format("Verified %s in range [%s,%s]", condition.getField(), lowerBound, upperBound));
             }
+
         }
     }
 
