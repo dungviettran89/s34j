@@ -11,6 +11,9 @@ import org.springframework.context.annotation.Bean;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Servlet;
 
+import javax.servlet.MultipartConfigElement;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -30,7 +33,7 @@ public class S34jServerApplication {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Bean
-    public ServletRegistrationBean servletRegistrationBean() {
+    public ServletRegistrationBean servletRegistrationBean() throws IOException {
         Path basePath = Paths.get(path);
         S3Context s3Context = new S3Context(basePath) {
             @Override
@@ -42,11 +45,14 @@ public class S34jServerApplication {
                 }
             }
         }.setRegion(region);
+        String uploadDir = Files.createTempDirectory("upload").toAbsolutePath().toString();
+        MultipartConfigElement mce = new MultipartConfigElement(uploadDir);
         S3Servlet s3Servlet = new S3Servlet(s3Context);
         ServletRegistrationBean registration = new ServletRegistrationBean();
         registration.setName(S3Servlet.class.getSimpleName());
         registration.setServlet(s3Servlet);
         registration.setLoadOnStartup(1);
+        registration.setMultipartConfig(mce);
         registration.setUrlMappings(Lists.newArrayList("/*"));
 
         logger.warn("starting S34J server.");
