@@ -51,9 +51,9 @@ public class S3RequestVerifier {
         if (isNotBlank(providedSha256)) {
             String computedSha256 = contentLength > 0 ? PathHelper.sha256HashFile(content) : AWS4SignerBase.EMPTY_BODY_SHA256;
             if (!equalsIgnoreCase(computedSha256, providedSha256)) {
-                logger.info("INVALID_DIGEST: providedSha256=" + providedSha256);
-                logger.info("INVALID_DIGEST: computedSha256=" + computedSha256);
-                throw new S3Exception(ErrorCode.INVALID_DIGEST);
+                logger.info("X_AMZ_CONTENT_SHA256_MISMATCH: providedSha256=" + providedSha256);
+                logger.info("X_AMZ_CONTENT_SHA256_MISMATCH: computedSha256=" + computedSha256);
+                throw new S3Exception(ErrorCode.X_AMZ_CONTENT_SHA256_MISMATCH);
             }
         }
         String providedMd5 = s3Request.getHeader("content-md5");
