@@ -185,7 +185,14 @@ public class ObjectVisitor {
     }
 
     private String getName(Path dir) {
-        return replace(baseDir.relativize(dir).toString(), "\\", "/");
+        String relativePath = baseDir.relativize(dir).toString();
+        String separator = baseDir.getFileSystem().getSeparator();
+        if (!equalsIgnoreCase(separator, "/")) {
+            return replace(relativePath, separator, "/");
+        } else {
+            return relativePath;
+        }
+
     }
 
     private boolean handleDelimiter(String fileName) {

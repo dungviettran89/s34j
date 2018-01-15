@@ -20,6 +20,8 @@ public class ListBucketResultV2DTO extends GenericDTO {
     private String startAfter;
     @Key("ContinuationToken")
     private String continuationToken;
+    @Key("Encoding-Type")
+    private String encodingType;
     @Key("NextContinuationToken")
     private String nextContinuationToken;
     @Key("Contents")
@@ -109,5 +111,13 @@ public class ListBucketResultV2DTO extends GenericDTO {
 
     public void setNextContinuationToken(String nextContinuationToken) {
         this.nextContinuationToken = nextContinuationToken;
+    }
+
+    public String getEncodingType() {
+        return encodingType;
+    }
+
+    public void setEncodingType(String encodingType) {
+        this.encodingType = encodingType;
     }
 }

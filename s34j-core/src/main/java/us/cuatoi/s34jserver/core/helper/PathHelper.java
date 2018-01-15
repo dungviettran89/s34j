@@ -20,6 +20,7 @@ import static us.cuatoi.s34jserver.core.S3Constants.EXPIRATION_DATE_FORMAT;
 public class PathHelper {
 
     public static final Logger logger = LoggerFactory.getLogger(PathHelper.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(PathHelper.class);
 
     public static void deleteDir(Path dir) throws IOException {
         final List<Path> pathsToDelete = Files.walk(dir)
@@ -64,8 +65,25 @@ public class PathHelper {
         return EXPIRATION_DATE_FORMAT.print(Files.getLastModifiedTime(path).toMillis());
     }
 
+    public static String getLastModifiedStringUnchecked(Path path) {
+        try {
+            return getLastModifiedString(path);
+        } catch (IOException e) {
+            LOGGER.info("Can get last modified:" + path, e);
+            return null;
+        }
+    }
+
     public static String getCreationTimeString(Path path) throws IOException {
         BasicFileAttributes attribute = Files.readAttributes(path, BasicFileAttributes.class);
         return EXPIRATION_DATE_FORMAT.print(attribute.creationTime().toMillis());
+    }
+
+    public static long sizeUnchecked(Path part)  {
+        try {
+            return Files.size(part);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

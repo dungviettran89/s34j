@@ -26,4 +26,5 @@ public class S3Constants {
     public static final String METADATA_JSON = "metadata.json";
     public static final String CHUNK_SIGNATURE = ";chunk-signature=";
     public static final String STORAGE_CLASS = "STANDARD";
+    public static final String ETAG_SUFFIX = ".etag";
 }

@@ -68,6 +68,7 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
         dto.setTruncated(visitor.isTruncated());
         dto.setKeyCount(visitor.getObjects().size());
         dto.setContinuationToken(continuationToken);
+        dto.setEncodingType(encodingType);
         dto.setNextContinuationToken(visitor.getNextContinuationToken());
         for (String prefix : visitor.getPrefixes()) {
             CommonPrefixesDTO cpd = new CommonPrefixesDTO();

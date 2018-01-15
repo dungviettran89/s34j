@@ -6,16 +6,20 @@ import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
+import us.cuatoi.s34jserver.core.dto.PartDTO;
 import us.cuatoi.s34jserver.core.model.S3Response;
 import us.cuatoi.s34jserver.core.model.object.ObjectS3Request;
 import us.cuatoi.s34jserver.core.operation.object.ObjectS3RequestHandler;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static us.cuatoi.s34jserver.core.S3Constants.ETAG_SUFFIX;
 
 public abstract class MultipartUploadObjectS3RequestHandler<F extends ObjectS3Request, T extends S3Response> extends ObjectS3RequestHandler<F, T> {
     protected final String uploadId;
@@ -46,8 +50,28 @@ public abstract class MultipartUploadObjectS3RequestHandler<F extends ObjectS3Re
     }
 
     protected void verifyUploadExists() {
-        if(!Files.exists(uploadDir)){
+        if (!Files.exists(uploadDir)) {
             throw new S3Exception(ErrorCode.NO_SUCH_UPLOAD);
+        }
+    }
+
+    protected String getOrCalculateETag(Path partFile) throws IOException {
+        Path eTagFile = uploadDir.resolve(partFile.getFileName().toString() + ETAG_SUFFIX);
+        String savedETag;
+        if (Files.exists(eTagFile)) {
+            savedETag = new String(Files.readAllBytes(eTagFile), UTF_8);
+        } else {
+            savedETag = calculateETag(partFile);
+            Files.write(eTagFile, savedETag.getBytes(UTF_8));
+        }
+        return savedETag;
+    }
+
+    protected String getOrCalculateETagUnchecked(Path partFile) {
+        try {
+            return getOrCalculateETag(partFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -22,8 +22,7 @@ public class PutObjectS3RequestHandler extends ObjectS3RequestHandler<PutObjectS
         Files.createDirectories(objectUploadDir);
         logger.info("Created " + objectUploadDir);
 
-
-        String eTag = calculateETag();
+        String eTag = calculateETag(s3Request.getContent());
         ObjectMetadata metadata = createMetadata(eTag);
         saveMetadata(metadata);
         return (PutObjectS3Response) new PutObjectS3Response(s3Request).setHeader("ETag", eTag);

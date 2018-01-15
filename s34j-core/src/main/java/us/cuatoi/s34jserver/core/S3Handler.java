@@ -12,10 +12,7 @@ import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.GetObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.HeadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.multipart.AbortMultipartUploadObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.multipart.CompleteMultipartUploadObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.multipart.InitiateMultipartUploadObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.multipart.UploadPartObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.multipart.*;
 import us.cuatoi.s34jserver.core.operation.GetBucketsS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.S3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.bucket.*;
@@ -23,10 +20,7 @@ import us.cuatoi.s34jserver.core.operation.object.DeleteObjectS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.object.GetObjectS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.object.HeadObjectS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.object.PutObjectS3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.object.multipart.AbortMultipartUploadObjectS3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.object.multipart.CompleteMultipartUploadObjectS3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.object.multipart.InitiateMultipartUploadObjectS3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.object.multipart.UploadPartObjectS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.object.multipart.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -118,6 +112,8 @@ public class S3Handler {
             return new ListObjectsV2S3RequestHandler(context, (ListObjectsV2S3Request) s3Request);
         } else if (s3Request instanceof DeleteMultipleObjectsS3Request) {
             return new DeleteMultipleObjectsS3RequestHandler(context, (DeleteMultipleObjectsS3Request) s3Request);
+        }else if (s3Request instanceof ListPartsObjectS3Request) {
+            return new ListPartsObjectS3RequestHandler(context, (ListPartsObjectS3Request) s3Request);
         }
         return null;
     }

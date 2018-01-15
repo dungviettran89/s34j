@@ -64,7 +64,7 @@ public class CompleteMultipartUploadObjectS3RequestHandler
             if (!Files.exists(partFile)) {
                 throw new S3Exception(ErrorCode.INVALID_PART);
             }
-            if (!equalsIgnoreCase(part.geteTag(), calculateETag(partFile))) {
+            if (!equalsIgnoreCase(part.geteTag(), getOrCalculateETag(partFile))) {
                 throw new S3Exception(ErrorCode.INVALID_PART);
             }
             if (lastPart != null && Integer.parseInt(part.getPartNumber()) <= Integer.parseInt(lastPart.getPartNumber())) {
@@ -73,4 +73,5 @@ public class CompleteMultipartUploadObjectS3RequestHandler
             lastPart = part;
         }
     }
+
 }

@@ -33,6 +33,7 @@ public class ListMultipartUploadsBucketS3RequestHandler extends BucketS3RequestH
         uploadIdMarker = s3Request.getQueryParameter("upload-id-marker");
         maxUploads = parseLong(s3Request.getQueryParameter("max-uploads"), 1000);
         prefix = s3Request.getQueryParameter("prefix");
+
     }
 
     @Override
@@ -44,17 +45,17 @@ public class ListMultipartUploadsBucketS3RequestHandler extends BucketS3RequestH
         logger.debug("marker=" + marker);
         logger.debug("uploadIdMarker=" + uploadIdMarker);
         String uploadMarker = marker;
-        if (isNotBlank(uploadIdMarker)) {
-            uploadMarker = uploadMarker + "/" + uploadIdMarker;
-        } else {
-            uploadMarker = uploadMarker + "/" + Character.MAX_VALUE;
+        if (isNotBlank(uploadMarker) && isNotBlank(uploadIdMarker)) {
+            uploadMarker = uploadMarker + separator + uploadIdMarker;
+        } else if (isNotBlank(uploadMarker)) {
+            uploadMarker = uploadMarker + separator + Character.MAX_VALUE;
         }
         ObjectVisitor visitor = new ObjectVisitor(bucketUploadDir)
                 .setDelimiter(delimiter)
                 .setMaxKeys(maxUploads)
                 .setPrefix(prefix)
                 .setStartAfter(uploadMarker)
-                .setSuffix("/" + METADATA_JSON)
+                .setSuffix(separator + METADATA_JSON)
                 .visit();
 
         ListMultipartUploadsResultDTO result = new ListMultipartUploadsResultDTO();
@@ -67,6 +68,7 @@ public class ListMultipartUploadsBucketS3RequestHandler extends BucketS3RequestH
             pd.setPrefix(prefix);
             result.getCommonPrefixes().add(pd);
         }
+        Path lastMetadataFile=null;
         for (Path metadata : visitor.getObjects()) {
             Path upload = metadata.getParent();
             Path object = upload.getParent();
@@ -84,10 +86,11 @@ public class ListMultipartUploadsBucketS3RequestHandler extends BucketS3RequestH
             ud.setObjectName(object.getFileName().toString());
             ud.setInitiated(PathHelper.getCreationTimeString(metadata));
             result.getUploads().add(ud);
+            lastMetadataFile = metadata;
         }
         result.setTruncated(visitor.isTruncated());
-        if (visitor.isTruncated()) {
-            Path nextUploadMetadata = bucketDir.resolve(visitor.getNextMarker());
+        if (visitor.isTruncated() && lastMetadataFile != null) {
+            Path nextUploadMetadata = bucketDir.resolve(lastMetadataFile);
             Path nextUpload = nextUploadMetadata.getParent();
             Path nextObject = nextUpload.getParent();
             result.setNextKeyMarker(nextObject.getFileName().toString());

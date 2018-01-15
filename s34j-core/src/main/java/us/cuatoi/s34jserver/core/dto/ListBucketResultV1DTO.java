@@ -18,6 +18,8 @@ public class ListBucketResultV1DTO extends GenericDTO {
     private String marker;
     @Key("NextMarker")
     private String nextMarker;
+    @Key("Encoding-Type")
+    private String encodingType;
     @Key("Contents")
     private List<ContentsDTO> contents = new ArrayList<>();
     @Key("CommonPrefixesDTO")
@@ -91,5 +93,13 @@ public class ListBucketResultV1DTO extends GenericDTO {
 
     public void setCommonPrefixes(List<CommonPrefixesDTO> commonPrefixes) {
         this.commonPrefixes = commonPrefixes;
+    }
+
+    public String getEncodingType() {
+        return encodingType;
+    }
+
+    public void setEncodingType(String encodingType) {
+        this.encodingType = encodingType;
     }
 }

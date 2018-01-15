@@ -10,10 +10,7 @@ import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.GetObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.HeadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.multipart.AbortMultipartUploadObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.multipart.CompleteMultipartUploadObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.multipart.InitiateMultipartUploadObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.multipart.UploadPartObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.multipart.*;
 
 import static org.apache.commons.lang3.StringUtils.*;
 
@@ -67,17 +64,23 @@ public class S3RequestDetector {
                 return new GetObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "head") && noQueryParams) {
                 return new HeadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("uploads") != null) {
-                return new InitiateMultipartUploadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "put") && s3Request.getQueryParameter("uploadId") != null) {
-                return new UploadPartObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "delete") && s3Request.getQueryParameter("uploadId") != null) {
-                return new AbortMultipartUploadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("uploadId") != null) {
-                CompleteMultipartUploadDTO dto = DTOHelper.parseXmlContent(s3Request.getContent(), new CompleteMultipartUploadDTO());
-                return new CompleteMultipartUploadObjectS3Request(s3Request)
-                        .setCompleteMultipartUploadDTO(dto)
-                        .setObjectName(objectName).setBucketName(bucketName);
+            } else {
+                //multipart request
+                String uploadIdParameter = s3Request.getQueryParameter("uploadId");
+                if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("uploads") != null) {
+                    return new InitiateMultipartUploadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+                } else if (equalsIgnoreCase(method, "put") && uploadIdParameter != null) {
+                    return new UploadPartObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+                } else if (equalsIgnoreCase(method, "delete") && uploadIdParameter != null) {
+                    return new AbortMultipartUploadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+                } else if (equalsIgnoreCase(method, "get") && uploadIdParameter != null) {
+                    return new ListPartsObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+                } else if (equalsIgnoreCase(method, "post") && uploadIdParameter != null) {
+                    CompleteMultipartUploadDTO dto = DTOHelper.parseXmlContent(s3Request.getContent(), new CompleteMultipartUploadDTO());
+                    return new CompleteMultipartUploadObjectS3Request(s3Request)
+                            .setCompleteMultipartUploadDTO(dto)
+                            .setObjectName(objectName).setBucketName(bucketName);
+                }
             }
         }
         return s3Request;

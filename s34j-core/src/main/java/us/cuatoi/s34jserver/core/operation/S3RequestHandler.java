@@ -18,6 +18,7 @@ public abstract class S3RequestHandler<F extends S3Request, T extends S3Response
     protected final Path baseMetadataDir;
     protected final Path baseUploadDir;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final String separator;
 
     public S3RequestHandler(S3Context context, F s3Request) {
         this.context = context;
@@ -26,6 +27,7 @@ public abstract class S3RequestHandler<F extends S3Request, T extends S3Response
         workDir = baseDir.resolve(S3Constants.WORK_DIR);
         baseMetadataDir = workDir.resolve(S3Constants.METADATA_DIR);
         baseUploadDir = workDir.resolve(S3Constants.UPLOAD_DIR);
+        separator = baseDir.getFileSystem().getSeparator();
     }
 
     public abstract T handle() throws IOException;

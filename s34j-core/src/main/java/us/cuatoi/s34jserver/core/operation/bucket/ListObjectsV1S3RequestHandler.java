@@ -49,6 +49,7 @@ public class ListObjectsV1S3RequestHandler extends BucketS3RequestHandler<ListOb
         dto.setPrefix(prefix);
         dto.setMarker(marker);
         dto.setMaxKeys(maxKeys);
+        dto.setEncodingType(encodingType);
         dto.setTruncated(visitor.isTruncated());
         for (String prefix : visitor.getPrefixes()) {
             CommonPrefixesDTO cpd = new CommonPrefixesDTO();
