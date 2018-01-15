@@ -8,18 +8,12 @@ import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
 import us.cuatoi.s34jserver.core.model.S3Response;
 import us.cuatoi.s34jserver.core.model.bucket.*;
-import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.GetObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.HeadObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.*;
 import us.cuatoi.s34jserver.core.model.object.multipart.*;
 import us.cuatoi.s34jserver.core.operation.GetBucketsS3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.S3RequestHandler;
 import us.cuatoi.s34jserver.core.operation.bucket.*;
-import us.cuatoi.s34jserver.core.operation.object.DeleteObjectS3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.object.GetObjectS3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.object.HeadObjectS3RequestHandler;
-import us.cuatoi.s34jserver.core.operation.object.PutObjectS3RequestHandler;
+import us.cuatoi.s34jserver.core.operation.object.*;
 import us.cuatoi.s34jserver.core.operation.object.multipart.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -78,6 +72,7 @@ public class S3Handler {
     }
 
     private S3RequestHandler getHandler(S3Request s3Request) {
+        //TODO: Refactor this
         if (s3Request instanceof GetBucketsS3Request) {
             return new GetBucketsS3RequestHandler(context, (GetBucketsS3Request) s3Request);
         } else if (s3Request instanceof PutBucketS3Request) {
@@ -112,8 +107,10 @@ public class S3Handler {
             return new ListObjectsV2S3RequestHandler(context, (ListObjectsV2S3Request) s3Request);
         } else if (s3Request instanceof DeleteMultipleObjectsS3Request) {
             return new DeleteMultipleObjectsS3RequestHandler(context, (DeleteMultipleObjectsS3Request) s3Request);
-        }else if (s3Request instanceof ListPartsObjectS3Request) {
+        } else if (s3Request instanceof ListPartsObjectS3Request) {
             return new ListPartsObjectS3RequestHandler(context, (ListPartsObjectS3Request) s3Request);
+        } else if (s3Request instanceof PostObjectS3Request) {
+            return new PostObjectS3RequestHandler(context, (PostObjectS3Request) s3Request);
         }
         return null;
     }

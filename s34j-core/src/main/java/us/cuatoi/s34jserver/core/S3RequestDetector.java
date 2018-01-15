@@ -6,10 +6,7 @@ import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
 import us.cuatoi.s34jserver.core.model.bucket.*;
-import us.cuatoi.s34jserver.core.model.object.DeleteObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.GetObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.HeadObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
+import us.cuatoi.s34jserver.core.model.object.*;
 import us.cuatoi.s34jserver.core.model.object.multipart.*;
 
 import static org.apache.commons.lang3.StringUtils.*;
@@ -23,6 +20,7 @@ public class S3RequestDetector {
     }
 
     public S3Request detectRequest() throws Exception {
+        //TODO: Refactor this
         String uri = s3Request.getUri();
         int slashCount = countMatches(uri, '/');
         boolean root = equalsIgnoreCase(uri, "/");
@@ -69,6 +67,8 @@ public class S3RequestDetector {
                 return new GetObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "head") && hasOnlyAuthParameter) {
                 return new HeadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+            } else if (equalsIgnoreCase(method, "post") && s3Request.getFormParameter("fileName") != null) {
+                return new PostObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("uploads") != null) {
                 return new InitiateMultipartUploadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "put") && isMultipartRequest) {

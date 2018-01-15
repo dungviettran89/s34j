@@ -17,15 +17,7 @@ public class PutObjectS3RequestHandler extends ObjectS3RequestHandler<PutObjectS
 
     @Override
     protected PutObjectS3Response handleObject() throws IOException {
-        Files.createDirectories(objectFile.getParent());
-        Files.copy(s3Request.getContent(), objectFile, StandardCopyOption.REPLACE_EXISTING);
-        logger.info("Saved " + objectFile);
-        Files.createDirectories(objectUploadDir);
-        logger.info("Created " + objectUploadDir);
-
-        String eTag = calculateETag(s3Request.getContent());
-        ObjectMetadata metadata = createMetadata(eTag);
-        saveMetadata(metadata);
+        String eTag = saveObjectAndMetadata();
         return (PutObjectS3Response) new PutObjectS3Response(s3Request).setHeader("ETag", eTag);
     }
 

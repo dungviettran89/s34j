@@ -75,6 +75,7 @@ public class S3RequestParserVerifier {
                 Path content = Files.createTempFile(s3Request.getRequestId() + ".", ".tmp");
                 Files.copy(part.getInputStream(), content, StandardCopyOption.REPLACE_EXISTING);
                 s3Request.setContent(content);
+                s3Request.setFormParameter("fileName", part.getSubmittedFileName());
             }
         }
     }
