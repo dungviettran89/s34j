@@ -49,17 +49,17 @@ public class S3RequestVerifier {
         logger.trace("Checking " + content);
         long contentLength = Files.size(content);
         String computedSha256 = contentLength > 0 ? PathHelper.sha256HashFile(content) : AWS4SignerBase.EMPTY_BODY_SHA256;
-        logger.trace("computedSha256:" + computedSha256);
-        logger.trace("providedSha256:" + providedSha256);
         if (!equalsIgnoreCase(computedSha256, providedSha256)) {
-            throw new S3Exception(ErrorCode.BAD_DIGEST);
+            logger.info("INVALID_DIGEST: providedSha256="+providedSha256);
+            logger.info("INVALID_DIGEST: computedSha256="+computedSha256);
+            throw new S3Exception(ErrorCode.INVALID_DIGEST);
         }
         String providedMd5 = s3Request.getHeader("content-md5");
         if (contentLength > 0 && isNotBlank(providedMd5)) {
             String computedMd5 = BaseEncoding.base64().encode(md5HashFileToByte(content));
-            logger.trace("providedMd5:" + providedMd5);
-            logger.trace("computedMd5:" + computedMd5);
             if (!equalsIgnoreCase(providedMd5, computedMd5)) {
+                logger.info("INVALID_DIGEST: providedMd5="+providedMd5);
+                logger.info("INVALID_DIGEST: computedMd5="+computedMd5);
                 throw new S3Exception(ErrorCode.INVALID_DIGEST);
             }
         }
@@ -84,6 +84,7 @@ public class S3RequestVerifier {
             }
         }
         if (isBlank(authorizationHeader)) {
+            logger.info("MISSING_SECURITY_HEADER authorizationHeader=" + authorizationHeader);
             throw new S3Exception(MISSING_SECURITY_HEADER);
         }
 
@@ -102,10 +103,13 @@ public class S3RequestVerifier {
         String serviceName = authorization.getServiceName();
         String regionName = authorization.getRegionName();
         AWS4SignerForAuthorizationHeader signer = new AWS4SignerForAuthorizationHeader(url, method, serviceName, regionName);
+        aws4SignerForChunkedUpload = new AWS4SignerForChunkedUpload(url, method, serviceName, regionName);
+
         String awsAccessKey = authorization.getAwsAccessKey();
         String awsSecretKey = context.getSecretKey(awsAccessKey);
-        aws4SignerForChunkedUpload = new AWS4SignerForChunkedUpload(url, method, serviceName, regionName);
         if (isBlank(awsSecretKey)) {
+            logger.info("INVALID_ACCESS_KEY_ID awsAccessKey=" + awsAccessKey);
+            logger.info("INVALID_ACCESS_KEY_ID awsSecretKey=" + awsSecretKey);
             throw new S3Exception(ErrorCode.INVALID_ACCESS_KEY_ID);
         }
         HashMap<String, String> headers = new HashMap<>();
@@ -124,17 +128,21 @@ public class S3RequestVerifier {
             }
         }
         Date date = getRequestDate(amzDateHeader);
-
+        Date now = new Date();
         String expiresParams = s3Request.getQueryParameter("X-Amz-Expires");
         if (isNotBlank(expiresParams)) {
             int expires = Integer.parseInt(expiresParams) * 1000;
-            if (Math.abs(date.getTime() - new Date().getTime()) > expires) {
+            if (Math.abs(date.getTime() - now.getTime()) > expires) {
+                logger.info("EXPIRED_TOKEN currentDate=" + now);
+                logger.info("EXPIRED_TOKEN requestDate=" + date);
                 throw new S3Exception(ErrorCode.EXPIRED_TOKEN);
             }
         } else {
             String expiresDefault = System.getProperty("s34j.auth.request.maxDifferenceMinutes", "15");
             int expires = Integer.parseInt(expiresDefault) * 60 * 1000;
-            if (Math.abs(date.getTime() - new Date().getTime()) > expires) {
+            if (Math.abs(date.getTime() - now.getTime()) > expires) {
+                logger.info("REQUEST_TIME_TOO_SKEWED currentDate=" + now);
+                logger.info("REQUEST_TIME_TOO_SKEWED requestDate=" + date);
                 throw new S3Exception(ErrorCode.REQUEST_TIME_TOO_SKEWED);
             }
         }
@@ -151,9 +159,9 @@ public class S3RequestVerifier {
         logger.trace("url=" + url);
         logger.trace("url.getHost()=" + url.getHost());
         logger.trace("url.getPort()=" + url.getPort());
-        logger.trace("a=" + authorizationHeader);
-        logger.trace("c=" + computedHeader);
         if (!StringUtils.equals(authorizationHeader, computedHeader)) {
+            logger.info("SIGNATURE_DOES_NOT_MATCH providedHeader=" + authorizationHeader);
+            logger.info("SIGNATURE_DOES_NOT_MATCH computedHeader=" + computedHeader);
             throw new S3Exception(ErrorCode.SIGNATURE_DOES_NOT_MATCH);
         }
 

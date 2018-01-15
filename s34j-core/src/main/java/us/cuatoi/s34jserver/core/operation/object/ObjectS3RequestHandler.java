@@ -20,8 +20,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
 import static java.nio.file.Files.getLastModifiedTime;
-import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
-import static org.apache.commons.lang3.StringUtils.startsWith;
+import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34jserver.core.helper.PathHelper.md5HashFile;
 
 public abstract class ObjectS3RequestHandler<F extends ObjectS3Request, T extends S3Response>
@@ -107,6 +106,12 @@ public abstract class ObjectS3RequestHandler<F extends ObjectS3Request, T extend
             metadata.getHeaders().forEach(response::setHeader);
             metadata.getMetadata().forEach(response::setHeader);
         }
+        s3Request.getQueryParameters().forEach((k,v)->{
+            if(startsWith(k,"response-")){
+                String header = remove(k, "response-");
+                response.setHeader(header, v);
+            }
+        });
         response.setHeader("Last-Modified", S3Constants.HTTP_HEADER_DATE_FORMAT.print(getLastModifiedTime(objectFile).toMillis()));
         response.setHeader("Content-Length", String.valueOf(Files.size(objectFile)));
         return response;
