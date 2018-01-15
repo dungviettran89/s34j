@@ -84,9 +84,6 @@ public class AWS4SignerForChunkedUpload extends AWS4SignerBase {
         // to ISO 8601 format for use in signature generation
         this.dateTimeStamp = dateTimeFormat.format(now);
 
-        // update the headers with required 'x-amz-date' and 'host' values
-        headers.put("x-amz-date", dateTimeStamp);
-
         String hostHeader = endpointUrl.getHost();
         int port = endpointUrl.getPort();
         if (port > -1) {

@@ -160,6 +160,7 @@ public class S3Handler {
             errorResponse.setBucketName(((BucketS3Request) s3Request).getBucketName());
         }
         response.getWriter().write(errorResponse.toString());
+        logger.debug("Error=" + errorResponse);
     }
 
     private void printDebugInfo() {

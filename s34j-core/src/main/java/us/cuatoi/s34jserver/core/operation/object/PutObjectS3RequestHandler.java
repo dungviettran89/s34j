@@ -7,6 +7,7 @@ import us.cuatoi.s34jserver.core.model.object.PutObjectS3Response;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 public class PutObjectS3RequestHandler extends ObjectS3RequestHandler<PutObjectS3Request, PutObjectS3Response> {
 
@@ -17,7 +18,7 @@ public class PutObjectS3RequestHandler extends ObjectS3RequestHandler<PutObjectS
     @Override
     protected PutObjectS3Response handleObject() throws IOException {
         Files.createDirectories(objectFile.getParent());
-        Files.copy(s3Request.getContent(), objectFile);
+        Files.copy(s3Request.getContent(), objectFile, StandardCopyOption.REPLACE_EXISTING);
         logger.info("Saved " + objectFile);
         Files.createDirectories(objectUploadDir);
         logger.info("Created " + objectUploadDir);

@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 public class S3Request {
     private String requestId;
     private String serverId;
@@ -141,6 +143,14 @@ public class S3Request {
 
     public String getQueryParameter(String key) {
         return this.queryParameters.get(key);
+    }
+
+    public String getFullUrl() {
+        if (isBlank(queryString)) {
+            return url;
+        } else {
+            return url + "?" + queryString;
+        }
     }
 
 

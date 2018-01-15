@@ -133,10 +133,7 @@ public class S3RequestParserVerifier {
             String header = headerNames.nextElement();
             s3Request.setHeader(lowerCase(header), request.getHeader(header));
         }
-        String fullURL = s3Request.getUrl();
-        if (isNotBlank(s3Request.getQueryString())) {
-            fullURL += "?" + s3Request.getQueryString();
-        }
+        String fullURL = s3Request.getFullUrl();
         for (NameValuePair pair : URLEncodedUtils.parse(new URI(fullURL), UTF_8)) {
             s3Request.setQueryParameter(pair.getName(), pair.getValue());
         }

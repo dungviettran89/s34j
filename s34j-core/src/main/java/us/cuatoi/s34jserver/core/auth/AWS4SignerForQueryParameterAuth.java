@@ -38,6 +38,7 @@ public class AWS4SignerForQueryParameterAuth extends AWS4SignerBase {
      *            The user's AWS Access Key.
      * @param awsSecretKey
      *            The user's AWS Secret Key.
+     * @param date
      * @return The computed authorization string for the request. This value
      *         needs to be set as the header 'Authorization' on the subsequent
      *         HTTP request.
@@ -46,18 +47,18 @@ public class AWS4SignerForQueryParameterAuth extends AWS4SignerBase {
                                    Map<String, String> queryParameters,
                                    String bodyHash,
                                    String awsAccessKey,
-                                   String awsSecretKey) {
+                                   String awsSecretKey,
+                                   Date date) {
         // first get the date and time for the subsequent request, and convert
         // to ISO 8601 format
         // for use in signature generation
-        Date now = new Date();
-        String dateTimeStamp = dateTimeFormat.format(now);
+        String dateTimeStamp = dateTimeFormat.format(date);
 
         // make sure "Host" header is added
         String hostHeader = endpointUrl.getHost();
         int port = endpointUrl.getPort();
         if ( port > -1 ) {
-            hostHeader.concat(":" + Integer.toString(port));
+            hostHeader = hostHeader.concat(":" + Integer.toString(port));
         }
         headers.put("Host", hostHeader);
         
@@ -67,7 +68,7 @@ public class AWS4SignerForQueryParameterAuth extends AWS4SignerBase {
         String canonicalizedHeaders = getCanonicalizedHeaderString(headers);
         
         // we need scope as part of the query parameters
-        String dateStamp = dateStampFormat.format(now);
+        String dateStamp = dateStampFormat.format(date);
         String scope =  dateStamp + "/" + regionName + "/" + serviceName + "/" + TERMINATOR;
         
         // add the fixed authorization params required by Signature V4
@@ -87,15 +88,15 @@ public class AWS4SignerForQueryParameterAuth extends AWS4SignerBase {
         String canonicalRequest = getCanonicalRequest(endpointUrl, httpMethod,
                 canonicalizedQueryParameters, canonicalizedHeaderNames,
                 canonicalizedHeaders, bodyHash);
-        logger.debug("--------- Canonical request --------");
-        logger.debug(canonicalRequest);
-        logger.debug("------------------------------------");
+        logger.trace("--------- Canonical request --------");
+        logger.trace(canonicalRequest);
+        logger.trace("------------------------------------");
         
         // construct the string to be signed
         String stringToSign = getStringToSign(SCHEME, ALGORITHM, dateTimeStamp, scope, canonicalRequest);
-        logger.debug("--------- String to sign -----------");
-        logger.debug(stringToSign);
-        logger.debug("------------------------------------");
+        logger.trace("--------- String to sign -----------");
+        logger.trace(stringToSign);
+        logger.trace("------------------------------------");
         
         // compute the signing key
         byte[] kSecret = (SCHEME + awsSecretKey).getBytes();

@@ -27,14 +27,17 @@ public class S3RequestDetector {
         int slashCount = countMatches(uri, '/');
         boolean root = equalsIgnoreCase(uri, "/");
         String method = lowerCase(s3Request.getMethod());
-        boolean noQueryParams = s3Request.getQueryParameters().size() == 0;
-        if (root && noQueryParams) {
+        boolean hasOnlyAuthParameter = true;
+        for (String name : s3Request.getQueryParameters().keySet()) {
+            hasOnlyAuthParameter = hasOnlyAuthParameter && startsWith(name, "X-Amz-");
+        }
+        if (root && hasOnlyAuthParameter) {
             //root request
             return new GetBucketsS3Request(s3Request);
         } else if (slashCount == 1) {
             //bucket request
             String bucketName = substring(uri, 1);
-            if (equalsIgnoreCase(method, "put") && noQueryParams) {
+            if (equalsIgnoreCase(method, "put") && hasOnlyAuthParameter) {
                 return new PutBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "get") && s3Request.getQueryParameter("location") != null) {
                 return new GetLocationBucketS3Request(s3Request).setBucketName(bucketName);
@@ -44,9 +47,9 @@ public class S3RequestDetector {
                 return new ListObjectsV1S3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "get") && equalsIgnoreCase(s3Request.getQueryParameter("list-type"), "2")) {
                 return new ListObjectsV2S3Request(s3Request).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "delete") && noQueryParams) {
+            } else if (equalsIgnoreCase(method, "delete") && hasOnlyAuthParameter) {
                 return new DeleteBucketS3Request(s3Request).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "head") && noQueryParams) {
+            } else if (equalsIgnoreCase(method, "head") && hasOnlyAuthParameter) {
                 return new HeadBucketS3Request(s3Request).setBucketName(bucketName);
             } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("delete") != null) {
                 DeleteDTO dto = DTOHelper.parseXmlContent(s3Request.getContent(), new DeleteDTO());
@@ -56,13 +59,13 @@ public class S3RequestDetector {
             int secondSlash = indexOf(uri, '/', 2);
             String bucketName = substring(uri, 1, secondSlash);
             String objectName = substring(uri, secondSlash + 1);
-            if (equalsIgnoreCase(method, "put") && noQueryParams) {
+            if (equalsIgnoreCase(method, "put") && hasOnlyAuthParameter) {
                 return new PutObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "delete") && noQueryParams) {
+            } else if (equalsIgnoreCase(method, "delete") && hasOnlyAuthParameter) {
                 return new DeleteObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "get") && noQueryParams) {
+            } else if (equalsIgnoreCase(method, "get") && hasOnlyAuthParameter) {
                 return new GetObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
-            } else if (equalsIgnoreCase(method, "head") && noQueryParams) {
+            }  else if (equalsIgnoreCase(method, "head") && hasOnlyAuthParameter) {
                 return new HeadObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
             } else {
                 //multipart request
