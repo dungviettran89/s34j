@@ -23,6 +23,9 @@ public class PathHelper {
     public static final Logger LOGGER = LoggerFactory.getLogger(PathHelper.class);
 
     public static void deleteDir(Path dir) throws IOException {
+        if (!Files.exists(dir)) {
+            return;
+        }
         final List<Path> pathsToDelete = Files.walk(dir)
                 .sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
@@ -79,7 +82,7 @@ public class PathHelper {
         return EXPIRATION_DATE_FORMAT.print(attribute.creationTime().toMillis());
     }
 
-    public static long sizeUnchecked(Path part)  {
+    public static long sizeUnchecked(Path part) {
         try {
             return Files.size(part);
         } catch (IOException e) {
