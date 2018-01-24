@@ -2,7 +2,7 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class InitiateMultipartUploadResultDTO extends GenericDTO {
+public class InitiateMultipartUploadResultXml extends AbstractXml {
     @Key("Bucket")
     private String bucket;
     @Key("Key")
@@ -10,7 +10,7 @@ public class InitiateMultipartUploadResultDTO extends GenericDTO {
     @Key("UploadId")
     private String uploadId;
 
-    public InitiateMultipartUploadResultDTO() {
+    public InitiateMultipartUploadResultXml() {
         super.name = "InitiateMultipartUploadResult";
     }
 

@@ -2,14 +2,15 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class OwnerDTO extends GenericDTO {
+public class InitiatorXml extends AbstractXml {
     @Key("ID")
     private String id;
     @Key("DisplayName")
     private String displayName;
 
-    public OwnerDTO() {
-        super.name = "Owner";
+    public InitiatorXml() {
+        super();
+        this.name = "Initiator";
     }
 
     public String getId() {

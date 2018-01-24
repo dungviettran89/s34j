@@ -1,6 +1,7 @@
 package us.cuatoi.s34jserver;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import us.cuatoi.s34jserver.functional.S34JFunctionalTest;
 
 import java.io.IOException;
@@ -8,6 +9,8 @@ import java.net.Socket;
 
 public class S34jServerApplicationFunctionTestMain {
     public static void main(String[] args) {
+        final ConfigurableApplicationContext context = SpringApplication.run(S34jServerApplication.class, args);
+
         new Thread(() -> {
             try {
                 for (int i = 0; i < 30 && available(19000); i++) {
@@ -20,10 +23,11 @@ public class S34jServerApplicationFunctionTestMain {
                 sleep(5000);
             } catch (Exception e) {
                 sleep(5000);
-                throw new RuntimeException(e);
+                e.printStackTrace();
+            } finally {
+                SpringApplication.exit(context);
             }
         }).start();
-        SpringApplication.run(S34jServerApplication.class, args);
     }
 
     private static void sleep(int millis) {

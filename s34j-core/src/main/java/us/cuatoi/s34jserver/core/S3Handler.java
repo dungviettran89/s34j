@@ -3,7 +3,7 @@ package us.cuatoi.s34jserver.core;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.cuatoi.s34jserver.core.dto.ErrorResponseDTO;
+import us.cuatoi.s34jserver.core.dto.ErrorResponseXml;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
 import us.cuatoi.s34jserver.core.model.S3Request;
 import us.cuatoi.s34jserver.core.model.S3Response;
@@ -111,6 +111,8 @@ public class S3Handler {
             return new ListPartsObjectS3RequestHandler(context, (ListPartsObjectS3Request) s3Request);
         } else if (s3Request instanceof PostObjectS3Request) {
             return new PostObjectS3RequestHandler(context, (PostObjectS3Request) s3Request);
+        }else if (s3Request instanceof HandlePolicyBucketS3Request) {
+            return new HandlePolicyBucketS3RequestHandler(context, (HandlePolicyBucketS3Request) s3Request);
         }
         return null;
     }
@@ -147,7 +149,7 @@ public class S3Handler {
         response.setHeader("x-amz-request-id", s3Request.getRequestId());
         response.setHeader("x-amz-version-id", "1.0");
 
-        ErrorResponseDTO errorResponse = new ErrorResponseDTO();
+        ErrorResponseXml errorResponse = new ErrorResponseXml();
         errorResponse.setRequestId(s3Request.getRequestId());
         errorResponse.setHostId(s3Request.getServerId());
         errorResponse.setResource(s3Request.getUri());

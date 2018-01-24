@@ -1,7 +1,7 @@
 package us.cuatoi.s34jserver.core.operation.object.multipart;
 
 import us.cuatoi.s34jserver.core.S3Context;
-import us.cuatoi.s34jserver.core.dto.InitiateMultipartUploadResultDTO;
+import us.cuatoi.s34jserver.core.dto.InitiateMultipartUploadResultXml;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.model.object.multipart.InitiateMultipartUploadObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.multipart.InitiateMultipartUploadObjectS3Response;
@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import static us.cuatoi.s34jserver.core.helper.LogHelper.debugMultiline;
-import static us.cuatoi.s34jserver.core.helper.LogHelper.infoMultiline;
 
 public class InitiateMultipartUploadObjectS3RequestHandler extends MultipartUploadObjectS3RequestHandler<InitiateMultipartUploadObjectS3Request, InitiateMultipartUploadObjectS3Response> {
 
@@ -30,7 +29,7 @@ public class InitiateMultipartUploadObjectS3RequestHandler extends MultipartUplo
         logger.info("Updated " + uploadMetadataFile);
         debugMultiline(logger, "Metadata: " + metadataString);
 
-        InitiateMultipartUploadResultDTO content = new InitiateMultipartUploadResultDTO();
+        InitiateMultipartUploadResultXml content = new InitiateMultipartUploadResultXml();
         content.setBucket(bucketName);
         content.setKey(objectName);
         content.setUploadId(uploadId);

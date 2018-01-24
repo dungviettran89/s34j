@@ -2,9 +2,13 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class CommonPrefixesDTO {
+public class PrefixXml extends AbstractXml {
     @Key("Prefix")
     private String prefix;
+
+    public PrefixXml() {
+        super.name = "Prefix";
+    }
 
     public String getPrefix() {
         return prefix;

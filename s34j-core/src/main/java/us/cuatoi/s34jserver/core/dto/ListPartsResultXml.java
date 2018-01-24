@@ -5,7 +5,7 @@ import com.google.api.client.util.Key;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListPartsResultDTO extends GenericDTO {
+public class ListPartsResultXml extends AbstractXml {
     @Key("Bucket")
     private String bucket;
     @Key("Encoding-Type")
@@ -15,9 +15,9 @@ public class ListPartsResultDTO extends GenericDTO {
     @Key("UploadId")
     private String uploadId;
     @Key("Initiator")
-    private InitiatorDTO initiator;
+    private InitiatorXml initiator;
     @Key("Owner")
-    private OwnerDTO owner;
+    private OwnerXml owner;
     @Key("StorageClass")
     private String storageClass;
     @Key("PartNumberMarker")
@@ -29,9 +29,9 @@ public class ListPartsResultDTO extends GenericDTO {
     @Key("IsTruncated")
     private boolean truncated;
     @Key("Part")
-    private List<PartResponseDTO> parts = new ArrayList<>();
+    private List<PartResponseXml> parts = new ArrayList<>();
 
-    public ListPartsResultDTO() {
+    public ListPartsResultXml() {
         super.name="ListPartsResult";
     }
 
@@ -67,19 +67,19 @@ public class ListPartsResultDTO extends GenericDTO {
         this.uploadId = uploadId;
     }
 
-    public InitiatorDTO getInitiator() {
+    public InitiatorXml getInitiator() {
         return initiator;
     }
 
-    public void setInitiator(InitiatorDTO initiator) {
+    public void setInitiator(InitiatorXml initiator) {
         this.initiator = initiator;
     }
 
-    public OwnerDTO getOwner() {
+    public OwnerXml getOwner() {
         return owner;
     }
 
-    public void setOwner(OwnerDTO owner) {
+    public void setOwner(OwnerXml owner) {
         this.owner = owner;
     }
 
@@ -123,11 +123,11 @@ public class ListPartsResultDTO extends GenericDTO {
         this.truncated = truncated;
     }
 
-    public List<PartResponseDTO> getParts() {
+    public List<PartResponseXml> getParts() {
         return parts;
     }
 
-    public void setParts(List<PartResponseDTO> parts) {
+    public void setParts(List<PartResponseXml> parts) {
         this.parts = parts;
     }
 }

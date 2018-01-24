@@ -2,13 +2,13 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class CopyObjectResultDTO extends GenericDTO {
+public class CopyObjectResultXml extends AbstractXml {
     @Key("ETag")
     private String eTag;
     @Key("LastModified")
     private String lastModified;
 
-    public CopyObjectResultDTO() {
+    public CopyObjectResultXml() {
         super.name = "CopyObjectResult";
     }
 

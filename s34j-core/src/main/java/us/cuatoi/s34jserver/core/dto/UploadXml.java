@@ -2,21 +2,21 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class UploadDTO extends GenericDTO {
+public class UploadXml extends AbstractXml {
     @Key("Key")
     private String objectName;
     @Key("UploadId")
     private String uploadId;
     @Key("Initiator")
-    private InitiatorDTO initiator;
+    private InitiatorXml initiator;
     @Key("Owner")
-    private OwnerDTO owner;
+    private OwnerXml owner;
     @Key("StorageClass")
     private String storageClass;
     @Key("Initiated")
     private String initiated;
 
-    public UploadDTO() {
+    public UploadXml() {
         super.name = "Upload";
     }
 
@@ -36,19 +36,19 @@ public class UploadDTO extends GenericDTO {
         this.uploadId = uploadId;
     }
 
-    public InitiatorDTO getInitiator() {
+    public InitiatorXml getInitiator() {
         return initiator;
     }
 
-    public void setInitiator(InitiatorDTO initiator) {
+    public void setInitiator(InitiatorXml initiator) {
         this.initiator = initiator;
     }
 
-    public OwnerDTO getOwner() {
+    public OwnerXml getOwner() {
         return owner;
     }
 
-    public void setOwner(OwnerDTO owner) {
+    public void setOwner(OwnerXml owner) {
         this.owner = owner;
     }
 

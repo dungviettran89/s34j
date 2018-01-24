@@ -1,11 +1,11 @@
 package us.cuatoi.s34jserver.core.model.bucket;
 
-import us.cuatoi.s34jserver.core.dto.DeleteDTO;
+import us.cuatoi.s34jserver.core.dto.DeleteXml;
 import us.cuatoi.s34jserver.core.model.S3Request;
 
 public class DeleteMultipleObjectsS3Request extends BucketS3Request {
 
-    private DeleteDTO dto;
+    private DeleteXml dto;
 
     /* Constructor */
 
@@ -14,12 +14,12 @@ public class DeleteMultipleObjectsS3Request extends BucketS3Request {
     }
 
     /* Getters */
-    public DeleteDTO getDto() {
+    public DeleteXml getDto() {
         return dto;
     }
     /* Setters */
 
-    public DeleteMultipleObjectsS3Request setDto(DeleteDTO dto) {
+    public DeleteMultipleObjectsS3Request setDto(DeleteXml dto) {
         this.dto = dto;
         return this;
     }

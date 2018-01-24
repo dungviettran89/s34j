@@ -6,7 +6,6 @@ import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
-import us.cuatoi.s34jserver.core.dto.PartDTO;
 import us.cuatoi.s34jserver.core.model.S3Response;
 import us.cuatoi.s34jserver.core.model.object.ObjectS3Request;
 import us.cuatoi.s34jserver.core.operation.object.ObjectS3RequestHandler;

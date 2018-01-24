@@ -2,15 +2,15 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class DeleteErrorDTO {
+public class ObjectXml extends AbstractXml {
     @Key("Key")
     private String key;
     @Key("VersionId")
     private String versionId;
-    @Key("Code")
-    private String code;
-    @Key("Message")
-    private String message;
+
+    public ObjectXml() {
+        super.name = "Object";
+    }
 
     public String getKey() {
         return key;
@@ -26,21 +26,5 @@ public class DeleteErrorDTO {
 
     public void setVersionId(String versionId) {
         this.versionId = versionId;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 }

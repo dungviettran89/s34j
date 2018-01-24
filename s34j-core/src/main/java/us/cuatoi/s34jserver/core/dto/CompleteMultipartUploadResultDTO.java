@@ -2,7 +2,7 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class CompleteMultipartUploadResultDTO extends GenericDTO {
+public class CompleteMultipartUploadResultDTO extends AbstractXml {
     @Key("Location")
     private String location;
     @Key("Bucket")

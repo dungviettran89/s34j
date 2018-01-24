@@ -4,7 +4,7 @@ import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
-import us.cuatoi.s34jserver.core.dto.CopyObjectResultDTO;
+import us.cuatoi.s34jserver.core.dto.CopyObjectResultXml;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
 import us.cuatoi.s34jserver.core.model.object.PutObjectS3Request;
@@ -113,7 +113,7 @@ public class PutObjectS3RequestHandler extends ObjectS3RequestHandler<PutObjectS
             logger.info("                  to:" + objectMetadataFile);
             saveMetadata(metadata);
         }
-        CopyObjectResultDTO dto = new CopyObjectResultDTO();
+        CopyObjectResultXml dto = new CopyObjectResultXml();
         dto.seteTag(sourceETag);
         dto.setLastModified(S3Constants.EXPIRATION_DATE_FORMAT.print(modifiedTime));
         return (PutObjectS3Response) new PutObjectS3Response(s3Request).setContent(dto);

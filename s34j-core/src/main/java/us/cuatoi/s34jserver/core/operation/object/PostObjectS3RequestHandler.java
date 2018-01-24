@@ -6,8 +6,7 @@ import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
-import us.cuatoi.s34jserver.core.dto.PostResponseDTO;
-import us.cuatoi.s34jserver.core.helper.DTOHelper;
+import us.cuatoi.s34jserver.core.dto.PostResponseXml;
 import us.cuatoi.s34jserver.core.model.object.PostObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.PostObjectS3Response;
 
@@ -62,7 +61,7 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
                     .setStatusCode(SC_TEMPORARY_REDIRECT);
         }
 
-        PostResponseDTO dto = new PostResponseDTO();
+        PostResponseXml dto = new PostResponseXml();
         dto.setBucket(bucketName);
         dto.setKey(objectName);
         dto.setLocation(s3Request.getUrl());

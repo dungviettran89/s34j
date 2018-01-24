@@ -44,7 +44,7 @@ public class ListObjectsV1S3RequestHandler extends BucketS3RequestHandler<ListOb
                 .setStartAfter(marker)
                 .visit();
 
-        ListBucketResultV1DTO dto = new ListBucketResultV1DTO();
+        ListBucketResultV1Xml dto = new ListBucketResultV1Xml();
         dto.setName(bucketName);
         dto.setPrefix(prefix);
         dto.setMarker(marker);
@@ -52,16 +52,16 @@ public class ListObjectsV1S3RequestHandler extends BucketS3RequestHandler<ListOb
         dto.setEncodingType(encodingType);
         dto.setTruncated(visitor.isTruncated());
         for (String prefix : visitor.getPrefixes()) {
-            CommonPrefixesDTO cpd = new CommonPrefixesDTO();
+            CommonPrefixesXml cpd = new CommonPrefixesXml();
             cpd.setPrefix(prefix);
             dto.getCommonPrefixes().add(cpd);
         }
         for (Path path : visitor.getObjects()) {
             logger.trace("Found: " + path);
-            OwnerDTO od = new OwnerDTO();
+            OwnerXml od = new OwnerXml();
             od.setId(context.getServerId());
             od.setDisplayName(context.getServerId());
-            ContentsDTO cd = new ContentsDTO();
+            ContentsXml cd = new ContentsXml();
             cd.setKey(path.toString());
             cd.setStorageClass(S3Constants.STORAGE_CLASS);
             cd.setOwner(od);

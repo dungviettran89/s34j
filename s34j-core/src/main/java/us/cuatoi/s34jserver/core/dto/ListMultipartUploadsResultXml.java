@@ -5,9 +5,9 @@ import com.google.api.client.util.Key;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListMultipartUploadsResultDTO extends GenericDTO {
+public class ListMultipartUploadsResultXml extends AbstractXml {
     @Key("Upload")
-    List<UploadDTO> uploads = new ArrayList<>();
+    List<UploadXml> uploads = new ArrayList<>();
     @Key("Bucket")
     private String bucketName;
     @Key("KeyMarker")
@@ -23,17 +23,17 @@ public class ListMultipartUploadsResultDTO extends GenericDTO {
     @Key("IsTruncated")
     private boolean isTruncated;
     @Key("CommonPrefixes")
-    private List<PrefixDTO> commonPrefixes = new ArrayList<>();
+    private List<PrefixXml> commonPrefixes = new ArrayList<>();
 
-    public ListMultipartUploadsResultDTO() {
+    public ListMultipartUploadsResultXml() {
         super.name = "ListMultipartUploadsResult";
     }
 
-    public List<UploadDTO> getUploads() {
+    public List<UploadXml> getUploads() {
         return uploads;
     }
 
-    public void setUploads(List<UploadDTO> uploads) {
+    public void setUploads(List<UploadXml> uploads) {
         this.uploads = uploads;
     }
 
@@ -93,11 +93,11 @@ public class ListMultipartUploadsResultDTO extends GenericDTO {
         isTruncated = truncated;
     }
 
-    public List<PrefixDTO> getCommonPrefixes() {
+    public List<PrefixXml> getCommonPrefixes() {
         return commonPrefixes;
     }
 
-    public void setCommonPrefixes(List<PrefixDTO> commonPrefixes) {
+    public void setCommonPrefixes(List<PrefixXml> commonPrefixes) {
         this.commonPrefixes = commonPrefixes;
     }
 }

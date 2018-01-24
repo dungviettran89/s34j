@@ -5,13 +5,13 @@ import com.google.api.client.util.Key;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeleteDTO extends GenericDTO {
+public class DeleteXml extends AbstractXml {
     @Key("Quiet")
     private boolean quiet;
     @Key("Object")
-    private List<DeletedDTO> objects =new ArrayList<>();
+    private List<DeletedXml> objects =new ArrayList<>();
 
-    public DeleteDTO() {
+    public DeleteXml() {
         super.namespaceDictionary.set("", "http://s3.amazonaws.com/doc/2006-03-01/");
         super.name = "Delete";
     }
@@ -24,11 +24,11 @@ public class DeleteDTO extends GenericDTO {
         this.quiet = quiet;
     }
 
-    public List<DeletedDTO> getObjects() {
+    public List<DeletedXml> getObjects() {
         return objects;
     }
 
-    public void setObjects(List<DeletedDTO> objects) {
+    public void setObjects(List<DeletedXml> objects) {
         this.objects = objects;
     }
 }

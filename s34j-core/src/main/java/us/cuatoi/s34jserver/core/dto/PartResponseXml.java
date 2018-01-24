@@ -2,7 +2,7 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class PartResponseDTO extends GenericDTO {
+public class PartResponseXml extends AbstractXml {
     @Key("PartNumber")
     private Long partNumber;
     @Key("ETag")

@@ -2,7 +2,7 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class PostResponseDTO extends GenericDTO{
+public class PostResponseXml extends AbstractXml {
     @Key("Bucket")
     private String bucket;
     @Key("ETag")
@@ -12,7 +12,7 @@ public class PostResponseDTO extends GenericDTO{
     @Key("Location")
     private String location;
 
-    public PostResponseDTO() {
+    public PostResponseXml() {
         super.name="PostResponse";
     }
 

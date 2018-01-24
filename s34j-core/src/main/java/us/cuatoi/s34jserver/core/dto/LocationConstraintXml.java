@@ -2,11 +2,11 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class LocationConstraintDTO extends GenericDTO {
+public class LocationConstraintXml extends AbstractXml {
     @Key(value = "text()")
     private String region;
 
-    public LocationConstraintDTO() {
+    public LocationConstraintXml() {
         super.name = "LocationConstraint";
         super.namespaceDictionary.set("", "http://s3.amazonaws.com/doc/2006-03-01/");
     }

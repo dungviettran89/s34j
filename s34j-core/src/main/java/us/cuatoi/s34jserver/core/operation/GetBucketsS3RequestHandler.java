@@ -2,10 +2,10 @@ package us.cuatoi.s34jserver.core.operation;
 
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
-import us.cuatoi.s34jserver.core.dto.BucketDTO;
-import us.cuatoi.s34jserver.core.dto.BucketsDTO;
-import us.cuatoi.s34jserver.core.dto.ListAllMyBucketsResultDTO;
-import us.cuatoi.s34jserver.core.dto.OwnerDTO;
+import us.cuatoi.s34jserver.core.dto.BucketXml;
+import us.cuatoi.s34jserver.core.dto.BucketsXml;
+import us.cuatoi.s34jserver.core.dto.ListAllMyBucketsResultXml;
+import us.cuatoi.s34jserver.core.dto.OwnerXml;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Request;
 import us.cuatoi.s34jserver.core.model.GetBucketsS3Response;
 
@@ -21,11 +21,11 @@ public class GetBucketsS3RequestHandler extends S3RequestHandler<GetBucketsS3Req
 
     @Override
     public GetBucketsS3Response handle() throws IOException {
-        BucketsDTO b = new BucketsDTO();
+        BucketsXml b = new BucketsXml();
         Files.list(baseDir).forEach((p) -> {
             try {
                 Verifier.verifyBucketName(p.getFileName().toString());
-                BucketDTO br = new BucketDTO();
+                BucketXml br = new BucketXml();
                 br.setName(p.getFileName().toString());
                 br.setCreationDate(getCreationTimeString(p));
                 b.getBucketList().add(br);
@@ -36,11 +36,11 @@ public class GetBucketsS3RequestHandler extends S3RequestHandler<GetBucketsS3Req
             }
         });
 
-        OwnerDTO or = new OwnerDTO();
+        OwnerXml or = new OwnerXml();
         or.setId(context.getServerId());
         or.setDisplayName(context.getServerId());
 
-        ListAllMyBucketsResultDTO content = new ListAllMyBucketsResultDTO();
+        ListAllMyBucketsResultXml content = new ListAllMyBucketsResultXml();
         content.setOwner(or);
         content.setBuckets(b);
         return (GetBucketsS3Response) new GetBucketsS3Response(s3Request).setContent(content);

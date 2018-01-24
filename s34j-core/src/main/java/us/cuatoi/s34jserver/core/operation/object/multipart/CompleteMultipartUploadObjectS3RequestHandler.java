@@ -5,7 +5,7 @@ import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
 import us.cuatoi.s34jserver.core.dto.CompleteMultipartUploadResultDTO;
-import us.cuatoi.s34jserver.core.dto.PartDTO;
+import us.cuatoi.s34jserver.core.dto.PartXml;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
 import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
@@ -33,7 +33,7 @@ public class CompleteMultipartUploadObjectS3RequestHandler
 
         Files.createDirectories(objectFile.getParent());
         try (OutputStream os = Files.newOutputStream(objectFile)) {
-            for (PartDTO part : s3Request.getCompleteMultipartUploadDTO().getParts()) {
+            for (PartXml part : s3Request.getCompleteMultipartUploadXml().getParts()) {
                 try (InputStream is = Files.newInputStream(uploadDir.resolve(part.getPartNumber()))) {
                     IOUtils.copy(is, os);
                 }
@@ -58,8 +58,8 @@ public class CompleteMultipartUploadObjectS3RequestHandler
     }
 
     private void verifyParts() throws IOException {
-        PartDTO lastPart = null;
-        for (PartDTO part : s3Request.getCompleteMultipartUploadDTO().getParts()) {
+        PartXml lastPart = null;
+        for (PartXml part : s3Request.getCompleteMultipartUploadXml().getParts()) {
             Path partFile = uploadDir.resolve(part.getPartNumber());
             if (!Files.exists(partFile)) {
                 throw new S3Exception(ErrorCode.INVALID_PART);

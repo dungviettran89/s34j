@@ -2,7 +2,7 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class ErrorResponseDTO extends GenericDTO {
+public class ErrorResponseXml extends AbstractXml {
     @Key("Code")
     protected String code;
     @Key("Message")
@@ -18,7 +18,7 @@ public class ErrorResponseDTO extends GenericDTO {
     @Key("HostId")
     protected String hostId;
 
-    public ErrorResponseDTO() {
+    public ErrorResponseXml() {
         super.name = "ErrorResponse";
     }
 

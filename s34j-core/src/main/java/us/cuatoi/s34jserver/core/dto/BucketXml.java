@@ -2,13 +2,13 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class BucketDTO extends GenericDTO {
+public class BucketXml extends AbstractXml {
     @Key("Name")
     private String name;
     @Key("CreationDate")
     private String creationDate;
 
-    public BucketDTO() {
+    public BucketXml() {
         super.name = "Bucket";
     }
 

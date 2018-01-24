@@ -2,7 +2,7 @@ package us.cuatoi.s34jserver.core.dto;
 
 import com.google.api.client.util.Key;
 
-public class DeletedDTO extends GenericDTO {
+public class DeletedXml extends AbstractXml {
     @Key("Key")
     private String key;
     @Key("VersionId")

@@ -1,6 +1,5 @@
 package us.cuatoi.s34jserver.core.operation.bucket;
 
-import com.sun.javafx.charts.ChartLayoutAnimator;
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.dto.*;
@@ -10,7 +9,6 @@ import us.cuatoi.s34jserver.core.model.bucket.ListMultipartUploadsBucketS3Respon
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static us.cuatoi.s34jserver.core.S3Constants.METADATA_JSON;
@@ -58,13 +56,13 @@ public class ListMultipartUploadsBucketS3RequestHandler extends BucketS3RequestH
                 .setSuffix(separator + METADATA_JSON)
                 .visit();
 
-        ListMultipartUploadsResultDTO result = new ListMultipartUploadsResultDTO();
+        ListMultipartUploadsResultXml result = new ListMultipartUploadsResultXml();
         result.setBucketName(bucketName);
         result.setMaxUploads(maxUploads);
         result.setKeyMarker(marker);
         result.setUploadIdMarker(uploadIdMarker);
         for (String prefix : visitor.getPrefixes()) {
-            PrefixDTO pd = new PrefixDTO();
+            PrefixXml pd = new PrefixXml();
             pd.setPrefix(prefix);
             result.getCommonPrefixes().add(pd);
         }
@@ -72,13 +70,13 @@ public class ListMultipartUploadsBucketS3RequestHandler extends BucketS3RequestH
         for (Path metadata : visitor.getObjects()) {
             Path upload = metadata.getParent();
             Path object = upload.getParent();
-            OwnerDTO oo = new OwnerDTO();
+            OwnerXml oo = new OwnerXml();
             oo.setDisplayName(context.getServerId());
             oo.setId(context.getServerId());
-            InitiatorDTO io = new InitiatorDTO();
+            InitiatorXml io = new InitiatorXml();
             io.setDisplayName(context.getServerId());
             io.setId(context.getServerId());
-            UploadDTO ud = new UploadDTO();
+            UploadXml ud = new UploadXml();
             ud.setOwner(oo);
             ud.setInitiator(io);
             ud.setStorageClass(S3Constants.STORAGE_CLASS);

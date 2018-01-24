@@ -4,9 +4,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Context;
-import us.cuatoi.s34jserver.core.dto.DeleteErrorDTO;
-import us.cuatoi.s34jserver.core.dto.DeleteResultDTO;
-import us.cuatoi.s34jserver.core.dto.DeletedDTO;
+import us.cuatoi.s34jserver.core.dto.DeleteErrorXml;
+import us.cuatoi.s34jserver.core.dto.DeleteResultXml;
+import us.cuatoi.s34jserver.core.dto.DeletedXml;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
 import us.cuatoi.s34jserver.core.model.bucket.DeleteMultipleObjectsS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.DeleteMultipleObjectsS3Response;
@@ -24,8 +24,8 @@ public class DeleteMultipleObjectsS3RequestHandler
 
     @Override
     public DeleteMultipleObjectsS3Response handle() throws IOException {
-        Set<DeletedDTO> deletedObjects = Sets.newConcurrentHashSet();
-        Set<DeleteErrorDTO> errors = Sets.newConcurrentHashSet();
+        Set<DeletedXml> deletedObjects = Sets.newConcurrentHashSet();
+        Set<DeleteErrorXml> errors = Sets.newConcurrentHashSet();
         s3Request.getDto().getObjects().stream().forEach((o) -> {
             try {
                 Path objectFile = bucketDir.resolve(o.getKey());
@@ -37,14 +37,14 @@ public class DeleteMultipleObjectsS3RequestHandler
                 Files.deleteIfExists(objectFile);
                 logger.info("Deleted " + objectFile);
                 //todo: Handle versions
-                DeletedDTO deleted = new DeletedDTO();
+                DeletedXml deleted = new DeletedXml();
                 deleted.setKey(o.getKey());
                 deleted.setVersionId(o.getVersionId());
                 deletedObjects.add(deleted);
             } catch (IOException e) {
                 logger.warn("Can not delete in bucket " + bucketName);
                 logger.warn("Can not delete key" + o.getKey());
-                DeleteErrorDTO error = new DeleteErrorDTO();
+                DeleteErrorXml error = new DeleteErrorXml();
                 ErrorCode errorCode = ErrorCode.INTERNAL_ERROR;
                 error.setCode(errorCode.getName());
                 error.setMessage(errorCode.getDescription());
@@ -53,7 +53,7 @@ public class DeleteMultipleObjectsS3RequestHandler
                 errors.add(error);
             }
         });
-        DeleteResultDTO result = new DeleteResultDTO();
+        DeleteResultXml result = new DeleteResultXml();
         result.setErrors(Lists.newArrayList(errors));
         if (!s3Request.getDto().isQuiet()) {
             result.setDeleted(Lists.newArrayList(deletedObjects));

@@ -2,24 +2,19 @@ package us.cuatoi.s34jserver.core.operation.bucket;
 
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
-import us.cuatoi.s34jserver.core.dto.CommonPrefixesDTO;
-import us.cuatoi.s34jserver.core.dto.ContentsDTO;
-import us.cuatoi.s34jserver.core.dto.ListBucketResultV2DTO;
-import us.cuatoi.s34jserver.core.dto.OwnerDTO;
-import us.cuatoi.s34jserver.core.helper.DTOHelper;
+import us.cuatoi.s34jserver.core.dto.CommonPrefixesXml;
+import us.cuatoi.s34jserver.core.dto.ContentsXml;
+import us.cuatoi.s34jserver.core.dto.ListBucketResultV2Xml;
+import us.cuatoi.s34jserver.core.dto.OwnerXml;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
 import us.cuatoi.s34jserver.core.model.bucket.ListObjectsV2S3Request;
 import us.cuatoi.s34jserver.core.model.bucket.ListObjectsV2S3Response;
-import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static us.cuatoi.s34jserver.core.S3Constants.METADATA_JSON;
 import static us.cuatoi.s34jserver.core.helper.NumberHelper.parseLong;
-import static us.cuatoi.s34jserver.core.helper.PathHelper.md5HashFile;
 
 public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListObjectsV2S3Request, ListObjectsV2S3Response> {
 
@@ -60,7 +55,7 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
                 .setStartAfter(startAfter)
                 .visit();
 
-        ListBucketResultV2DTO dto = new ListBucketResultV2DTO();
+        ListBucketResultV2Xml dto = new ListBucketResultV2Xml();
         dto.setName(bucketName);
         dto.setMaxKeys(maxKeys);
         dto.setPrefix(prefix);
@@ -71,13 +66,13 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
         dto.setEncodingType(encodingType);
         dto.setNextContinuationToken(visitor.getNextContinuationToken());
         for (String prefix : visitor.getPrefixes()) {
-            CommonPrefixesDTO cpd = new CommonPrefixesDTO();
+            CommonPrefixesXml cpd = new CommonPrefixesXml();
             cpd.setPrefix(prefix);
             dto.getCommonPrefixes().add(cpd);
         }
         for (Path path : visitor.getObjects()) {
             logger.trace("Found: " + path);
-            ContentsDTO cd = new ContentsDTO();
+            ContentsXml cd = new ContentsXml();
             cd.setKey(path.toString());
             cd.setStorageClass(S3Constants.STORAGE_CLASS);
             cd.setOwner(getOwner(path));
@@ -92,9 +87,9 @@ public class ListObjectsV2S3RequestHandler extends BucketS3RequestHandler<ListOb
         return (ListObjectsV2S3Response) new ListObjectsV2S3Response(s3Request).setContent(dto);
     }
 
-    private OwnerDTO getOwner(Path path) {
+    private OwnerXml getOwner(Path path) {
         if ("true".equalsIgnoreCase(fetchOwner)) {
-            OwnerDTO od = new OwnerDTO();
+            OwnerXml od = new OwnerXml();
             od.setId(context.getServerId());
             od.setDisplayName(context.getServerId());
             return od;

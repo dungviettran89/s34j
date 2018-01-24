@@ -2,10 +2,10 @@ package us.cuatoi.s34jserver.core.operation.object.multipart;
 
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
-import us.cuatoi.s34jserver.core.dto.InitiatorDTO;
-import us.cuatoi.s34jserver.core.dto.ListPartsResultDTO;
-import us.cuatoi.s34jserver.core.dto.OwnerDTO;
-import us.cuatoi.s34jserver.core.dto.PartResponseDTO;
+import us.cuatoi.s34jserver.core.dto.InitiatorXml;
+import us.cuatoi.s34jserver.core.dto.ListPartsResultXml;
+import us.cuatoi.s34jserver.core.dto.OwnerXml;
+import us.cuatoi.s34jserver.core.dto.PartResponseXml;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
 import us.cuatoi.s34jserver.core.model.object.multipart.ListPartsObjectS3Request;
 import us.cuatoi.s34jserver.core.model.object.multipart.ListPartsObjectS3Response;
@@ -39,15 +39,15 @@ public class ListPartsObjectS3RequestHandler extends MultipartUploadObjectS3Requ
         logger.info("maxParts=" + maxParts);
         logger.info("partNumberMarker=" + partNumberMarker);
 
-        InitiatorDTO id = new InitiatorDTO();
+        InitiatorXml id = new InitiatorXml();
         id.setDisplayName(context.getServerId());
         id.setId(context.getServerId());
 
-        OwnerDTO od = new OwnerDTO();
+        OwnerXml od = new OwnerXml();
         od.setDisplayName(context.getServerId());
         od.setId(context.getServerId());
 
-        ListPartsResultDTO dto = new ListPartsResultDTO();
+        ListPartsResultXml dto = new ListPartsResultXml();
         dto.setMaxParts(maxParts);
         dto.setBucket(bucketName);
         dto.setEncodingType(encodingType);
@@ -71,7 +71,7 @@ public class ListPartsObjectS3RequestHandler extends MultipartUploadObjectS3Requ
                         return;
                     }
                     if (dto.getParts().size() < maxParts) {
-                        PartResponseDTO prd = new PartResponseDTO();
+                        PartResponseXml prd = new PartResponseXml();
                         prd.setPartNumber(Long.parseLong(partNumber));
                         prd.setLastModified(PathHelper.getLastModifiedStringUnchecked(part));
                         prd.seteTag(getOrCalculateETagUnchecked(part));

@@ -5,7 +5,7 @@ import com.google.api.client.util.Key;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListBucketResultV1DTO extends GenericDTO {
+public class ListBucketResultV1Xml extends AbstractXml {
     @Key("Name")
     private String name;
     @Key("Prefix")
@@ -21,11 +21,11 @@ public class ListBucketResultV1DTO extends GenericDTO {
     @Key("Encoding-Type")
     private String encodingType;
     @Key("Contents")
-    private List<ContentsDTO> contents = new ArrayList<>();
-    @Key("CommonPrefixesDTO")
-    private List<CommonPrefixesDTO> commonPrefixes = new ArrayList<>();
+    private List<ContentsXml> contents = new ArrayList<>();
+    @Key("CommonPrefixes")
+    private List<CommonPrefixesXml> commonPrefixes = new ArrayList<>();
 
-    public ListBucketResultV1DTO() {
+    public ListBucketResultV1Xml() {
         super.name = "ListBucketResult";
     }
 
@@ -79,19 +79,19 @@ public class ListBucketResultV1DTO extends GenericDTO {
         this.nextMarker = nextMarker;
     }
 
-    public List<ContentsDTO> getContents() {
+    public List<ContentsXml> getContents() {
         return contents;
     }
 
-    public void setContents(List<ContentsDTO> contents) {
+    public void setContents(List<ContentsXml> contents) {
         this.contents = contents;
     }
 
-    public List<CommonPrefixesDTO> getCommonPrefixes() {
+    public List<CommonPrefixesXml> getCommonPrefixes() {
         return commonPrefixes;
     }
 
-    public void setCommonPrefixes(List<CommonPrefixesDTO> commonPrefixes) {
+    public void setCommonPrefixes(List<CommonPrefixesXml> commonPrefixes) {
         this.commonPrefixes = commonPrefixes;
     }
 

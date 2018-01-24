@@ -1,6 +1,7 @@
 package us.cuatoi.s34jserver.core.operation.bucket;
 
 import us.cuatoi.s34jserver.core.ErrorCode;
+import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
@@ -16,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static us.cuatoi.s34jserver.core.S3Constants.METADATA_JSON;
+import static us.cuatoi.s34jserver.core.S3Constants.POLICY_JSON;
 import static us.cuatoi.s34jserver.core.helper.PathHelper.md5HashFile;
 
 public abstract class BucketS3RequestHandler<F extends BucketS3Request, T extends S3Response> extends S3RequestHandler<F, T> {
@@ -23,6 +25,7 @@ public abstract class BucketS3RequestHandler<F extends BucketS3Request, T extend
     protected final Path bucketDir;
     protected final String bucketName;
     protected final Path bucketMetadataDir;
+    protected final Path bucketPolicyFile;
     protected final Path bucketUploadDir;
 
     public BucketS3RequestHandler(S3Context context, F s3Request) {
@@ -30,6 +33,7 @@ public abstract class BucketS3RequestHandler<F extends BucketS3Request, T extend
         bucketName = s3Request.getBucketName();
         bucketDir = baseDir.resolve(bucketName);
         bucketMetadataDir = baseMetadataDir.resolve(bucketName);
+        bucketPolicyFile = bucketMetadataDir.resolve(POLICY_JSON);
         bucketUploadDir = baseUploadDir.resolve(bucketName);
         Verifier.verifyBucketName(bucketName);
     }

@@ -3,7 +3,7 @@ package us.cuatoi.s34jserver.core.dto;
 import com.google.api.client.util.Key;
 import us.cuatoi.s34jserver.core.S3Constants;
 
-public class ContentsDTO extends GenericDTO {
+public class ContentsXml extends AbstractXml {
 
     @Key("Key")
     private String key;
@@ -16,9 +16,9 @@ public class ContentsDTO extends GenericDTO {
     @Key("StorageClass")
     private String storageClass = S3Constants.STORAGE_CLASS;
     @Key("Owner")
-    private OwnerDTO owner;
+    private OwnerXml owner;
 
-    public ContentsDTO() {
+    public ContentsXml() {
         super.name = "ListBucketResult";
     }
 
@@ -62,11 +62,11 @@ public class ContentsDTO extends GenericDTO {
         this.storageClass = storageClass;
     }
 
-    public OwnerDTO getOwner() {
+    public OwnerXml getOwner() {
         return owner;
     }
 
-    public void setOwner(OwnerDTO owner) {
+    public void setOwner(OwnerXml owner) {
         this.owner = owner;
     }
 }
