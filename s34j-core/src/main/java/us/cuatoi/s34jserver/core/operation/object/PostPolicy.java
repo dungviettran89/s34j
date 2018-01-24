@@ -6,7 +6,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-class Policy {
+class PostPolicy {
 
     private static GsonBuilder GSON_BUILDER = new GsonBuilder()
             .registerTypeAdapter(Condition.class, new Parser());
@@ -30,8 +30,8 @@ class Policy {
         this.conditions = conditions;
     }
 
-    public static Policy parse(String string) {
-        return GSON_BUILDER.create().fromJson(string, Policy.class);
+    public static PostPolicy parse(String string) {
+        return GSON_BUILDER.create().fromJson(string, PostPolicy.class);
     }
 
     static class Parser implements JsonDeserializer<Condition> {

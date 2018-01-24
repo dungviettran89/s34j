@@ -76,12 +76,12 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
     private void verifyPolicy() throws IOException {
         String policyJson = new String(BaseEncoding.base64().decode(this.policy), UTF_8);
         logger.trace("policyJson=" + policyJson);
-        Policy policy = Policy.parse(policyJson);
-        long expire = S3Constants.EXPIRATION_DATE_FORMAT.parseDateTime(policy.getExpiration()).getMillis();
+        PostPolicy postPolicy = PostPolicy.parse(policyJson);
+        long expire = S3Constants.EXPIRATION_DATE_FORMAT.parseDateTime(postPolicy.getExpiration()).getMillis();
         if (expire < System.currentTimeMillis()) {
             throw new S3Exception(ErrorCode.EXPIRED_TOKEN);
         }
-        for (Policy.Condition condition : policy.getConditions()) {
+        for (PostPolicy.Condition condition : postPolicy.getConditions()) {
             if (condition == null) {
                 continue;
             } else if (equalsAnyIgnoreCase(condition.getOperator(), "eq", "start-with")) {
@@ -142,7 +142,7 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
         }
     }
 
-    private void verify(Policy.Condition condition, String valueToCheck) {
+    private void verify(PostPolicy.Condition condition, String valueToCheck) {
         if (equalsIgnoreCase(condition.getOperator(), "eq") && !StringUtils.equals(condition.getValue(), valueToCheck)) {
             logger.info("ACCESS_DENIED " + condition.getValue() + "!=" + valueToCheck);
             throw new S3Exception(ErrorCode.ACCESS_DENIED);

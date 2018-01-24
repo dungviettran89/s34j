@@ -33,14 +33,14 @@ public class ObjectVisitorTest {
     public void testVisitWithPrefixAndStartAfter() throws Exception {
         test(3,
                 "src/main/java/us/cuatoi/s34jserver/core/operation/bucket",
-                "src/main/java/us/cuatoi/s34jserver/core/operation/bucket/GetLocationBucketS3RequestHandler.java", null, null, null);
+                "src/main/java/us/cuatoi/s34jserver/core/operation/bucket/GetBucketLocationBucketS3RequestHandler.java", null, null, null);
     }
 
     @Test
     public void testVisitWithStartAfter() throws Exception {
         test(3,
                 null,
-                "src/main/java/us/cuatoi/s34jserver/core/operation/bucket/GetLocationBucketS3RequestHandler.java", null, null, null);
+                "src/main/java/us/cuatoi/s34jserver/core/operation/bucket/GetBucketLocationBucketS3RequestHandler.java", null, null, null);
     }
 
     @Test

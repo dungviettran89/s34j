@@ -7,8 +7,8 @@ import us.cuatoi.s34jserver.core.dto.ListPartsResultXml;
 import us.cuatoi.s34jserver.core.dto.OwnerXml;
 import us.cuatoi.s34jserver.core.dto.PartResponseXml;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
-import us.cuatoi.s34jserver.core.model.object.multipart.ListPartsObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.multipart.ListPartsObjectS3Response;
+import us.cuatoi.s34jserver.core.model.object.multipart.ListMultipartUploadPartsS3Request;
+import us.cuatoi.s34jserver.core.model.object.multipart.ListMultipartUploadPartsS3Response;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,13 +19,13 @@ import static us.cuatoi.s34jserver.core.S3Constants.METADATA_JSON;
 import static us.cuatoi.s34jserver.core.S3Constants.STORAGE_CLASS;
 import static us.cuatoi.s34jserver.core.helper.NumberHelper.parseLong;
 
-public class ListPartsObjectS3RequestHandler extends MultipartUploadObjectS3RequestHandler<ListPartsObjectS3Request, ListPartsObjectS3Response> {
+public class ListMultipartUploadPartsS3RequestHandler extends MultipartUploadObjectS3RequestHandler<ListMultipartUploadPartsS3Request, ListMultipartUploadPartsS3Response> {
 
     private final String encodingType;
     private final long maxParts;
     private final String partNumberMarker;
 
-    public ListPartsObjectS3RequestHandler(S3Context context, ListPartsObjectS3Request s3Request) {
+    public ListMultipartUploadPartsS3RequestHandler(S3Context context, ListMultipartUploadPartsS3Request s3Request) {
         super(context, s3Request);
         encodingType = s3Request.getQueryParameter("encoding-type");
         maxParts = parseLong(s3Request.getQueryParameter("max-parts"), 1000);
@@ -33,7 +33,7 @@ public class ListPartsObjectS3RequestHandler extends MultipartUploadObjectS3Requ
     }
 
     @Override
-    protected ListPartsObjectS3Response handleObject() throws IOException {
+    protected ListMultipartUploadPartsS3Response handleObject() throws IOException {
         verifyUploadExists();
         logger.info("encodingType=" + encodingType);
         logger.info("maxParts=" + maxParts);
@@ -86,7 +86,7 @@ public class ListPartsObjectS3RequestHandler extends MultipartUploadObjectS3Requ
         if (!dto.isTruncated()) {
             dto.setNextPartNumberMarker(null);
         }
-        return (ListPartsObjectS3Response) new ListPartsObjectS3Response(s3Request).setContent(dto);
+        return (ListMultipartUploadPartsS3Response) new ListMultipartUploadPartsS3Response(s3Request).setContent(dto);
     }
 
 }

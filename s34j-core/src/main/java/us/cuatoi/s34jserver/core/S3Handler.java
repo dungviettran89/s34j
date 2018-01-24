@@ -77,10 +77,10 @@ public class S3Handler {
             return new GetBucketsS3RequestHandler(context, (GetBucketsS3Request) s3Request);
         } else if (s3Request instanceof PutBucketS3Request) {
             return new PutBucketS3RequestHandler(context, (PutBucketS3Request) s3Request);
-        } else if (s3Request instanceof GetLocationBucketS3Request) {
-            return new GetLocationBucketS3RequestHandler(context, (GetLocationBucketS3Request) s3Request);
-        } else if (s3Request instanceof ListMultipartUploadsBucketS3Request) {
-            return new ListMultipartUploadsBucketS3RequestHandler(context, (ListMultipartUploadsBucketS3Request) s3Request);
+        } else if (s3Request instanceof GetBucketLocationBucketS3Request) {
+            return new GetBucketLocationBucketS3RequestHandler(context, (GetBucketLocationBucketS3Request) s3Request);
+        } else if (s3Request instanceof ListBucketMultipartUploadsS3Request) {
+            return new ListBucketMultipartUploadsS3RequestHandler(context, (ListBucketMultipartUploadsS3Request) s3Request);
         } else if (s3Request instanceof DeleteBucketS3Request) {
             return new DeleteBucketS3RequestHandler(context, (DeleteBucketS3Request) s3Request);
         } else if (s3Request instanceof HeadBucketS3Request) {
@@ -107,8 +107,8 @@ public class S3Handler {
             return new ListObjectsV2S3RequestHandler(context, (ListObjectsV2S3Request) s3Request);
         } else if (s3Request instanceof DeleteMultipleObjectsS3Request) {
             return new DeleteMultipleObjectsS3RequestHandler(context, (DeleteMultipleObjectsS3Request) s3Request);
-        } else if (s3Request instanceof ListPartsObjectS3Request) {
-            return new ListPartsObjectS3RequestHandler(context, (ListPartsObjectS3Request) s3Request);
+        } else if (s3Request instanceof ListMultipartUploadPartsS3Request) {
+            return new ListMultipartUploadPartsS3RequestHandler(context, (ListMultipartUploadPartsS3Request) s3Request);
         } else if (s3Request instanceof PostObjectS3Request) {
             return new PostObjectS3RequestHandler(context, (PostObjectS3Request) s3Request);
         }else if (s3Request instanceof HandlePolicyBucketS3Request) {
