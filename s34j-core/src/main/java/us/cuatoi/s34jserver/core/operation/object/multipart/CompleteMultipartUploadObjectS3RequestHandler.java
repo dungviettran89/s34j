@@ -1,10 +1,12 @@
 package us.cuatoi.s34jserver.core.operation.object.multipart;
 
 import org.apache.commons.io.IOUtils;
+import org.xmlpull.v1.XmlPullParserException;
 import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
 import us.cuatoi.s34jserver.core.dto.CompleteMultipartUploadResultDTO;
+import us.cuatoi.s34jserver.core.dto.CompleteMultipartUploadXml;
 import us.cuatoi.s34jserver.core.dto.PartXml;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
@@ -24,10 +26,13 @@ public class CompleteMultipartUploadObjectS3RequestHandler
         extends MultipartUploadObjectS3RequestHandler<CompleteMultipartUploadObjectS3Request, CompleteMultipartUploadObjectS3Response> {
     public CompleteMultipartUploadObjectS3RequestHandler(S3Context context, CompleteMultipartUploadObjectS3Request s3Request) {
         super(context, s3Request);
+
     }
 
     @Override
-    protected CompleteMultipartUploadObjectS3Response handleObject() throws IOException {
+    protected CompleteMultipartUploadObjectS3Response handleObject() throws IOException, XmlPullParserException {
+        CompleteMultipartUploadXml dto = DTOHelper.parseXmlContent(s3Request.getContent(), new CompleteMultipartUploadXml());
+        s3Request.setCompleteMultipartUploadXml(dto);
         verifyUploadExists();
         verifyParts();
 

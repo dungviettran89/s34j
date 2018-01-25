@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import us.cuatoi.s34jserver.core.auth.AWS4SignerForChunkedUpload;
 import us.cuatoi.s34jserver.core.auth.S3RequestVerifier;
 import us.cuatoi.s34jserver.core.model.S3Request;
+import us.cuatoi.s34jserver.core.model.bucket.BucketS3Request;
+import us.cuatoi.s34jserver.core.model.object.ObjectS3Request;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -16,8 +18,6 @@ import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -43,14 +43,12 @@ public class S3RequestParserVerifier {
     }
 
     public S3Request execute() throws Exception {
-        parseHeaders();
-
+        s3Request = parseHeaders();
+        verifier.setS3Request(s3Request).verifyHeaders();
         if (!equalsIgnoreCase(request.getMethod(), "get")) {
             parseContent();
         }
-
-        //Detect request type
-        return new S3RequestDetector(s3Request).detectRequest();
+        return s3Request;
     }
 
     private void parseContent() throws IOException, ServletException {
@@ -122,16 +120,6 @@ public class S3RequestParserVerifier {
         logger.trace("Saved to " + content);
     }
 
-    private long readContentLength() {
-        long contentLength = 0;
-        try {
-            contentLength = Long.parseLong(s3Request.getHeader("content-length"));
-        } catch (NumberFormatException ex) {
-            throw new S3Exception(ErrorCode.MISSING_CONTENT_LENGTH);
-        }
-        return contentLength;
-    }
-
     private void parseSingleChunk() throws IOException {
         Path content = Files.createTempFile(s3Request.getRequestId() + ".", ".tmp");
         Files.copy(request.getInputStream(), content, StandardCopyOption.REPLACE_EXISTING);
@@ -139,7 +127,7 @@ public class S3RequestParserVerifier {
         verifier.verifySingleChunk();
     }
 
-    private void parseHeaders() throws URISyntaxException, IOException, ServletException {
+    private S3Request parseHeaders() throws Exception {
         s3Request.setMethod(request.getMethod())
                 .setUri(request.getRequestURI())
                 .setUrl(request.getRequestURL().toString())
@@ -164,6 +152,19 @@ public class S3RequestParserVerifier {
                 }
             }
         }
-        verifier.verifyHeaders();
+        //Detect bucket name and object name
+        String uri = s3Request.getUri();
+        int slashCount = countMatches(uri, '/');
+        if (slashCount == 1) {
+            String bucketName = substring(uri, 1);
+            s3Request = new BucketS3Request(s3Request).setBucketName(bucketName);
+        } else {
+            int secondSlash = indexOf(uri, '/', 2);
+            String bucketName = substring(uri, 1, secondSlash);
+            String objectName = substring(uri, secondSlash + 1);
+            s3Request = new ObjectS3Request(s3Request).setObjectName(objectName).setBucketName(bucketName);
+        }
+
+        return new S3RequestDetector(s3Request).detectRequest();
     }
 }

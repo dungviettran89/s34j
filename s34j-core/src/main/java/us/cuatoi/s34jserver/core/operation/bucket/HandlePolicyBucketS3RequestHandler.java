@@ -27,7 +27,7 @@ public class HandlePolicyBucketS3RequestHandler extends BucketS3RequestHandler<H
         } else if (equalsIgnoreCase(s3Request.getMethod(), "delete")) {
             return handleDelete();
         }
-        throw new S3Exception(ErrorCode.NOT_IMPLEMENTED);
+        throw new S3Exception(ErrorCode.METHOD_NOT_ALLOWED);
     }
 
     private HandlePolicyBucketS3Response handleDelete() throws IOException {

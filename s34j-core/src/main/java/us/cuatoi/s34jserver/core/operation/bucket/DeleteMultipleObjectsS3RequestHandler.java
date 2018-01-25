@@ -2,11 +2,14 @@ package us.cuatoi.s34jserver.core.operation.bucket;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.xmlpull.v1.XmlPullParserException;
 import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.dto.DeleteErrorXml;
 import us.cuatoi.s34jserver.core.dto.DeleteResultXml;
+import us.cuatoi.s34jserver.core.dto.DeleteXml;
 import us.cuatoi.s34jserver.core.dto.DeletedXml;
+import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
 import us.cuatoi.s34jserver.core.model.bucket.DeleteMultipleObjectsS3Request;
 import us.cuatoi.s34jserver.core.model.bucket.DeleteMultipleObjectsS3Response;
@@ -23,7 +26,9 @@ public class DeleteMultipleObjectsS3RequestHandler
     }
 
     @Override
-    public DeleteMultipleObjectsS3Response handle() throws IOException {
+    public DeleteMultipleObjectsS3Response handle() throws IOException, XmlPullParserException {
+        DeleteXml dto = DTOHelper.parseXmlContent(s3Request.getContent(), new DeleteXml());
+        s3Request.setDto(dto);
         Set<DeletedXml> deletedObjects = Sets.newConcurrentHashSet();
         Set<DeleteErrorXml> errors = Sets.newConcurrentHashSet();
         s3Request.getDto().getObjects().stream().forEach((o) -> {

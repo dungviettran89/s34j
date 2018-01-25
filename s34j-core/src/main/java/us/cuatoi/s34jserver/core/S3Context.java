@@ -36,4 +36,12 @@ public abstract class S3Context {
         this.serverId = serverId;
         return this;
     }
+
+    public Path getBaseMetadataDir() {
+        return basePath.resolve(S3Constants.WORK_DIR).resolve(S3Constants.METADATA_DIR);
+    }
+
+    public Path getBaseUploadDir() {
+        return basePath.resolve(S3Constants.WORK_DIR).resolve(S3Constants.UPLOAD_DIR);
+    }
 }

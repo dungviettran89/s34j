@@ -1,6 +1,6 @@
 package us.cuatoi.s34jserver.core.operation.object;
 
-import com.google.common.collect.Lists;
+import org.xmlpull.v1.XmlPullParserException;
 import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.S3Context;
@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
 import java.util.function.BiConsumer;
 
 import static java.nio.file.Files.getLastModifiedTime;
@@ -45,12 +43,12 @@ public abstract class ObjectS3RequestHandler<F extends ObjectS3Request, T extend
     }
 
     @Override
-    public T handle() throws IOException {
+    public T handle() throws IOException, XmlPullParserException {
         verifyBucketExists();
         return handleObject();
     }
 
-    protected abstract T handleObject() throws IOException;
+    protected abstract T handleObject() throws IOException, XmlPullParserException;
 
     protected String calculateETag() throws IOException {
         return calculateETag(objectFile);

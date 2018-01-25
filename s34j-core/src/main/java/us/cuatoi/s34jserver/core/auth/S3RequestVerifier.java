@@ -1,6 +1,8 @@
 package us.cuatoi.s34jserver.core.auth;
 
 import com.google.common.io.BaseEncoding;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -9,8 +11,10 @@ import org.slf4j.LoggerFactory;
 import us.cuatoi.s34jserver.core.ErrorCode;
 import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Exception;
+import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
 import us.cuatoi.s34jserver.core.model.S3Request;
+import us.cuatoi.s34jserver.core.model.bucket.BucketS3Request;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -28,6 +32,7 @@ import java.util.List;
 import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34jserver.core.ErrorCode.AUTHORIZATION_HEADER_MALFORMED;
 import static us.cuatoi.s34jserver.core.ErrorCode.MISSING_SECURITY_HEADER;
+import static us.cuatoi.s34jserver.core.S3Constants.POLICY_JSON;
 import static us.cuatoi.s34jserver.core.auth.AWS4SignerForChunkedUpload.STREAMING_BODY_SHA256;
 import static us.cuatoi.s34jserver.core.helper.PathHelper.md5HashFileToByte;
 
@@ -40,6 +45,11 @@ public class S3RequestVerifier {
     public S3RequestVerifier(S3Context context, S3Request s3Request) {
         this.context = context;
         this.s3Request = s3Request;
+    }
+
+    public S3RequestVerifier setS3Request(S3Request s3Request) {
+        this.s3Request = s3Request;
+        return this;
     }
 
     @SuppressWarnings("deprecation")
@@ -67,7 +77,10 @@ public class S3RequestVerifier {
         }
     }
 
-    public void verifyHeaders() {
+    public void verifyHeaders() throws IOException {
+        //Verify bucket policy
+        BucketPolicy policy = loadBucketPolicy();
+
         URL url = newURLUnchecked(s3Request.getUrl());
 
         String authorizationHeader = s3Request.getHeader("authorization");
@@ -197,6 +210,34 @@ public class S3RequestVerifier {
             throw new S3Exception(ErrorCode.SIGNATURE_DOES_NOT_MATCH);
         }
 
+    }
+
+    private BucketPolicy loadBucketPolicy() throws IOException {
+        if (!(s3Request instanceof BucketS3Request)) {
+            return null;
+        }
+        BucketS3Request request = (BucketS3Request) s3Request;
+
+        String bucketName = request.getBucketName();
+        if (isBlank(bucketName)) {
+            return null;
+        }
+        Path policyPath = context.getBaseMetadataDir().resolve(bucketName).resolve(POLICY_JSON);
+        if (!Files.exists(policyPath)) {
+            return null;
+        }
+
+        JsonObject json = DTOHelper.fromJson(policyPath, JsonObject.class);
+        if (!json.has("Statement")) {
+            return null;
+        }
+        if (!json.get("Statement").isJsonArray()) {
+            return null;
+        }
+        JsonArray statements = json.getAsJsonArray("Statement");
+
+
+        return null;
     }
 
     private Date getRequestDate(String amzDateHeader) {
