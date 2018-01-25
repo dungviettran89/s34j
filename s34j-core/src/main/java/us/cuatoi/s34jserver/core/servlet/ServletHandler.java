@@ -187,7 +187,9 @@ public class ServletHandler {
         servletResponse.setHeader("x-amz-version-id", "1.0");
         response.getHeaders().forEach(servletResponse::setHeader);
         servletResponse.setStatus(response.getStatus());
-        servletResponse.setContentType(response.getContentType());
+        if (isNotBlank(response.getContentType())) {
+            servletResponse.setContentType(response.getContentType());
+        }
         Object content = response.getContent();
         if (content instanceof Path) {
             try (InputStream is = Files.newInputStream((Path) content)) {
