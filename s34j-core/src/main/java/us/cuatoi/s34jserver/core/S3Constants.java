@@ -14,7 +14,7 @@ public class S3Constants {
     public static final String ISO8601BasicFormat = "yyyyMMdd'T'HHmmss'Z'";
     public static final String DateStringFormat = "yyyyMMdd";
 
-    public static final String CONTENT_TYPE = "application/xml; charset=utf-8";
+    public static final String CONTENT_TYPE_XML = "application/xml; charset=utf-8";
     public static final String WORK_DIR = ".s34j";
     public static final String METADATA_DIR = "metadata";
     public static final String UPLOAD_DIR = "upload";

@@ -16,8 +16,8 @@ public abstract class S3RequestHandler<F extends S3Request, T extends S3Response
     protected final Path baseDir;
     protected final Path baseMetadataDir;
     protected final Path baseUploadDir;
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
     protected final String separator;
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     public S3RequestHandler(S3Context context, F s3Request) {
         this.context = context;

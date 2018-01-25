@@ -8,7 +8,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
-public class InitiateMultipartUploadObjectS3RequestHandlerTest {
+public class InitiateMultipartUploadObjectS3RequestBuilderTest {
     @Test
     public void testGenerateId() throws Exception {
         List<String> ids = new ArrayList<>();

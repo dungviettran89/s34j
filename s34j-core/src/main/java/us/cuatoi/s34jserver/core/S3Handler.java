@@ -132,7 +132,7 @@ public class S3Handler {
                 IOUtils.copy(is, response.getOutputStream());
             }
         } else if (s3Response.getContent() != null) {
-            response.setContentType(S3Constants.CONTENT_TYPE);
+            response.setContentType(S3Constants.CONTENT_TYPE_XML);
             response.getWriter().write(s3Response.getContent().toString());
             logger.debug("Content=" + s3Response.getContent().toString());
         }
