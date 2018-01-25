@@ -213,6 +213,7 @@ public class ServletHandler {
     }
 
     private void parseQueryParameters(HttpServletRequest servletRequest, Request request) throws URISyntaxException {
+        request.setUrl(servletRequest.getRequestURL().toString());
         String url = buildFullUrl(servletRequest);
         Map<String, String> queryParameters = new HashMap<>();
         for (NameValuePair pair : URLEncodedUtils.parse(new URI(url), UTF_8)) {

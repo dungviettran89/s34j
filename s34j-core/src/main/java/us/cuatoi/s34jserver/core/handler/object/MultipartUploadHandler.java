@@ -2,6 +2,7 @@ package us.cuatoi.s34jserver.core.handler.object;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.BaseEncoding;
+import org.apache.commons.io.IOUtils;
 import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.dto.*;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
@@ -12,6 +13,8 @@ import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
 import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -61,13 +64,63 @@ public class MultipartUploadHandler extends ObjectHandler {
             case "get":
                 return listPart();
             case "post":
-                return initiateMultipartUpload();
+                return isBlank(request.getHeader("uploadId")) ?
+                        initiateMultipartUpload() :
+                        completeMultipartUpload();
             case "put":
                 return uploadPart();
             case "delete":
                 return abortUpload();
             default:
                 throw new S3Exception(ErrorCode.NOT_IMPLEMENTED);
+        }
+    }
+
+    private Response completeMultipartUpload() throws Exception {
+        CompleteMultipartUploadXml dto = DTOHelper.parseXmlContent(request.getContent(), new CompleteMultipartUploadXml());
+        verifyUploadExists();
+        verifyParts(dto);
+
+        Files.createDirectories(objectFile.getParent());
+        try (OutputStream os = Files.newOutputStream(objectFile)) {
+            for (PartXml part : dto.getParts()) {
+                try (InputStream is = Files.newInputStream(uploadDir.resolve(part.getPartNumber()))) {
+                    IOUtils.copy(is, os);
+                }
+            }
+        }
+        logger.info("Created " + objectFile);
+
+        String eTag = calculateETag();
+        ObjectMetadata metadata = DTOHelper.fromJson(uploadMetadataFile, ObjectMetadata.class);
+        metadata.seteTag(eTag);
+        saveMetadata(metadata);
+
+        PathHelper.deleteDir(uploadDir);
+
+        CompleteMultipartUploadResultDTO content = new CompleteMultipartUploadResultDTO();
+        content.setBucket(bucketName);
+        content.setKey(objectName);
+        content.seteTag(eTag);
+        content.setLocation(request.getUrl());
+        return new Response()
+                .setContent(content).setHeader("ETag", eTag);
+    }
+
+    private void verifyParts(CompleteMultipartUploadXml dto) throws IOException {
+        PartXml lastPart = null;
+        for (PartXml part : dto.getParts()) {
+            Path partFile = uploadDir.resolve(part.getPartNumber());
+            if (!Files.exists(partFile)) {
+                throw new S3Exception(ErrorCode.INVALID_PART);
+            }
+            if (!equalsIgnoreCase(part.geteTag(), getOrCalculateETag(partFile))) {
+                throw new S3Exception(ErrorCode.INVALID_PART);
+            }
+            if (lastPart != null && Integer.parseInt(part.getPartNumber()) <= Integer.parseInt(lastPart.getPartNumber())) {
+                throw new S3Exception(ErrorCode.INVALID_PART_ORDER);
+            }
+            lastPart = part;
         }
     }
 

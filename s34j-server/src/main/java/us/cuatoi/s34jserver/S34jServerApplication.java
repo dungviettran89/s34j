@@ -1,6 +1,7 @@
 package us.cuatoi.s34jserver;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,16 +9,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import us.cuatoi.s34jserver.core.S3Context;
 import us.cuatoi.s34jserver.core.S3Servlet;
+import us.cuatoi.s34jserver.core.servlet.SimpleStorageServlet;
 
 import javax.servlet.MultipartConfigElement;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+import java.util.HashMap;
 
 @SpringBootApplication
 public class S34jServerApplication {
@@ -34,29 +32,23 @@ public class S34jServerApplication {
 
     @Bean
     public ServletRegistrationBean servletRegistrationBean() throws IOException {
-        Path basePath = Paths.get(path);
-        S3Context s3Context = new S3Context(basePath) {
-            @Override
-            public String getSecretKey(String accessKey) {
-                if (equalsIgnoreCase(accessKey, S34jServerApplication.this.accessKey)) {
-                    return S34jServerApplication.this.secretKey;
-                } else {
-                    return String.valueOf(System.currentTimeMillis());
-                }
-            }
-        }.setRegion(region);
+        HashMap<String, String> parameters = Maps.newHashMap();
+        parameters.put("region", region);
+        parameters.put("secretKey", secretKey);
+        parameters.put("accessKey", accessKey);
+        parameters.put("path", path);
         String uploadDir = Files.createTempDirectory("upload").toAbsolutePath().toString();
         MultipartConfigElement mce = new MultipartConfigElement(uploadDir);
-        S3Servlet s3Servlet = new S3Servlet(s3Context);
         ServletRegistrationBean registration = new ServletRegistrationBean();
         registration.setName(S3Servlet.class.getSimpleName());
-        registration.setServlet(s3Servlet);
+        registration.setServlet(new SimpleStorageServlet());
         registration.setLoadOnStartup(1);
         registration.setMultipartConfig(mce);
         registration.setUrlMappings(Lists.newArrayList("/*"));
+        registration.setInitParameters(parameters);
 
         logger.warn("starting S34J server.");
-        logger.warn("path=" + basePath.toUri());
+        logger.warn("path=" + path);
         logger.warn("accessKey=" + accessKey);
         logger.warn("secretKey=" + secretKey);
         logger.warn("region=" + region);
