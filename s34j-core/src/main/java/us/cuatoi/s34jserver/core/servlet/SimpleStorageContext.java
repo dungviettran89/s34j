@@ -8,7 +8,8 @@ public class SimpleStorageContext implements StorageContext {
     private Path baseDir;
     private String accessKey;
     private String secretKey;
-    private String serverId;
+    private String serverId = "s34j";
+    private String region = "us-central-1";
 
     /* Getters */
     @Override
@@ -29,7 +30,12 @@ public class SimpleStorageContext implements StorageContext {
         return serverId;
     }
 
+    @Override
+    public String getRegion() {
+        return region;
+    }
     /* Setters */
+
     public SimpleStorageContext setBaseDir(Path baseDir) {
         this.baseDir = baseDir;
         return this;
@@ -49,8 +55,13 @@ public class SimpleStorageContext implements StorageContext {
         this.serverId = serverId;
         return this;
     }
+    public SimpleStorageContext setRegion(String region) {
+        this.region = region;
+        return this;
+    }
 
     /* Others */
+
     @Override
     public String getSecretKey(String accessKey) {
         return secretKey;

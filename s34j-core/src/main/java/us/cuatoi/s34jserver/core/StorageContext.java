@@ -11,4 +11,6 @@ public interface StorageContext {
 
     /* Others */
     String getSecretKey(String accessKey);
+
+    String getRegion();
 }

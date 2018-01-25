@@ -1,6 +1,5 @@
 package us.cuatoi.s34jserver.core.handler.bucket;
 
-import org.apache.commons.lang3.StringUtils;
 import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
@@ -13,9 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.lowerCase;
+import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34jserver.core.S3Constants.METADATA_JSON;
 import static us.cuatoi.s34jserver.core.S3Constants.POLICY_JSON;
 import static us.cuatoi.s34jserver.core.helper.PathHelper.md5HashFile;
@@ -108,7 +105,8 @@ public class BucketHandler extends BaseHandler {
         public boolean canHandle(Request request) {
             boolean ok = isNotBlank(request.getBucketName());
             ok = ok && !equalsIgnoreCase(request.getMethod(), "get");
-            ok = ok && !StringUtils.containsAny(request.getQueryString(), "location", "uploads", "policy");
+            ok = ok && !containsAny(request.getQueryString(),
+                    "location", "uploads", "policy", "delete");
             return ok;
         }
 

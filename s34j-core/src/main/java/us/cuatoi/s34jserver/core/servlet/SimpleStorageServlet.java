@@ -29,6 +29,12 @@ public class SimpleStorageServlet extends HttpServlet {
         if (isBlank(serverId)) {
             serverId = "s34j";
         }
+
+        String region = config.getInitParameter("region");
+        if (isBlank(region)) {
+            region = "us-central-1";
+        }
+
         String accessKey = config.getInitParameter("accessKey");
         String secretKey = config.getInitParameter("secretKey");
         if (isAnyBlank(accessKey, secretKey)) {
@@ -40,6 +46,7 @@ public class SimpleStorageServlet extends HttpServlet {
         context.setAccessKey(accessKey);
         context.setSecretKey(secretKey);
         context.setServerId(serverId);
+        context.setRegion(region);
         handler = new ServletHandler(context);
     }
 

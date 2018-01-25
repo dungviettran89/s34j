@@ -24,13 +24,11 @@ public class S3RequestDetector {
             hasOnlyAuthParameter = hasOnlyAuthParameter && startsWith(name, "X-Amz-");
         }
         if (s3Request instanceof ObjectS3Request) {
-            String uploadIdParameter = s3Request.getQueryParameter("uploadId");
-            boolean isMultipartRequest = uploadIdParameter != null;
             if (equalsIgnoreCase(method, "put") && hasOnlyAuthParameter) {
                 return new PutObjectS3Request(s3Request);
             } else if (equalsIgnoreCase(method, "delete") && hasOnlyAuthParameter) {
                 return new DeleteObjectS3Request(s3Request);
-            } else if (equalsIgnoreCase(method, "get") && !isMultipartRequest) {
+            } else if (equalsIgnoreCase(method, "get") && !(s3Request.getQueryParameter("uploadId") != null)) {
                 return new GetObjectS3Request(s3Request);
             } else if (equalsIgnoreCase(method, "head") && hasOnlyAuthParameter) {
                 return new HeadObjectS3Request(s3Request);
@@ -38,13 +36,13 @@ public class S3RequestDetector {
                 return new PostObjectS3Request(s3Request);
             } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("uploads") != null) {
                 return new InitiateMultipartUploadObjectS3Request(s3Request);
-            } else if (equalsIgnoreCase(method, "put") && isMultipartRequest) {
+            } else if (equalsIgnoreCase(method, "put") && s3Request.getQueryParameter("uploadId") != null) {
                 return new UploadPartObjectS3Request(s3Request);
-            } else if (equalsIgnoreCase(method, "delete") && isMultipartRequest) {
+            } else if (equalsIgnoreCase(method, "delete") && s3Request.getQueryParameter("uploadId") != null) {
                 return new AbortMultipartUploadObjectS3Request(s3Request);
-            } else if (equalsIgnoreCase(method, "get") && isMultipartRequest) {
+            } else if (equalsIgnoreCase(method, "get") && s3Request.getQueryParameter("uploadId") != null) {
                 return new ListMultipartUploadPartsS3Request(s3Request);
-            } else if (equalsIgnoreCase(method, "post") && isMultipartRequest) {
+            } else if (equalsIgnoreCase(method, "post") && s3Request.getQueryParameter("uploadId") != null) {
                 return new CompleteMultipartUploadObjectS3Request(s3Request);
             }
         } else if (s3Request instanceof BucketS3Request) {

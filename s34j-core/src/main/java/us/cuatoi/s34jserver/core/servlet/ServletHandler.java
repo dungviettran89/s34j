@@ -15,9 +15,10 @@ import us.cuatoi.s34jserver.core.dto.AbstractXml;
 import us.cuatoi.s34jserver.core.dto.ErrorResponseXml;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
 import us.cuatoi.s34jserver.core.handler.GetBucketsHandler;
-import us.cuatoi.s34jserver.core.handler.bucket.BucketHandler;
-import us.cuatoi.s34jserver.core.handler.bucket.ListObjectsV1Handler;
-import us.cuatoi.s34jserver.core.handler.bucket.ListObjectsV2Handler;
+import us.cuatoi.s34jserver.core.handler.bucket.*;
+import us.cuatoi.s34jserver.core.handler.object.MultipartUploadHandler;
+import us.cuatoi.s34jserver.core.handler.object.ObjectHandler;
+import us.cuatoi.s34jserver.core.handler.object.PutObjectHandler;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -52,6 +53,11 @@ public class ServletHandler {
         handlers.add(new BucketHandler.Builder());
         handlers.add(new ListObjectsV1Handler.Builder());
         handlers.add(new ListObjectsV2Handler.Builder());
+        handlers.add(new DeleteMultipleObjectsHandler.Builder());
+        handlers.add(new PolicyBucketHandler.Builder());
+        handlers.add(new ObjectHandler.Builder());
+        handlers.add(new PutObjectHandler.Builder());
+        handlers.add(new MultipartUploadHandler.Builder());
     }
 
     public boolean service(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
@@ -179,6 +185,7 @@ public class ServletHandler {
         traceMultiline(logger, "Response=" + response);
         servletResponse.setHeader("x-amz-request-id", request.getRequestId());
         servletResponse.setHeader("x-amz-version-id", "1.0");
+        response.getHeaders().forEach(servletResponse::setHeader);
         servletResponse.setStatus(response.getStatus());
         servletResponse.setContentType(response.getContentType());
         Object content = response.getContent();
