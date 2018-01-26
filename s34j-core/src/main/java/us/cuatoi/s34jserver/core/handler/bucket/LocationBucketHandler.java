@@ -33,6 +33,7 @@ public class LocationBucketHandler extends BucketHandler {
         @Override
         public boolean canHandle(Request request) {
             boolean ok = isNotBlank(request.getBucketName());
+            ok = ok && isBlank(request.getObjectName());
             ok = ok && !contains(request.getQueryString(), "location");
             return ok;
         }

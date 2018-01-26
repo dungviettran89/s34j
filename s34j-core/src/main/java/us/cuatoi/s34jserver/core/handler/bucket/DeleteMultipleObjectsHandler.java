@@ -68,7 +68,8 @@ public class DeleteMultipleObjectsHandler extends BucketHandler {
         @Override
         public boolean canHandle(Request request) {
             boolean ok = isNotBlank(request.getBucketName());
-            ok = ok && equalsIgnoreCase(request.getMethod(), "delete");
+            ok = ok && isBlank(request.getObjectName());
+            ok = ok && equalsIgnoreCase(request.getMethod(), "post");
             ok = ok && contains(request.getQueryString(), "delete");
             return ok;
         }

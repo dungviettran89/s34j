@@ -6,7 +6,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-class PostPolicy {
+public class PostPolicy {
 
     private static GsonBuilder GSON_BUILDER = new GsonBuilder()
             .registerTypeAdapter(Condition.class, new Parser());
@@ -66,7 +66,7 @@ class PostPolicy {
         }
     }
 
-    static class Condition {
+    public static class Condition {
         private String field;
         private String operator;
         private String value;

@@ -51,7 +51,7 @@ public class PutObjectHandler extends ObjectHandler {
         }
     }
 
-    private Response saveNewObject() throws Exception {
+    private Response copyObject() throws Exception {
         Path sourceObject = baseDir.resolve(copySource);
         Path sourceMetadata = baseMetadataDir.resolve(copySource).resolve(METADATA_JSON);
 
@@ -116,7 +116,7 @@ public class PutObjectHandler extends ObjectHandler {
         return new Response().setContent(dto);
     }
 
-    private Response copyObject() throws Exception {
+    private Response saveNewObject() throws Exception {
         String eTag = saveObjectAndMetadata();
         return new Response().setHeader("ETag", eTag);
     }
@@ -129,6 +129,7 @@ public class PutObjectHandler extends ObjectHandler {
             ok = ok && equalsIgnoreCase(request.getMethod(), "put");
             ok = ok && !containsAny(request.getQueryString(), "uploads", "uploadId");
             ok = ok && request.getFormParameter("fileName") == null;
+
             return ok;
         }
 

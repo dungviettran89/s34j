@@ -64,7 +64,7 @@ public class MultipartUploadHandler extends ObjectHandler {
             case "get":
                 return listPart();
             case "post":
-                return isBlank(request.getHeader("uploadId")) ?
+                return isBlank(request.getQueryParameter("uploadId")) ?
                         initiateMultipartUpload() :
                         completeMultipartUpload();
             case "put":
@@ -267,7 +267,7 @@ public class MultipartUploadHandler extends ObjectHandler {
 
         @Override
         public BaseHandler create(SimpleStorageContext context, Request request) {
-            return new ObjectHandler(context, request);
+            return new MultipartUploadHandler(context, request);
         }
     }
 }

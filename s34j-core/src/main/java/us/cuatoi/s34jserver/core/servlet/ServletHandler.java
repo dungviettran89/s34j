@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -61,6 +60,7 @@ public class ServletHandler {
     }
 
     public boolean service(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
+        logger.debug("=========== " + servletRequest.getMethod() + " " + buildFullUrl(servletRequest) + " ==================");
         Request request = new Request();
         request.setServerId(context.getServerId());
         request.setRequestId(UUID.randomUUID().toString());
@@ -68,7 +68,7 @@ public class ServletHandler {
         try {
             ServletParserVerifier parserVerifier = new ServletParserVerifier(context, request);
             parseObjectInformation(servletRequest, request);
-            parseQueryParameters(servletRequest, request);
+            parseParameters(servletRequest, request);
             parseHeaders(servletRequest, request);
 
             BaseHandler.Builder builder = findHandler(request);
@@ -97,15 +97,18 @@ public class ServletHandler {
 
     private Request parseContent(ServletParserVerifier parserVerifier, HttpServletRequest servletRequest, Request request) throws IOException, ServletException {
         String contentEncoding = request.getHeader("content-encoding");
-        boolean multipart = equalsIgnoreCase(request.getMethod(), "post") &&
-                contains(request.getHeader("content-type"), "multipart/form-data");
         if (equalsIgnoreCase("aws-chunked", contentEncoding)) {
             return parseMultipleChunk(parserVerifier, servletRequest, request);
-        } else if (multipart) {
+        } else if (isMultipart(request)) {
             return parseMultiPartFormData(servletRequest, request);
         } else {
             return parseSingleChunk(parserVerifier, servletRequest, request);
         }
+    }
+
+    private boolean isMultipart(Request request) {
+        return equalsIgnoreCase(request.getMethod(), "post") &&
+                contains(request.getHeader("content-type"), "multipart/form-data");
     }
 
     private Request parseSingleChunk(ServletParserVerifier verifier, HttpServletRequest servletRequest, Request request) throws IOException {
@@ -184,23 +187,22 @@ public class ServletHandler {
         traceMultiline(logger, "Request=" + request);
         traceMultiline(logger, "Response=" + response);
         servletResponse.setHeader("x-amz-request-id", request.getRequestId());
-        servletResponse.setHeader("x-amz-version-id", "1.0");
+        servletResponse.setHeader("x-amz-id-2", request.getRequestId() + "-" + System.currentTimeMillis());
+        servletResponse.setHeader("Server", request.getServerId());
         response.getHeaders().forEach(servletResponse::setHeader);
         servletResponse.setStatus(response.getStatus());
-        if (isNotBlank(response.getContentType())) {
-            servletResponse.setContentType(response.getContentType());
-        }
         Object content = response.getContent();
         if (content instanceof Path) {
+            servletResponse.setContentLengthLong(Files.size((Path) content));
             try (InputStream is = Files.newInputStream((Path) content)) {
                 IOUtils.copy(is, servletResponse.getOutputStream());
             }
         } else if (contains(response.getContentType(), "json")) {
             new Gson().toJson(content, servletResponse.getWriter());
+            servletResponse.setContentType(response.getContentType());
         } else if (content instanceof AbstractXml) {
             servletResponse.getWriter().write(content.toString());
-        } else {
-            logger.error("Unknown content type. Content=" + content);
+            servletResponse.setContentType(response.getContentType());
         }
         return true;
     }
@@ -214,7 +216,7 @@ public class ServletHandler {
         return null;
     }
 
-    private void parseQueryParameters(HttpServletRequest servletRequest, Request request) throws URISyntaxException {
+    private void parseParameters(HttpServletRequest servletRequest, Request request) throws Exception {
         request.setUrl(servletRequest.getRequestURL().toString());
         String url = buildFullUrl(servletRequest);
         Map<String, String> queryParameters = new HashMap<>();
@@ -225,6 +227,25 @@ public class ServletHandler {
             logger.trace("query.parameter." + name + "=" + value);
         }
         request.setQueryParameters(queryParameters);
+
+        Map<String, String> formParameters = new HashMap<>();
+        for (String name : Collections.list(servletRequest.getParameterNames())) {
+            if (!queryParameters.containsKey(name)) {
+                formParameters.put(name, servletRequest.getParameter(name));
+            }
+        }
+
+        if (isMultipart(request)) {
+            for (Part part : servletRequest.getParts()) {
+                if (isBlank(part.getSubmittedFileName())) {
+                    String name = part.getName();
+                    String value = IOUtils.toString(part.getInputStream(), UTF_8);
+                    logger.trace("MutiPart Form Data: " + name + "=" + value);
+                    formParameters.put(name, value);
+                }
+            }
+        }
+        request.setFormParameters(formParameters);
     }
 
     private void parseObjectInformation(HttpServletRequest servletRequest, Request request) {
@@ -234,7 +255,9 @@ public class ServletHandler {
         logger.trace("uri=" + uri);
         String bucketName = null;
         String objectName = null;
-        if (!equalsIgnoreCase(uri, "/") && indexOf(uri, '/', 1) < 0) {
+        if (equalsIgnoreCase(uri, "/")) {
+            logger.trace("Root request");
+        } else if (!equalsIgnoreCase(uri, "/") && indexOf(uri, '/', 1) < 0) {
             bucketName = substring(uri, 1);
             logger.trace("bucketName=" + bucketName);
         } else {

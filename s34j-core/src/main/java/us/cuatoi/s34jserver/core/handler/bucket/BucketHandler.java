@@ -70,10 +70,6 @@ public class BucketHandler extends BaseHandler {
     }
 
 
-    private Response handleV2() {
-        return null;
-    }
-
     private Response handleHead() {
         verifyBucketExists();
         return new Response().setStatus(200);
@@ -104,6 +100,7 @@ public class BucketHandler extends BaseHandler {
         @Override
         public boolean canHandle(Request request) {
             boolean ok = isNotBlank(request.getBucketName());
+            ok = ok && isBlank(request.getObjectName());
             ok = ok && !equalsIgnoreCase(request.getMethod(), "get");
             ok = ok && !containsAny(request.getQueryString(),
                     "location", "uploads", "policy", "delete");

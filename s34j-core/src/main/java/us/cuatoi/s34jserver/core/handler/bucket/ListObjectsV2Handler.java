@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static us.cuatoi.s34jserver.core.helper.NumberHelper.parseLong;
 
@@ -105,6 +106,7 @@ public class ListObjectsV2Handler extends BucketHandler {
         @Override
         public boolean canHandle(Request request) {
             boolean ok = isNotBlank(request.getBucketName());
+            ok = ok && isBlank(request.getObjectName());
             ok = ok && equalsIgnoreCase(request.getMethod(), "get");
             ok = ok && equalsIgnoreCase(request.getQueryParameter("list-type"), "2");
             return ok;

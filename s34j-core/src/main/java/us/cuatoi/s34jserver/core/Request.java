@@ -13,8 +13,8 @@ public class Request {
     private String requestId;
     private String method;
     private Path content;
-    private HashMap<String, String> headers = new HashMap<>();
-    private HashMap<String, String> formParameters = new HashMap<>();
+    private Map<String, String> headers = new HashMap<>();
+    private Map<String, String> formParameters = new HashMap<>();
     private String url;
     private long date;
     private String queryString;
@@ -53,12 +53,12 @@ public class Request {
         return content;
     }
 
-    public HashMap<String, String> getHeaders() {
+    public Map<String, String> getHeaders() {
         return headers;
 
     }
 
-    public HashMap<String, String> getFormParameters() {
+    public Map<String, String> getFormParameters() {
         return formParameters;
     }
 
@@ -81,7 +81,7 @@ public class Request {
         return this;
     }
 
-    public Request setFormParameters(HashMap<String, String> formParameters) {
+    public Request setFormParameters(Map<String, String> formParameters) {
         this.formParameters = formParameters;
         return this;
     }

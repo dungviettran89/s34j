@@ -52,7 +52,7 @@ public class SimpleStorageServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (handler.service(req, resp)) {
+        if (!handler.service(req, resp)) {
             resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         }
     }
