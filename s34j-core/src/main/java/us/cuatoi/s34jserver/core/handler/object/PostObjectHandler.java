@@ -33,6 +33,11 @@ public class PostObjectHandler extends ObjectHandler {
     }
 
     @Override
+    protected String getName() {
+        return "s3:PutObject";
+    }
+
+    @Override
     public Response handle() throws Exception {
         logger.debug("policy=" + policy);
         logger.debug("awsAccessKeyId=" + awsAccessKeyId);

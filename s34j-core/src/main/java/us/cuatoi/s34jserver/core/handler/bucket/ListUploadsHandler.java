@@ -35,6 +35,11 @@ public class ListUploadsHandler extends BucketHandler {
     }
 
     @Override
+    protected String getName() {
+        return "s3:ListBucketMultipartUploads";
+    }
+
+    @Override
     public Response handle() throws Exception {
         logger.debug("delimiter=" + delimiter);
         logger.debug("encodingType=" + encodingType);

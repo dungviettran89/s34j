@@ -25,6 +25,11 @@ public class DeleteMultipleObjectsHandler extends BucketHandler {
     }
 
     @Override
+    protected String getName() {
+        return "s3:DeleteObject";
+    }
+
+    @Override
     public Response handle() throws Exception {
         DeleteXml dto = DTOHelper.parseXmlContent(request.getContent(), new DeleteXml());
         Set<DeletedXml> deletedObjects = Sets.newConcurrentHashSet();

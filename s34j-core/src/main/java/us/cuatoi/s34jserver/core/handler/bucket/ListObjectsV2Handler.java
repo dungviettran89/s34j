@@ -40,6 +40,12 @@ public class ListObjectsV2Handler extends BucketHandler {
     }
 
     @Override
+    protected String getName() {
+        return "s3:ListBucket";
+    }
+
+
+    @Override
     public Response handle() throws Exception {
         logger.debug("delimiter=" + delimiter);
         logger.debug("encodingType=" + encodingType);

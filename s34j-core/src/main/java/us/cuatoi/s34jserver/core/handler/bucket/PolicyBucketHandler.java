@@ -16,6 +16,18 @@ public class PolicyBucketHandler extends BucketHandler {
     }
 
     @Override
+    protected String getName() {
+        if (equalsIgnoreCase(request.getMethod(), "get")) {
+            return "s3:GetBucketPolicy";
+        } else if (equalsIgnoreCase(request.getMethod(), "put")) {
+            return "s3:PutBucketPolicy";
+        } else if (equalsIgnoreCase(request.getMethod(), "delete")) {
+            return "s3:DeleteBucketPolicy";
+        }
+        return super.getName();
+    }
+
+    @Override
     public Response handle() throws Exception {
         if (equalsIgnoreCase(request.getMethod(), "get")) {
             return handlePolicyGet();

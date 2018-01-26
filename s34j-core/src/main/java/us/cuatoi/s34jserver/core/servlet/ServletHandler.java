@@ -96,6 +96,10 @@ public class ServletHandler {
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
             return writeError(request, new S3Exception(ErrorCode.INTERNAL_ERROR), servletResponse);
+        } finally {
+            if (request.getContent() != null) {
+                Files.deleteIfExists(request.getContent());
+            }
         }
     }
 

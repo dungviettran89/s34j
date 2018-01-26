@@ -76,6 +76,20 @@ public class MultipartUploadHandler extends ObjectHandler {
         }
     }
 
+    @Override
+    protected String getName() {
+        switch (lowerCase(request.getMethod())) {
+            case "delete":
+                return "s3:AbortMultipartUpload";
+            case "get":
+                return "s3:ListMultipartUploadParts";
+            case "post":
+                return "s3:PutObject";
+            default:
+                return super.getName();
+        }
+    }
+
     private Response completeMultipartUpload() throws Exception {
         CompleteMultipartUploadXml dto = DTOHelper.parseXmlContent(request.getContent(), new CompleteMultipartUploadXml());
         verifyUploadExists();

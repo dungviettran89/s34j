@@ -8,6 +8,7 @@ import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.StorageContext;
 import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 public abstract class BaseHandler {
@@ -29,9 +30,13 @@ public abstract class BaseHandler {
         this.baseUploadDir = baseDir.resolve(S3Constants.WORK_DIR).resolve(S3Constants.UPLOAD_DIR);
     }
 
+    protected String getName() {
+        return "Unknown";
+    }
+
     public abstract Response handle() throws Exception ;
 
-    public boolean needVerification() {
+    public boolean needVerification() throws IOException, Exception {
         return true;
     }
 

@@ -25,6 +25,11 @@ public class GetBucketsHandler extends BaseHandler {
     }
 
     @Override
+    protected String getName() {
+        return "s3:ListAllMyBuckets";
+    }
+
+    @Override
     public Response handle() throws Exception {
         BucketsXml b = new BucketsXml();
         Files.list(baseDir).forEach((p) -> {

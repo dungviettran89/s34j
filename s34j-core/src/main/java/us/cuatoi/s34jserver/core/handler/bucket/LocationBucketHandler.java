@@ -12,6 +12,12 @@ public class LocationBucketHandler extends BucketHandler {
         super(context, request);
     }
 
+
+    @Override
+    protected String getName() {
+        return "s3:GetBucketLocation";
+    }
+
     @Override
     public Response handle() throws Exception {
         verifyBucketExists();

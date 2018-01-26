@@ -39,6 +39,20 @@ public class ObjectHandler extends BucketHandler {
     }
 
     @Override
+    protected String getName() {
+        switch (lowerCase(request.getMethod())) {
+            case "head":
+                return "s3:GetObject";
+            case "get":
+                return "s3:GetObject";
+            case "delete":
+                return "s3:DeleteObject";
+            default:
+                return super.getName();
+        }
+    }
+
+    @Override
     public Response handle() throws Exception {
         switch (lowerCase(request.getMethod())) {
             case "head":
