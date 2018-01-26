@@ -1,7 +1,7 @@
 package us.cuatoi.s34jserver.core.operation.object;
 
 import org.junit.Test;
-import us.cuatoi.s34jserver.core.operation.object.multipart.MultipartUploadObjectS3RequestHandler;
+import us.cuatoi.s34jserver.core.handler.object.MultipartUploadHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ public class InitiateMultipartUploadObjectS3RequestBuilderTest {
         List<String> ids = new ArrayList<>();
         for (int i = 0; i < 256; i++) {
             Thread.sleep(2);
-            String id = MultipartUploadObjectS3RequestHandler.generateNewId();
+            String id = MultipartUploadHandler.generateNewId();
             ids.add(id);
             System.out.println(id);
         }

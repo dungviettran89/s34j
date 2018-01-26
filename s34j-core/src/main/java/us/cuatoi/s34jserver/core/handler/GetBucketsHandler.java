@@ -8,7 +8,7 @@ import us.cuatoi.s34jserver.core.dto.BucketXml;
 import us.cuatoi.s34jserver.core.dto.BucketsXml;
 import us.cuatoi.s34jserver.core.dto.ListAllMyBucketsResultXml;
 import us.cuatoi.s34jserver.core.dto.OwnerXml;
-import us.cuatoi.s34jserver.core.operation.Verifier;
+import us.cuatoi.s34jserver.core.Verifier;
 import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.io.IOException;

@@ -1,14 +1,12 @@
-package us.cuatoi.s34jserver.core.operation.object;
+package us.cuatoi.s34jserver.core.handler.object;
 
 import com.google.common.io.BaseEncoding;
 import org.apache.commons.lang3.StringUtils;
-import us.cuatoi.s34jserver.core.ErrorCode;
-import us.cuatoi.s34jserver.core.S3Constants;
-import us.cuatoi.s34jserver.core.S3Context;
-import us.cuatoi.s34jserver.core.S3Exception;
+import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.dto.PostResponseXml;
-import us.cuatoi.s34jserver.core.model.object.PostObjectS3Request;
-import us.cuatoi.s34jserver.core.model.object.PostObjectS3Response;
+import us.cuatoi.s34jserver.core.handler.BaseHandler;
+import us.cuatoi.s34jserver.core.handler.bucket.BucketHandler;
+import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -19,23 +17,23 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.servlet.http.HttpServletResponse.SC_TEMPORARY_REDIRECT;
 import static org.apache.commons.lang3.StringUtils.*;
 
-public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjectS3Request, PostObjectS3Response> {
+public class PostObjectHandler extends ObjectHandler {
 
     private final String policy;
     private final String awsAccessKeyId;
     private final String successActionStatus;
     private final String successActionRedirect;
 
-    public PostObjectS3RequestHandler(S3Context context, PostObjectS3Request s3Request) {
-        super(context, s3Request);
-        policy = s3Request.getFormParameter("policy");
-        awsAccessKeyId = s3Request.getFormParameter("AWSAccessKeyId");
-        successActionRedirect = s3Request.getFormParameter("success_action_redirect");
-        successActionStatus = s3Request.getFormParameter("success_action_status");
+    protected PostObjectHandler(StorageContext context, Request request) {
+        super(context, request);
+        policy = request.getFormParameter("policy");
+        awsAccessKeyId = request.getFormParameter("AWSAccessKeyId");
+        successActionRedirect = request.getFormParameter("success_action_redirect");
+        successActionStatus = request.getFormParameter("success_action_status");
     }
 
     @Override
-    protected PostObjectS3Response handleObject() throws IOException {
+    public Response handle() throws Exception {
         logger.debug("policy=" + policy);
         logger.debug("awsAccessKeyId=" + awsAccessKeyId);
         logger.debug("successActionRedirect=" + successActionRedirect);
@@ -54,22 +52,20 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
         }
 
         if (isNotBlank(redirectUrl)) {
-            return (PostObjectS3Response) new PostObjectS3Response(s3Request)
+            return new Response()
                     .setHeader("success_action_redirect", successActionRedirect)
                     .setHeader("Location", redirectUrl)
                     .setHeader("ETag", eTag)
-                    .setStatusCode(SC_TEMPORARY_REDIRECT);
+                    .setStatus(SC_TEMPORARY_REDIRECT);
         }
 
         PostResponseXml dto = new PostResponseXml();
         dto.setBucket(bucketName);
         dto.setKey(objectName);
-        dto.setLocation(s3Request.getUrl());
+        dto.setLocation(request.getUrl());
         dto.seteTag(eTag);
         int statusCode = parseActionStatus();
-        return (PostObjectS3Response) new PostObjectS3Response(s3Request)
-                .setStatusCode(statusCode)
-                .setHeader("ETag", eTag)
+        return new Response().setStatus(statusCode).setHeader("ETag", eTag)
                 .setContent(statusCode == 201 ? dto : null);
     }
 
@@ -87,7 +83,7 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
             } else if (equalsAnyIgnoreCase(condition.getOperator(), "eq", "start-with")) {
                 switch (condition.getField()) {
                     case "$acl":
-                        verify(condition, s3Request.getFormParameter("acl"));
+                        verify(condition, request.getFormParameter("acl"));
                         break;
                     case "$key":
                         verify(condition, objectName);
@@ -105,25 +101,25 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
                         verify(condition.setOperator("eq"), "AWS4-HMAC-SHA256");
                         break;
                     case "$x-amz-credential":
-                        verify(condition.setOperator("eq"), s3Request.getFormParameter("x-amz-credential"));
+                        verify(condition.setOperator("eq"), request.getFormParameter("x-amz-credential"));
                         break;
                     case "$x-amz-date":
-                        verify(condition.setOperator("eq"), s3Request.getFormParameter("x-amz-date"));
+                        verify(condition.setOperator("eq"), request.getFormParameter("x-amz-date"));
                         break;
                     default:
                         if (equalsAnyIgnoreCase(condition.getField(), STORED_HEADERS)) {
-                            verify(condition, s3Request.getFormParameter(condition.getField()));
+                            verify(condition, request.getFormParameter(condition.getField()));
                         } else if (startsWith(condition.getField(), "x-amz-meta-")) {
-                            verify(condition, s3Request.getFormParameter(condition.getField()));
+                            verify(condition, request.getFormParameter(condition.getField()));
                         } else if (startsWith(condition.getField(), "x-amz-")) {
-                            verify(condition.setOperator("eq"), s3Request.getFormParameter(condition.getField()));
+                            verify(condition.setOperator("eq"), request.getFormParameter(condition.getField()));
                         }
                         break;
                 }
                 logger.trace("Verified " + condition.getField() + " "
                         + condition.getOperator() + " " + condition.getValue());
             } else if (equalsAnyIgnoreCase(condition.getOperator(), "content-length-range")) {
-                long size = Files.size(s3Request.getContent());
+                long size = Files.size(request.getContent());
                 long upperBound = condition.getUpperBound();
                 if (size > upperBound) {
                     logger.info("ENTITY_TOO_LARGE size=" + size);
@@ -160,4 +156,20 @@ public class PostObjectS3RequestHandler extends ObjectS3RequestHandler<PostObjec
         }
     }
 
+    public static class Builder extends BucketHandler.Builder {
+        @Override
+        public boolean canHandle(Request request) {
+            boolean ok = isNotBlank(request.getBucketName());
+            ok = ok && isNotBlank(request.getObjectName());
+            ok = ok && equalsIgnoreCase(request.getMethod(), "post");
+                    ok = ok && !containsAny(request.getQueryString(), "uploads", "uploadId");
+            ok = ok && request.getFormParameter("fileName") == null;
+            return ok;
+        }
+
+        @Override
+        public BaseHandler create(SimpleStorageContext context, Request request) {
+            return new PostObjectHandler(context, request);
+        }
+    }
 }

@@ -5,7 +5,7 @@ import us.cuatoi.s34jserver.core.dto.CopyObjectResultXml;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
 import us.cuatoi.s34jserver.core.handler.bucket.BucketHandler;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
-import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
+import us.cuatoi.s34jserver.core.ObjectMetadata;
 import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.nio.file.Files;

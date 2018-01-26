@@ -1,5 +1,7 @@
 package us.cuatoi.s34jserver.core;
 
+import us.cuatoi.s34jserver.core.helper.DTOHelper;
+
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -152,5 +154,10 @@ public class Request {
 
     public String getFormParameter(String name) {
         return formParameters.get(name);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + DTOHelper.toPrettyJson(this);
     }
 }

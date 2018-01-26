@@ -9,7 +9,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import us.cuatoi.s34jserver.core.S3Servlet;
 import us.cuatoi.s34jserver.core.servlet.SimpleStorageServlet;
 
 import javax.servlet.MultipartConfigElement;
@@ -40,7 +39,7 @@ public class S34jServerApplication {
         String uploadDir = Files.createTempDirectory("upload").toAbsolutePath().toString();
         MultipartConfigElement mce = new MultipartConfigElement(uploadDir);
         ServletRegistrationBean registration = new ServletRegistrationBean();
-        registration.setName(S3Servlet.class.getSimpleName());
+        registration.setName(SimpleStorageServlet.class.getSimpleName());
         registration.setServlet(new SimpleStorageServlet());
         registration.setLoadOnStartup(1);
         registration.setMultipartConfig(mce);

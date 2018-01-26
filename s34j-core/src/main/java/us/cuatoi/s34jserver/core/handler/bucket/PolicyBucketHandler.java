@@ -55,7 +55,7 @@ public class PolicyBucketHandler extends BucketHandler {
         public boolean canHandle(Request request) {
             boolean ok = isNotBlank(request.getBucketName());
             ok = ok && isBlank(request.getObjectName());
-            ok = ok && !contains(request.getQueryString(), "policy");
+            ok = ok && contains(request.getQueryString(), "policy");
             return ok;
         }
 

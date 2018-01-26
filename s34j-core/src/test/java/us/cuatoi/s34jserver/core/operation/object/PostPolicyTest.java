@@ -1,6 +1,7 @@
 package us.cuatoi.s34jserver.core.operation.object;
 
 import org.junit.Test;
+import us.cuatoi.s34jserver.core.handler.object.PostPolicy;
 
 import static org.junit.Assert.assertNotNull;
 

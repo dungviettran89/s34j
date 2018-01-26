@@ -3,6 +3,7 @@ package us.cuatoi.s34jserver.core.operation.bucket;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import us.cuatoi.s34jserver.core.handler.bucket.ObjectVisitor;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,15 +33,15 @@ public class ObjectVisitorTest {
     @Test
     public void testVisitWithPrefixAndStartAfter() throws Exception {
         test(3,
-                "src/main/java/us/cuatoi/s34jserver/core/operation/bucket",
-                "src/main/java/us/cuatoi/s34jserver/core/operation/bucket/GetBucketLocationBucketS3RequestHandler.java", null, null, null);
+                "src/main/java/us/cuatoi/s34jserver/core/handler/bucket/",
+                "src/main/java/us/cuatoi/s34jserver/core/handler/bucket/DeleteMultipleObjectsHandler.java", null, null, null);
     }
 
     @Test
     public void testVisitWithStartAfter() throws Exception {
         test(3,
                 null,
-                "src/main/java/us/cuatoi/s34jserver/core/operation/bucket/GetBucketLocationBucketS3RequestHandler.java", null, null, null);
+                "src/main/java/us/cuatoi/s34jserver/core/handler/bucket/DeleteMultipleObjectsHandler.java", null, null, null);
     }
 
     @Test

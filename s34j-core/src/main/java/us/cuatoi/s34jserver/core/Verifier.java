@@ -1,7 +1,4 @@
-package us.cuatoi.s34jserver.core.operation;
-
-import us.cuatoi.s34jserver.core.ErrorCode;
-import us.cuatoi.s34jserver.core.S3Exception;
+package us.cuatoi.s34jserver.core;
 
 public class Verifier {
     public static void verifyBucketName(String name) {

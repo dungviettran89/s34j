@@ -4,7 +4,7 @@ import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
-import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
+import us.cuatoi.s34jserver.core.ObjectMetadata;
 import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.io.IOException;

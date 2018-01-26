@@ -1,4 +1,4 @@
-package us.cuatoi.s34jserver.core.model.object;
+package us.cuatoi.s34jserver.core;
 
 import java.util.HashMap;
 import java.util.Map;

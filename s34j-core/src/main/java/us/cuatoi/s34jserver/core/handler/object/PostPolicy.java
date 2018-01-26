@@ -1,4 +1,4 @@
-package us.cuatoi.s34jserver.core.operation.object;
+package us.cuatoi.s34jserver.core.handler.object;
 
 import com.google.gson.*;
 

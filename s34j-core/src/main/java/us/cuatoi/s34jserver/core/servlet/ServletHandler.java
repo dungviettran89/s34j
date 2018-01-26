@@ -18,6 +18,7 @@ import us.cuatoi.s34jserver.core.handler.GetBucketsHandler;
 import us.cuatoi.s34jserver.core.handler.bucket.*;
 import us.cuatoi.s34jserver.core.handler.object.MultipartUploadHandler;
 import us.cuatoi.s34jserver.core.handler.object.ObjectHandler;
+import us.cuatoi.s34jserver.core.handler.object.PostObjectHandler;
 import us.cuatoi.s34jserver.core.handler.object.PutObjectHandler;
 
 import javax.servlet.ServletException;
@@ -50,6 +51,8 @@ public class ServletHandler {
         this.context = context;
         handlers.add(new GetBucketsHandler.Builder());
         handlers.add(new BucketHandler.Builder());
+        handlers.add(new LocationBucketHandler.Builder());
+        handlers.add(new ListUploadsHandler.Builder());
         handlers.add(new ListObjectsV1Handler.Builder());
         handlers.add(new ListObjectsV2Handler.Builder());
         handlers.add(new DeleteMultipleObjectsHandler.Builder());
@@ -57,6 +60,7 @@ public class ServletHandler {
         handlers.add(new ObjectHandler.Builder());
         handlers.add(new PutObjectHandler.Builder());
         handlers.add(new MultipartUploadHandler.Builder());
+        handlers.add(new PostObjectHandler.Builder());
     }
 
     public boolean service(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
@@ -184,8 +188,8 @@ public class ServletHandler {
     }
 
     private boolean writeResponse(Request request, Response response, HttpServletResponse servletResponse) throws IOException {
-        traceMultiline(logger, "Request=" + request);
-        traceMultiline(logger, "Response=" + response);
+        debugMultiline(logger, "Request=" + request);
+        debugMultiline(logger, "Response=" + response);
         servletResponse.setHeader("x-amz-request-id", request.getRequestId());
         servletResponse.setHeader("x-amz-id-2", request.getRequestId() + "-" + System.currentTimeMillis());
         servletResponse.setHeader("Server", request.getServerId());

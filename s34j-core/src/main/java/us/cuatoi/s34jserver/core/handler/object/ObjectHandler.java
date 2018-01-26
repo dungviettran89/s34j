@@ -1,14 +1,12 @@
 package us.cuatoi.s34jserver.core.handler.object;
 
-import org.apache.commons.lang3.StringUtils;
 import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
 import us.cuatoi.s34jserver.core.handler.bucket.BucketHandler;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.helper.LogHelper;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
-import us.cuatoi.s34jserver.core.model.object.ObjectMetadata;
-import us.cuatoi.s34jserver.core.operation.object.PostPolicy;
+import us.cuatoi.s34jserver.core.ObjectMetadata;
 import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import javax.servlet.http.HttpServletResponse;
@@ -49,7 +47,6 @@ public class ObjectHandler extends BucketHandler {
                 return handleObjectGet();
             case "delete":
                 return handleObjectDelete();
-
             default:
                 throw new S3Exception(ErrorCode.NOT_IMPLEMENTED);
         }
@@ -158,7 +155,7 @@ public class ObjectHandler extends BucketHandler {
         public boolean canHandle(Request request) {
             boolean ok = isNotBlank(request.getBucketName());
             ok = ok && isNotBlank(request.getObjectName());
-            ok = ok && !equalsAnyIgnoreCase(request.getMethod(), "put");
+            ok = ok && !equalsAnyIgnoreCase(request.getMethod(), "put","post");
             ok = ok && !containsAny(request.getQueryString(), "uploads", "uploadId");
             ok = ok && request.getFormParameter("fileName") == null;
             return ok;

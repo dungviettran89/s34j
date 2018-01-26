@@ -1,20 +1,21 @@
-package us.cuatoi.s34jserver.core.operation.bucket;
+package us.cuatoi.s34jserver.core.handler.bucket;
 
+import us.cuatoi.s34jserver.core.Request;
+import us.cuatoi.s34jserver.core.Response;
 import us.cuatoi.s34jserver.core.S3Constants;
-import us.cuatoi.s34jserver.core.S3Context;
+import us.cuatoi.s34jserver.core.StorageContext;
 import us.cuatoi.s34jserver.core.dto.*;
+import us.cuatoi.s34jserver.core.handler.BaseHandler;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
-import us.cuatoi.s34jserver.core.model.bucket.ListBucketMultipartUploadsS3Request;
-import us.cuatoi.s34jserver.core.model.bucket.ListBucketMultipartUploadsS3Response;
+import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34jserver.core.S3Constants.METADATA_JSON;
 import static us.cuatoi.s34jserver.core.helper.NumberHelper.parseLong;
 
-public class ListBucketMultipartUploadsS3RequestHandler extends BucketS3RequestHandler<ListBucketMultipartUploadsS3Request, ListBucketMultipartUploadsS3Response> {
+public class ListUploadsHandler extends BucketHandler {
 
     private final String delimiter;
     private final String encodingType;
@@ -23,19 +24,18 @@ public class ListBucketMultipartUploadsS3RequestHandler extends BucketS3RequestH
     private final String prefix;
     private final String uploadIdMarker;
 
-    public ListBucketMultipartUploadsS3RequestHandler(S3Context context, ListBucketMultipartUploadsS3Request s3Request) {
-        super(context, s3Request);
-        delimiter = s3Request.getQueryParameter("delimiter");
-        encodingType = s3Request.getQueryParameter("encoding-type");
-        marker = s3Request.getQueryParameter("marker");
-        uploadIdMarker = s3Request.getQueryParameter("upload-id-marker");
-        maxUploads = parseLong(s3Request.getQueryParameter("max-uploads"), 1000);
-        prefix = s3Request.getQueryParameter("prefix");
-
+    protected ListUploadsHandler(StorageContext context, Request request) {
+        super(context, request);
+        delimiter = request.getQueryParameter("delimiter");
+        encodingType = request.getQueryParameter("encoding-type");
+        marker = request.getQueryParameter("marker");
+        uploadIdMarker = request.getQueryParameter("upload-id-marker");
+        maxUploads = parseLong(request.getQueryParameter("max-uploads"), 1000);
+        prefix = request.getQueryParameter("prefix");
     }
 
     @Override
-    public ListBucketMultipartUploadsS3Response handle() throws IOException {
+    public Response handle() throws Exception {
         logger.debug("delimiter=" + delimiter);
         logger.debug("encodingType=" + encodingType);
         logger.debug("maxUploads=" + maxUploads);
@@ -66,7 +66,7 @@ public class ListBucketMultipartUploadsS3RequestHandler extends BucketS3RequestH
             pd.setPrefix(prefix);
             result.getCommonPrefixes().add(pd);
         }
-        Path lastMetadataFile=null;
+        Path lastMetadataFile = null;
         for (Path metadata : visitor.getObjects()) {
             Path upload = metadata.getParent();
             Path object = upload.getParent();
@@ -94,7 +94,22 @@ public class ListBucketMultipartUploadsS3RequestHandler extends BucketS3RequestH
             result.setNextKeyMarker(nextObject.getFileName().toString());
             result.setNextUploadIdMarker(nextUpload.getFileName().toString());
         }
-        return (ListBucketMultipartUploadsS3Response) new ListBucketMultipartUploadsS3Response(s3Request)
-                .setContent(result);
+        return new Response().setContent(result);
+    }
+
+    public static class Builder extends BaseHandler.Builder {
+        @Override
+        public boolean canHandle(Request request) {
+            boolean ok = isNotBlank(request.getBucketName());
+            ok = ok && isBlank(request.getObjectName());
+            ok = ok && equalsIgnoreCase(request.getMethod(), "get");
+            ok = ok && contains(request.getQueryString(), "uploads");
+            return ok;
+        }
+
+        @Override
+        public BaseHandler create(SimpleStorageContext context, Request request) {
+            return new ListUploadsHandler(context, request);
+        }
     }
 }
