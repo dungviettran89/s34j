@@ -129,7 +129,7 @@ provided below:
 ```
 Springboot configuration is provided below:
  ```java
- @Bean
+    @Bean
     public FilterRegistrationBean filterRegistrationBean() throws IOException {
         HashMap<String, String> parameters = Maps.newHashMap();
         parameters.put("region", region);
