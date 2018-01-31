@@ -9,6 +9,8 @@ public interface StorageContext {
 
     String getServerId();
 
+    boolean isAdminEnabled();
+
     /* Others */
     String getSecretKey(String accessKey);
 

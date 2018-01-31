@@ -6,8 +6,6 @@ import us.cuatoi.s34jserver.core.handler.bucket.BucketHandler;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.helper.LogHelper;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
-import us.cuatoi.s34jserver.core.ObjectMetadata;
-import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -176,7 +174,7 @@ public class ObjectHandler extends BucketHandler {
         }
 
         @Override
-        public BaseHandler create(SimpleStorageContext context, Request request) {
+        public BaseHandler create(StorageContext context, Request request) {
             return new ObjectHandler(context, request);
         }
     }

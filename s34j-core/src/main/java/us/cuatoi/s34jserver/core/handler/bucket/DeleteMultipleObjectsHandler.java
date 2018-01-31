@@ -10,7 +10,6 @@ import us.cuatoi.s34jserver.core.dto.DeletedXml;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
-import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -80,7 +79,7 @@ public class DeleteMultipleObjectsHandler extends BucketHandler {
         }
 
         @Override
-        public BaseHandler create(SimpleStorageContext context, Request request) {
+        public BaseHandler create(StorageContext context, Request request) {
             return new DeleteMultipleObjectsHandler(context, request);
         }
     }

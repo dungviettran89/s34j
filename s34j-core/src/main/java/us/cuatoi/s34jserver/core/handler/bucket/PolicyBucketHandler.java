@@ -2,7 +2,6 @@ package us.cuatoi.s34jserver.core.handler.bucket;
 
 import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
-import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -72,7 +71,7 @@ public class PolicyBucketHandler extends BucketHandler {
         }
 
         @Override
-        public BaseHandler create(SimpleStorageContext context, Request request) {
+        public BaseHandler create(StorageContext context, Request request) {
             return new PolicyBucketHandler(context, request);
         }
     }

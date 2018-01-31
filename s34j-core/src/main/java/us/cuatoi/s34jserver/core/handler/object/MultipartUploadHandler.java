@@ -280,7 +280,7 @@ public class MultipartUploadHandler extends ObjectHandler {
         }
 
         @Override
-        public BaseHandler create(SimpleStorageContext context, Request request) {
+        public BaseHandler create(StorageContext context, Request request) {
             return new MultipartUploadHandler(context, request);
         }
     }

@@ -5,8 +5,6 @@ import us.cuatoi.s34jserver.core.dto.CopyObjectResultXml;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
 import us.cuatoi.s34jserver.core.handler.bucket.BucketHandler;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
-import us.cuatoi.s34jserver.core.ObjectMetadata;
-import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -139,7 +137,7 @@ public class PutObjectHandler extends ObjectHandler {
         }
 
         @Override
-        public BaseHandler create(SimpleStorageContext context, Request request) {
+        public BaseHandler create(StorageContext context, Request request) {
             return new PutObjectHandler(context, request);
         }
     }

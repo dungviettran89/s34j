@@ -6,7 +6,6 @@ import us.cuatoi.s34jserver.core.Request;
 import us.cuatoi.s34jserver.core.Response;
 import us.cuatoi.s34jserver.core.S3Constants;
 import us.cuatoi.s34jserver.core.StorageContext;
-import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -46,6 +45,6 @@ public abstract class BaseHandler {
             return false;
         }
 
-        public abstract BaseHandler create(SimpleStorageContext context, Request request);
+        public abstract BaseHandler create(StorageContext context, Request request);
     }
 }

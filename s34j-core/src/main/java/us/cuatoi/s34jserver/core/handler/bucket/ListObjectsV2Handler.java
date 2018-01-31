@@ -10,7 +10,6 @@ import us.cuatoi.s34jserver.core.dto.ListBucketResultV2Xml;
 import us.cuatoi.s34jserver.core.dto.OwnerXml;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
-import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -118,7 +117,7 @@ public class ListObjectsV2Handler extends BucketHandler {
         }
 
         @Override
-        public BaseHandler create(SimpleStorageContext context, Request request) {
+        public BaseHandler create(StorageContext context, Request request) {
             return new ListObjectsV2Handler(context, request);
         }
     }

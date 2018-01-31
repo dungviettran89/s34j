@@ -2,14 +2,9 @@ package us.cuatoi.s34jserver.core.servlet;
 
 import com.google.common.io.BaseEncoding;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.cuatoi.s34jserver.core.ErrorCode;
-import us.cuatoi.s34jserver.core.Request;
-import us.cuatoi.s34jserver.core.S3Context;
-import us.cuatoi.s34jserver.core.S3Exception;
+import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.auth.AWS4Authorization;
 import us.cuatoi.s34jserver.core.auth.AWS4SignerBase;
 import us.cuatoi.s34jserver.core.auth.AWS4SignerForAuthorizationHeader;
@@ -18,13 +13,11 @@ import us.cuatoi.s34jserver.core.helper.PathHelper;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34jserver.core.ErrorCode.AUTHORIZATION_HEADER_MALFORMED;
@@ -34,14 +27,14 @@ import static us.cuatoi.s34jserver.core.helper.PathHelper.md5HashFileToByte;
 
 public class ServletParserVerifier {
 
-    private final SimpleStorageContext context;
+    private final StorageContext context;
     private final Request request;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private AWS4SignerForChunkedUpload aws4SignerForChunkedUpload;
     private boolean headerVerified = false;
 
 
-    public ServletParserVerifier(SimpleStorageContext context, Request request) {
+    public ServletParserVerifier(StorageContext context, Request request) {
         this.context = context;
         this.request = request;
     }

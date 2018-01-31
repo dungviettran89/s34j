@@ -1,15 +1,10 @@
 package us.cuatoi.s34jserver.core.handler;
 
-import us.cuatoi.s34jserver.core.Request;
-import us.cuatoi.s34jserver.core.Response;
-import us.cuatoi.s34jserver.core.S3Constants;
-import us.cuatoi.s34jserver.core.S3Exception;
+import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.dto.BucketXml;
 import us.cuatoi.s34jserver.core.dto.BucketsXml;
 import us.cuatoi.s34jserver.core.dto.ListAllMyBucketsResultXml;
 import us.cuatoi.s34jserver.core.dto.OwnerXml;
-import us.cuatoi.s34jserver.core.Verifier;
-import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +15,7 @@ import static us.cuatoi.s34jserver.core.helper.PathHelper.getCreationTimeString;
 
 public class GetBucketsHandler extends BaseHandler {
 
-    protected GetBucketsHandler(SimpleStorageContext context, Request request) {
+    protected GetBucketsHandler(StorageContext context, Request request) {
         super(context, request);
     }
 
@@ -68,7 +63,7 @@ public class GetBucketsHandler extends BaseHandler {
         }
 
         @Override
-        public BaseHandler create(SimpleStorageContext context, Request request) {
+        public BaseHandler create(StorageContext context, Request request) {
             return new GetBucketsHandler(context, request);
         }
     }

@@ -8,8 +8,6 @@ import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
 import us.cuatoi.s34jserver.core.helper.DTOHelper;
 import us.cuatoi.s34jserver.core.helper.PathHelper;
-import us.cuatoi.s34jserver.core.ObjectMetadata;
-import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -229,7 +227,7 @@ public class BucketHandler extends BaseHandler {
         }
 
         @Override
-        public BaseHandler create(SimpleStorageContext context, Request request) {
+        public BaseHandler create(StorageContext context, Request request) {
             return new BucketHandler(context, request);
         }
     }

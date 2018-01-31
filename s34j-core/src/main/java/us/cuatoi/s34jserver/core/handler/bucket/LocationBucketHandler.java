@@ -3,7 +3,6 @@ package us.cuatoi.s34jserver.core.handler.bucket;
 import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.dto.LocationConstraintXml;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
-import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import static org.apache.commons.lang3.StringUtils.*;
 
@@ -45,7 +44,7 @@ public class LocationBucketHandler extends BucketHandler {
         }
 
         @Override
-        public BaseHandler create(SimpleStorageContext context, Request request) {
+        public BaseHandler create(StorageContext context, Request request) {
             return new LocationBucketHandler(context, request);
         }
     }

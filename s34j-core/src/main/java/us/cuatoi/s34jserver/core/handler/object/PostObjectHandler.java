@@ -6,7 +6,6 @@ import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.dto.PostResponseXml;
 import us.cuatoi.s34jserver.core.handler.BaseHandler;
 import us.cuatoi.s34jserver.core.handler.bucket.BucketHandler;
-import us.cuatoi.s34jserver.core.servlet.SimpleStorageContext;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -173,7 +172,7 @@ public class PostObjectHandler extends ObjectHandler {
         }
 
         @Override
-        public BaseHandler create(SimpleStorageContext context, Request request) {
+        public BaseHandler create(StorageContext context, Request request) {
             return new PostObjectHandler(context, request);
         }
     }

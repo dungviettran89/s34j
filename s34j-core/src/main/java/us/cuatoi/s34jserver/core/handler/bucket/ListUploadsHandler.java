@@ -113,7 +113,7 @@ public class ListUploadsHandler extends BucketHandler {
         }
 
         @Override
-        public BaseHandler create(SimpleStorageContext context, Request request) {
+        public BaseHandler create(StorageContext context, Request request) {
             return new ListUploadsHandler(context, request);
         }
     }

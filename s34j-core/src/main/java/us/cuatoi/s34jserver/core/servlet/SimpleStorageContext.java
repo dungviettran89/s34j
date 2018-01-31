@@ -10,6 +10,7 @@ public class SimpleStorageContext implements StorageContext {
     private String secretKey;
     private String serverId = "s34j";
     private String region = "us-central-1";
+    private boolean adminEnabled = true;
 
     /* Getters */
     @Override
@@ -34,6 +35,12 @@ public class SimpleStorageContext implements StorageContext {
     public String getRegion() {
         return region;
     }
+
+    @Override
+    public boolean isAdminEnabled() {
+        return adminEnabled;
+    }
+
     /* Setters */
 
     public SimpleStorageContext setBaseDir(Path baseDir) {
@@ -57,6 +64,11 @@ public class SimpleStorageContext implements StorageContext {
     }
     public SimpleStorageContext setRegion(String region) {
         this.region = region;
+        return this;
+    }
+
+    public SimpleStorageContext setAdminEnabled(boolean adminEnabled) {
+        this.adminEnabled = adminEnabled;
         return this;
     }
 

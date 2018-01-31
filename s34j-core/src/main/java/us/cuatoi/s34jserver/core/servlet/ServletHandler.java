@@ -6,10 +6,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.cuatoi.s34jserver.core.ErrorCode;
-import us.cuatoi.s34jserver.core.Request;
-import us.cuatoi.s34jserver.core.Response;
-import us.cuatoi.s34jserver.core.S3Exception;
+import us.cuatoi.s34jserver.core.*;
 import us.cuatoi.s34jserver.core.auth.AWS4SignerForChunkedUpload;
 import us.cuatoi.s34jserver.core.dto.AbstractXml;
 import us.cuatoi.s34jserver.core.dto.ErrorResponseXml;
@@ -43,12 +40,14 @@ import static us.cuatoi.s34jserver.core.helper.LogHelper.traceMultiline;
 
 public class ServletHandler {
 
-    private final SimpleStorageContext context;
+    private final StorageContext context;
     private final List<BaseHandler.Builder> handlers = new ArrayList<>();
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final AdminHandler adminHandler;
 
-    public ServletHandler(SimpleStorageContext context) {
+    public ServletHandler(StorageContext context) {
         this.context = context;
+        adminHandler = new AdminHandler(context);
         handlers.add(new GetBucketsHandler.Builder());
         handlers.add(new BucketHandler.Builder());
         handlers.add(new LocationBucketHandler.Builder());
@@ -70,6 +69,10 @@ public class ServletHandler {
         request.setRequestId(UUID.randomUUID().toString());
         request.setMethod(servletRequest.getMethod());
         try {
+            if (startsWith(servletRequest.getRequestURI(), "/_admin/") &&
+                    context.isAdminEnabled()) {
+                return adminHandler.service(servletRequest,servletResponse);
+            }
             ServletParserVerifier parserVerifier = new ServletParserVerifier(context, request);
             parseObjectInformation(servletRequest, request);
             parseParameters(servletRequest, request);
