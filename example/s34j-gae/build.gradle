@@ -19,6 +19,8 @@ apply plugin: 'com.google.cloud.tools.appengine'
 
 dependencies {
     compile project(':s34j-core')
+    compile('com.google.cloud:google-cloud-nio:0.33.0-alpha')
+    compileOnly('javax.servlet:javax.servlet-api:3.1.0')
     compile('org.slf4j:slf4j-jdk14:1.7.25')
 }
 
