@@ -4,9 +4,6 @@
             <md-icon md-font-icon="fa fa-bars" style="font-size: 18px;"></md-icon>
         </md-button>
         <h2 flex md-truncate>S34J Management Console</h2>
-
-        <md-button class="md-icon-button" aria-label="Status" ng-click="toggleSideNav('right');">
-            <md-icon md-font-icon="fa fa-server" style="font-size: 18px;"></md-icon>
-        </md-button>
     </div>
 </md-toolbar>
+<md-progress-linear ng-if="loading" md-mode="indeterminate" style="margin-top:-3px;"></md-progress-linear>

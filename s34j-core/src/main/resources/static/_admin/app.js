@@ -1,5 +1,13 @@
 angular
-    .module('S34J', ['ngMaterial', 'ngMessages'])
+    .module('S34J', ['ngMaterial', 'ngMessages', 'ngRoute'])
+    .config(function ($routeProvider, $locationProvider) {
+        $locationProvider.hashPrefix('!');
+        $routeProvider
+            .when('/home', {templateUrl: 'home.tpl.html'})
+            .when('/data/:bucketName', {templateUrl: 'buckets.tpl.html'})
+            .when('/data/:bucketName/:objectName*', {templateUrl: 'bucket.tpl.html'})
+            .otherwise('/home');
+    })
     .service('$storage', function ($rootScope) {
         var $storage = {};
         $storage.login = function (accessKey, secretKey, callback) {
@@ -29,6 +37,7 @@ angular
                         $storage.errorCallback(err);
                     }
                 } else {
+                    data.type = 'ListBuckets';
                     callback(data);
                 }
             });
@@ -60,7 +69,7 @@ angular
         };
         $scope.reset();
     })
-    .controller('MainController', function ($rootScope, $mdSidenav, $mdDialog) {
+    .controller('TopController', function ($rootScope, $mdSidenav, $mdDialog) {
         $rootScope.toggleSideNav = function (id) {
             $mdSidenav(id).toggle();
         };
@@ -81,12 +90,13 @@ angular
                 $rootScope.showLoginDialog($scope.begin);
             }
         };
+        $scope.render = function (data) {
+            console.log(data);
+        };
         $scope.authenticated = function () {
             console.log('DataController authenticated.');
             $storage.errorCallback = $scope.onError;
-            $storage.listBuckets(function () {
-
-            });
+            $storage.listBuckets($scope.render);
         };
         $scope.begin = function () {
             console.log('DataController begin.');
