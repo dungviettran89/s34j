@@ -27,7 +27,7 @@ public class GetBucketsHandler extends BaseHandler {
     @Override
     public Response handle() throws Exception {
         BucketsXml b = new BucketsXml();
-        Files.list(baseDir).forEach((p) -> {
+        Files.list(baseDir).sorted().forEach((p) -> {
             try {
                 Verifier.verifyBucketName(p.getFileName().toString());
                 BucketXml br = new BucketXml();

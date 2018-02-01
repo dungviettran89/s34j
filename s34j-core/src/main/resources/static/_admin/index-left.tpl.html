@@ -1,4 +1,4 @@
-<md-sidenav md-component-id="left" class="md-sidenav-left" flex>
+<md-sidenav layout="column" md-component-id="left" class="md-sidenav-left" flex>
     <md-toolbar>
         <div class="md-toolbar-tools">
             <md-button class="md-icon-button" aria-label="Buckets" ng-click="toggleSideNav('left');">
@@ -8,30 +8,27 @@
         </div>
     </md-toolbar>
     <md-list>
-        <md-subheader class="md-no-sticky">Navigation</md-subheader>
         <md-list-item ng-href="#!/home" ng-click="toggleSideNav('left');">
             <md-icon md-font-icon="fa fa-home" style="font-size: 18px;"></md-icon>
             <p>Home</p>
         </md-list-item>
-        <md-list-item ng-repeat="bucket in buckets" ng-href="#!/s3/{{bucket.Name}}" ng-click="toggleSideNav('left');">
-            <md-icon md-font-icon="fa fa-cloud" style="font-size: 18px;"></md-icon>
-            <p>{{bucket.Name}}</p>
-        </md-list-item>
-        <md-subheader class="md-no-sticky">System</md-subheader>
-        <md-list-item ng-href="#!/status" ng-click="toggleSideNav('left');">
-            <md-icon md-font-icon="fa fa-server" style="font-size: 18px;"></md-icon>
-            <p>Status</p>
-        </md-list-item>
+        <md-subheader ng-if="buckets.length" class="md-no-sticky">Buckets</md-subheader>
+    </md-list>
+    <section flex layout="column" style="overflow: hidden;">
+        <md-list flex style="overflow-y: scroll;margin-right: -17px;">
+            <md-list-item ng-repeat="bucket in buckets" ng-href="#!/s3/{{bucket.Name}}"
+                          ng-click="toggleSideNav('left');">
+                <md-icon md-font-icon="fa fa-cloud" style="font-size: 18px;"></md-icon>
+                <p>{{bucket.Name}}</p>
+            </md-list-item>
+        </md-list>
+    </section>
+    <md-list>
+        <md-subheader class="md-no-sticky">{{accessKey}}</md-subheader>
         <md-list-item ng-href="#!/settings" ng-click="toggleSideNav('left');">
             <md-icon md-font-icon="fa fa-cog" style="font-size: 18px;"></md-icon>
             <p>Settings</p>
         </md-list-item>
-        <md-list-item ng-href="#!/users" ng-click="toggleSideNav('left');">
-            <md-icon md-font-icon="fa fa-users" style="font-size: 18px;"></md-icon>
-            <p>Users</p>
-        </md-list-item>
-
-        <md-subheader class="md-no-sticky">{{accessKey}}</md-subheader>
         <md-list-item ng-click="logout();">
             <md-icon md-font-icon="fa fa-sign-out-alt" style="font-size: 18px;"></md-icon>
             <p>Logout</p>

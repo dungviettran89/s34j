@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static org.apache.commons.lang3.StringUtils.contains;
 import static org.apache.commons.lang3.StringUtils.isAnyBlank;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -59,7 +60,9 @@ public class SimpleStorageServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (!handler.service(req, resp)) {
+        if (contains(req.getRequestURI(), "favicon.ico")) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        } else if (!handler.service(req, resp)) {
             resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         }
     }

@@ -3,7 +3,7 @@
         <md-button class="md-icon-button" aria-label="Buckets" ng-click="toggleSideNav('left');">
             <md-icon md-font-icon="fa fa-bars" style="font-size: 18px;"></md-icon>
         </md-button>
-        <h2 flex md-truncate>S34J Management Console</h2>
+        <h2 flex md-truncate>{{windowLocationHost}}</h2>
     </div>
 </md-toolbar>
 <md-progress-linear ng-if="loading" md-mode="indeterminate" style="margin-top:-3px;"></md-progress-linear>

@@ -37,6 +37,7 @@ angular
     })
     .run(function ($rootScope, $mdSidenav, $mdDialog) {
         console.log('Application startup!');
+        $rootScope.windowLocationHost = window.location.host;
         $rootScope.toggleSideNav = function (id) {
             $mdSidenav(id).toggle();
         };
