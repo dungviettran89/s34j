@@ -13,7 +13,7 @@
             <md-icon md-font-icon="fa fa-home" style="font-size: 18px;"></md-icon>
             <p>Home</p>
         </md-list-item>
-        <md-list-item ng-repeat="bucket in buckets" ng-href="#!/{{bucket.Name}}" ng-click="toggleSideNav('left');">
+        <md-list-item ng-repeat="bucket in buckets" ng-href="#!/s3/{{bucket.Name}}" ng-click="toggleSideNav('left');">
             <md-icon md-font-icon="fa fa-cloud" style="font-size: 18px;"></md-icon>
             <p>{{bucket.Name}}</p>
         </md-list-item>

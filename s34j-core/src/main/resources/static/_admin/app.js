@@ -7,8 +7,8 @@ angular
             .when('/status', {templateUrl: 'home.tpl.html'})
             .when('/settings', {templateUrl: 'home.tpl.html'})
             .when('/users', {templateUrl: 'home.tpl.html'})
-            .when('/:bucketName', {templateUrl: 'bucket.tpl.html'})
-            .when('/:bucketName/:objectName*', {templateUrl: 'bucket.tpl.html'})
+            .when('/s3/:bucketName', {templateUrl: 'bucket.tpl.html'})
+            .when('/s3/:bucketName/:objectName*', {templateUrl: 'bucket.tpl.html'})
             .otherwise('/home');
     })
     .controller('LoginController', function ($scope, $rootScope, $mdDialog) {
