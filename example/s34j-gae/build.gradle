@@ -1,0 +1,36 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.cloud.tools:appengine-gradle-plugin:+'
+    }
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'com.google.cloud.tools.appengine'
+
+dependencies {
+    compile project(':s34j-core')
+    compile('org.slf4j:slf4j-simple:1.7.25')
+}
+
+appengine {
+    deploy {
+        project = 's34j-demo'
+        stopPreviousVersion = true
+        promote = true
+    }
+}
+
+group = 'us.cuatoi.s34j'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
