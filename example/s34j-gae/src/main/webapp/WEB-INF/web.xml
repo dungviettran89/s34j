@@ -16,7 +16,7 @@
         </init-param>
         <init-param>
             <param-name>path</param-name>
-            <param-value>/tmp/data</param-value>
+            <param-value>/tmp</param-value>
         </init-param>
         <init-param>
             <param-name>region</param-name>
