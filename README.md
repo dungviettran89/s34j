@@ -61,7 +61,7 @@ a sample web.xml file:
         </init-param>
         <init-param>
             <param-name>region</param-name>
-            <param-value>us-central-1}</param-value>
+            <param-value>us-central-1</param-value>
         </init-param>
     </servlet>
     <servlet-mapping>
@@ -118,7 +118,7 @@ provided below:
         </init-param>
         <init-param>
             <param-name>region</param-name>
-            <param-value>us-central-1}</param-value>
+            <param-value>us-central-1</param-value>
         </init-param>
     </filter>
     <filter-mapping>

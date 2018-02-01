@@ -1,0 +1,32 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'war'
+apply from: 'https://raw.github.com/akhikhl/gretty/master/pluginScripts/gretty.plugin'
+
+group = 'us.cuatoi.s34j'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project(':s34j-core')
+    compile('org.slf4j:slf4j-simple:1.7.25')
+
+    compileOnly('javax.servlet:javax.servlet-api:3.1.0')
+
+    testCompile('junit:junit:4.12')
+}
+
+
+gretty {
+    httpPort = 19000
+    contextPath = '/'
+}

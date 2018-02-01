@@ -1,3 +1,4 @@
 rootProject.name = 's34j'
 include 's34j-server'
 include 's34j-core'
+include 's34j-war'
