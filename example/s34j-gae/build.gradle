@@ -19,7 +19,7 @@ apply plugin: 'com.google.cloud.tools.appengine'
 
 dependencies {
     compile project(':s34j-core')
-    compile('org.slf4j:slf4j-simple:1.7.25')
+    compile('org.slf4j:slf4j-jdk14:1.7.25')
 }
 
 appengine {

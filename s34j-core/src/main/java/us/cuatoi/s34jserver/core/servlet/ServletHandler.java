@@ -189,7 +189,7 @@ public class ServletHandler {
     private void parseHeaders(HttpServletRequest servletRequest, Request request) {
         HashMap<String, String> headers = new HashMap<>();
         for (String name : Collections.list(servletRequest.getHeaderNames())) {
-            headers.put(name, servletRequest.getHeader(name));
+            headers.put(lowerCase(name), servletRequest.getHeader(name));
         }
         request.setHeaders(headers);
     }

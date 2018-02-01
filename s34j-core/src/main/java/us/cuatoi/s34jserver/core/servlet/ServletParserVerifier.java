@@ -73,6 +73,7 @@ public class ServletParserVerifier {
         }
         if (isBlank(authorizationHeader)) {
             logger.info("MISSING_SECURITY_HEADER authorizationHeader=" + authorizationHeader);
+            logger.debug("MISSING_SECURITY_HEADER request=" + request);
             throw new S3Exception(MISSING_SECURITY_HEADER);
         }
 
