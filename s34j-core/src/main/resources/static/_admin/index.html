@@ -24,6 +24,7 @@
     <section layout="column" ng-include="'index-top.tpl.html'"></section>
     <section layout="row" flex>
         <section layout="column" ng-include="'index-left.tpl.html'"></section>
+        <md-progress-linear ng-if="loading" md-mode="indeterminate" style="margin-top:-3px;"></md-progress-linear>
         <section layout="column" ng-controller="DataController" ng-include="'index-center.tpl.html'" flex></section>
         <section layout="column" ng-include="'index-right.tpl.html'"></section>
     </section>

@@ -4,6 +4,8 @@ import us.cuatoi.s34jserver.core.StorageContext;
 
 import java.nio.file.Path;
 
+import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+
 public class SimpleStorageContext implements StorageContext {
     private Path baseDir;
     private String accessKey;
@@ -62,6 +64,7 @@ public class SimpleStorageContext implements StorageContext {
         this.serverId = serverId;
         return this;
     }
+
     public SimpleStorageContext setRegion(String region) {
         this.region = region;
         return this;
@@ -76,6 +79,6 @@ public class SimpleStorageContext implements StorageContext {
 
     @Override
     public String getSecretKey(String accessKey) {
-        return secretKey;
+        return equalsIgnoreCase(accessKey, this.accessKey) ? secretKey : null;
     }
 }

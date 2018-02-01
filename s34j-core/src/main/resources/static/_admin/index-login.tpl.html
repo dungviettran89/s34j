@@ -28,7 +28,8 @@
         </md-dialog-content>
         <md-dialog-actions layout="row">
             <span flex></span>
-            <md-button class="md-raised {{loading?'md-accent':'md-primary'}}" ng-disabled="loading" ng-click="login()">
+            <md-button aria-label="Login" class="md-raised {{loading?'md-accent':'md-primary'}}" ng-disabled="loading"
+                       ng-click="loginClicked();">
                 <span ng-if="!loading">Login</span>
                 <span ng-if="loading"><i class="fa fa-spinner fa-spin"></i></span>
             </md-button>
