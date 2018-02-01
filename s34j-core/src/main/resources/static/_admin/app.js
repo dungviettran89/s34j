@@ -4,58 +4,24 @@ angular
         $locationProvider.hashPrefix('!');
         $routeProvider
             .when('/home', {templateUrl: 'home.tpl.html'})
-            .when('/data/:bucketName', {templateUrl: 'buckets.tpl.html'})
-            .when('/data/:bucketName/:objectName*', {templateUrl: 'bucket.tpl.html'})
+            .when('/status', {templateUrl: 'home.tpl.html'})
+            .when('/settings', {templateUrl: 'home.tpl.html'})
+            .when('/users', {templateUrl: 'home.tpl.html'})
+            .when('/:bucketName', {templateUrl: 'bucket.tpl.html'})
+            .when('/:bucketName/:objectName*', {templateUrl: 'bucket.tpl.html'})
             .otherwise('/home');
     })
-    .service('$storage', function ($rootScope) {
-        var $storage = {};
-        $storage.login = function (accessKey, secretKey, callback) {
-            $rootScope.loading = true;
-            $storage.s3 = new AWS.S3({
-                accessKeyId: accessKey,
-                secretAccessKey: secretKey,
-                endpoint: window.location,
-                s3ForcePathStyle: true,
-                signatureVersion: 'v4'
-            });
-            $storage.s3.listBuckets({}, function (err, data) {
-                $rootScope.loading = false;
-                $rootScope.$apply();
-                if (err) console.log(err);
-                callback(err == null);
-            });
-        };
-        $storage.listBuckets = function (callback) {
-            $rootScope.loading = true;
-            $storage.s3.listBuckets({}, function (err, data) {
-                $rootScope.loading = false;
-                $rootScope.$apply();
-                if (err) {
-                    console.log(err);
-                    if ($storage.errorCallback) {
-                        $storage.errorCallback(err);
-                    }
-                } else {
-                    data.type = 'ListBuckets';
-                    callback(data);
-                }
-            });
-        };
-        return $storage;
-    })
-    .controller('LoginController', function ($scope, $mdDialog, $storage) {
+    .controller('LoginController', function ($scope, $rootScope, $mdDialog) {
         $scope.reset = function () {
             $scope.loading = false;
             $scope.accessKey = 'Q3AM3UQ867SPQQA43P2F';
             $scope.secretKey = 'zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG'
         };
         $scope.loginClicked = function () {
-            if ($scope.loginForm.$valid) {
+            var loginForm = $scope.loginForm;
+            if (loginForm.$valid) {
                 $scope.loading = true;
-                sessionStorage.accessKey = $scope.accessKey
-                sessionStorage.secretKey = $scope.secretKey
-                $storage.login($scope.accessKey, $scope.secretKey, function (result) {
+                $rootScope.authenticate($scope.accessKey, $scope.secretKey, function (result) {
                     $scope.loading = false;
                     if (!result) {
                         $scope.loginForm.accessKey.$setValidity('forbidden', false);
@@ -69,7 +35,8 @@ angular
         };
         $scope.reset();
     })
-    .controller('TopController', function ($rootScope, $mdSidenav, $mdDialog) {
+    .run(function ($rootScope, $mdSidenav, $mdDialog) {
+        console.log('Application startup!');
         $rootScope.toggleSideNav = function (id) {
             $mdSidenav(id).toggle();
         };
@@ -83,34 +50,88 @@ angular
                 if (success) callback();
             });
         };
-    })
-    .controller('DataController', function ($rootScope, $scope, $storage) {
-        $scope.onError = function (err) {
-            if (err.statusCode === 403) {
-                $rootScope.showLoginDialog($scope.begin);
-            }
+        $rootScope.authenticate = function (accessKey, secretKey, callback) {
+            var s3 = new AWS.S3({
+                accessKeyId: accessKey,
+                secretAccessKey: secretKey,
+                endpoint: window.location,
+                s3ForcePathStyle: true,
+                signatureVersion: 'v4'
+            });
+            s3.listBuckets({}, function (err, data) {
+                $rootScope.loading = false;
+                $rootScope.s3 = s3;
+                sessionStorage.accessKey = accessKey;
+                sessionStorage.secretKey = secretKey;
+                $rootScope.accessKey = accessKey;
+                if (err) {
+                    console.log(err);
+                    callback(false);
+                } else {
+                    console.log(data.Buckets);
+                    $rootScope.buckets = data.Buckets;
+                    callback(true);
+                }
+            });
         };
-        $scope.render = function (data) {
-            console.log(data);
-        };
-        $scope.authenticated = function () {
-            console.log('DataController authenticated.');
-            $storage.errorCallback = $scope.onError;
-            $storage.listBuckets($scope.render);
-        };
-        $scope.begin = function () {
-            console.log('DataController begin.');
-            if (!sessionStorage.accessKey) {
-                $rootScope.showLoginDialog($scope.authenticated);
+        $rootScope.login = function (callback) {
+            if (sessionStorage.accessKey) {
+                $rootScope.authenticate(sessionStorage.accessKey, sessionStorage.secretKey,
+                    function (result) {
+                        if (!result) {
+                            console.log('Stored token is invalid!');
+                            $rootScope.showLoginDialog(callback);
+                        } else {
+                            console.log('Stored token is valid!');
+                            callback();
+                        }
+                    });
             } else {
-                $storage.login(sessionStorage.accessKey, sessionStorage.secretKey, function (result) {
-                    if (result) {
-                        $scope.authenticated();
-                    } else {
-                        $rootScope.showLoginDialog($scope.authenticated);
-                    }
-                });
+                $rootScope.showLoginDialog(callback);
             }
         };
-        $scope.begin();
+        $rootScope.logout = function () {
+            $rootScope.s3 = undefined;
+            sessionStorage.accessKey = undefined;
+            sessionStorage.secretKey = undefined;
+            window.location.reload(true);
+        };
+    })
+    .service('BaseController', function ($rootScope, $timeout) {
+        var self = {};
+        self.onS3Error = function (err) {
+            console.log(err);
+        };
+        self.listBuckets = function (callback) {
+            $rootScope.loading = true;
+            $rootScope.s3.listBuckets({}, function (err, data) {
+                if (err) {
+                    $scope.on(err);
+                } else {
+                    callback(data);
+                }
+            })
+        };
+        self.start = function (callback) {
+            if (!$rootScope.s3) {
+                $rootScope.login(callback);
+            } else {
+                callback();
+            }
+        };
+        return self;
+    })
+    .controller('HomeController', function ($scope, $rootScope, BaseController) {
+        angular.extend($scope, BaseController);
+        $scope.onAuthenticated = function () {
+            console.log('HomeController onAuthenticated')
+        };
+        $scope.start($scope.onAuthenticated);
+    })
+    .controller('BucketController', function ($scope, $rootScope, BaseController) {
+        angular.extend($scope, BaseController);
+        $scope.onAuthenticated = function () {
+            console.log('BucketController onAuthenticated')
+        };
+        $scope.start($scope.onAuthenticated);
     });

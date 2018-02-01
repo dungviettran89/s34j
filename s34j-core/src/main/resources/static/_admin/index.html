@@ -3,11 +3,11 @@
     <title>S34J Management Console</title>
     <!--material design-->
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-route.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular-route.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular-messages.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
     <!--font awesome-->
     <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
@@ -19,13 +19,12 @@
     <link rel="stylesheet" href="app.css">
     <script src="app.js"></script>
 </head>
-</head>
 <body ng-app="S34J">
-<section ng-controller="MainController" layout="column" style="width: 100%;height: 100%" ng-cloak>
+<section layout="column" style="width: 100%;height: 100%" ng-cloak>
     <section layout="column" ng-include="'index-top.tpl.html'"></section>
     <section layout="row" flex>
         <section layout="column" ng-include="'index-left.tpl.html'"></section>
-        <section layout="row" ng-controller="DataController" ng-include="'index-center.tpl.html'" flex></section>
+        <section layout="row" ng-include="'index-center.tpl.html'" flex></section>
     </section>
 </section>
 </body>
