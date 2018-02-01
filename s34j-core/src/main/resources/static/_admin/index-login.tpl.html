@@ -1,0 +1,37 @@
+<md-dialog ng-controller="LoginController" aria-label="Login" style="width: 400px">
+    <form name="loginForm" ng-cloak>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Login</h2>
+            </div>
+        </md-toolbar>
+
+        <md-dialog-content>
+            <div class="md-dialog-content">
+                <md-input-container class="md-block">
+                    <label>Access Key</label>
+                    <input required type="text" name="accessKey" ng-model="accessKey" ng-disabled="loading"/>
+                    <div ng-messages="loginForm.accessKey.$error">
+                        <div ng-message="required">Please enter a value.</div>
+                        <div ng-message="forbidden">Incorrect.</div>
+                    </div>
+                </md-input-container>
+                <md-input-container class="md-block">
+                    <label>Secret Key</label>
+                    <input required type="password" name="secretKey" ng-model="secretKey" ng-disabled="loading"/>
+                    <div ng-messages="loginForm.secretKey.$error">
+                        <div ng-message="required">Please enter a value.</div>
+                        <div ng-message="forbidden">Incorrect.</div>
+                    </div>
+                </md-input-container>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <span flex></span>
+            <md-button class="md-raised {{loading?'md-accent':'md-primary'}}" ng-disabled="loading" ng-click="login()">
+                <span ng-if="!loading">Login</span>
+                <span ng-if="loading"><i class="fa fa-spinner fa-spin"></i></span>
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

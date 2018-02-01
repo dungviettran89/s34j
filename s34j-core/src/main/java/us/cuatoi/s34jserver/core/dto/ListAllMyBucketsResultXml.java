@@ -9,6 +9,7 @@ public class ListAllMyBucketsResultXml extends AbstractXml {
     private BucketsXml buckets;
 
     public ListAllMyBucketsResultXml() {
+        this.namespaceDictionary.set("","http://s3.amazonaws.com/doc/2006-03-01");
         this.name = "ListAllMyBucketsResult";
     }
 
