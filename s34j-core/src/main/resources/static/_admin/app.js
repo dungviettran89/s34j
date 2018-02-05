@@ -14,11 +14,21 @@ angular
     .controller('LoginController', function ($scope, $rootScope, $mdDialog) {
         $scope.reset = function () {
             $scope.loading = false;
-            $scope.accessKey = 'Q3AM3UQ867SPQQA43P2F';
-            $scope.secretKey = 'zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG';
-            $scope.host = window.location.protocol + '//' + window.location.host;
+            if (window.location.host.indexOf('localhost') >= 0) {
+                $scope.accessKey = 'Q3AM3UQ867SPQQA43P2F';
+                $scope.secretKey = 'zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG';
+                $scope.host = window.location.protocol + '//' + window.location.host;
+            } else if (window.location.host.indexOf('s34j-demo.appspot.com') >= 0) {
+                $scope.accessKey = 'Q3AM3UQ867SPQQA43P2F';
+                $scope.secretKey = 'zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG';
+                $scope.host = 'https://play.minio.io:9000';
+            } else {
+                $scope.accessKey = '';
+                $scope.secretKey = '';
+                $scope.host = window.location.protocol + '//' + window.location.host;
+            }
         };
-        $scope.resetClicked = function(){
+        $scope.resetClicked = function () {
             $scope.reset();
         };
         $scope.loginClicked = function () {
