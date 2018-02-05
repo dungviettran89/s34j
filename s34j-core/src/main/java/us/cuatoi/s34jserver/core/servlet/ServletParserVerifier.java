@@ -31,7 +31,6 @@ public class ServletParserVerifier {
     private final Request request;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private AWS4SignerForChunkedUpload aws4SignerForChunkedUpload;
-    private boolean headerVerified = false;
 
 
     public ServletParserVerifier(StorageContext context, Request request) {
@@ -166,7 +165,6 @@ public class ServletParserVerifier {
             logger.info("SIGNATURE_DOES_NOT_MATCH computedHeader=" + computedHeader);
             throw new S3Exception(ErrorCode.SIGNATURE_DOES_NOT_MATCH);
         }
-        headerVerified = true;
     }
 
     private Date getRequestDate(String amzDateHeader) {

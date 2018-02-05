@@ -9,6 +9,14 @@
         <md-dialog-content>
             <div class="md-dialog-content">
                 <md-input-container class="md-block">
+                    <label>Server</label>
+                    <input required type="text" name="host" ng-model="host" ng-disabled="loading"/>
+                    <div ng-messages="loginForm.host.$error">
+                        <div ng-message="required">Please enter a value.</div>
+                        <div ng-message="forbidden">Incorrect.</div>
+                    </div>
+                </md-input-container>
+                <md-input-container class="md-block">
                     <label>Access Key</label>
                     <input required type="text" name="accessKey" ng-model="accessKey" ng-disabled="loading"/>
                     <div ng-messages="loginForm.accessKey.$error">
@@ -27,6 +35,9 @@
             </div>
         </md-dialog-content>
         <md-dialog-actions layout="row">
+            <!--<md-button aria-lable="Reset" class="md-warm" ng-disabled="loading"-->
+                       <!--ng-click="resetClicked();">Reset-->
+            </md-button>
             <span flex></span>
             <md-button aria-label="Login" class="md-raised {{loading?'md-accent':'md-primary'}}" ng-disabled="loading"
                        ng-click="loginClicked();">

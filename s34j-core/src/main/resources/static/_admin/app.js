@@ -5,7 +5,7 @@ angular
         $routeProvider
             .when('/home', {templateUrl: 'home.tpl.html'})
             .when('/status', {templateUrl: 'home.tpl.html'})
-            .when('/settings', {templateUrl: 'home.tpl.html'})
+            .when('/settings', {templateUrl: 'settings.tpl.html'})
             .when('/users', {templateUrl: 'home.tpl.html'})
             .when('/s3/:bucketName', {templateUrl: 'bucket.tpl.html'})
             .when('/s3/:bucketName/:objectName*', {templateUrl: 'bucket.tpl.html'})
@@ -15,13 +15,21 @@ angular
         $scope.reset = function () {
             $scope.loading = false;
             $scope.accessKey = 'Q3AM3UQ867SPQQA43P2F';
-            $scope.secretKey = 'zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG'
+            $scope.secretKey = 'zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG';
+            $scope.host = window.location.protocol + '//' + window.location.host;
+        };
+        $scope.resetClicked = function(){
+            $scope.reset();
         };
         $scope.loginClicked = function () {
             var loginForm = $scope.loginForm;
             if (loginForm.$valid) {
                 $scope.loading = true;
-                $rootScope.authenticate($scope.accessKey, $scope.secretKey, function (result) {
+                $rootScope.authenticate({
+                    accessKey: $scope.accessKey,
+                    secretKey: $scope.secretKey,
+                    host: $scope.host
+                }, function (result) {
                     $scope.loading = false;
                     if (!result) {
                         $scope.loginForm.accessKey.$setValidity('forbidden', false);
@@ -37,7 +45,6 @@ angular
     })
     .run(function ($rootScope, $mdSidenav, $mdDialog) {
         console.log('Application startup!');
-        $rootScope.windowLocationHost = window.location.host;
         $rootScope.toggleSideNav = function (id) {
             $mdSidenav(id).toggle();
         };
@@ -51,20 +58,23 @@ angular
                 if (success) callback();
             });
         };
-        $rootScope.authenticate = function (accessKey, secretKey, callback) {
+        $rootScope.authenticate = function (auth, callback) {
             var s3 = new AWS.S3({
-                accessKeyId: accessKey,
-                secretAccessKey: secretKey,
-                endpoint: window.location,
+                accessKeyId: auth.accessKey,
+                secretAccessKey: auth.secretKey,
+                endpoint: auth.host,
                 s3ForcePathStyle: true,
                 signatureVersion: 'v4'
             });
             s3.listBuckets({}, function (err, data) {
                 $rootScope.loading = false;
                 $rootScope.s3 = s3;
-                sessionStorage.accessKey = accessKey;
-                sessionStorage.secretKey = secretKey;
-                $rootScope.accessKey = accessKey;
+                sessionStorage.accessKey = auth.accessKey;
+                sessionStorage.secretKey = auth.secretKey;
+                sessionStorage.host = auth.host;
+
+                $rootScope.accessKey = auth.accessKey;
+                $rootScope.host = auth.host;
                 if (err) {
                     console.log(err);
                     callback(false);
@@ -76,8 +86,14 @@ angular
             });
         };
         $rootScope.login = function (callback) {
-            if (sessionStorage.accessKey) {
-                $rootScope.authenticate(sessionStorage.accessKey, sessionStorage.secretKey,
+            if (sessionStorage.accessKey &&
+                sessionStorage.secretKey &&
+                sessionStorage.host) {
+                $rootScope.authenticate({
+                        accessKey: sessionStorage.accessKey,
+                        secretKey: sessionStorage.secretKey,
+                        host: sessionStorage.host
+                    },
                     function (result) {
                         if (!result) {
                             console.log('Stored token is invalid!');
@@ -127,6 +143,17 @@ angular
         $scope.onAuthenticated = function () {
             console.log('HomeController onAuthenticated')
         };
+
+        $rootScope.pageTitle = window.location.host;
+        $scope.start($scope.onAuthenticated);
+    })
+    .controller('SettingsController', function ($scope, $rootScope, BaseController) {
+        angular.extend($scope, BaseController);
+        $scope.onAuthenticated = function () {
+            console.log('SettingsController onAuthenticated')
+        };
+
+        $rootScope.pageTitle = 'Settings';
         $scope.start($scope.onAuthenticated);
     })
     .controller('BucketController', function ($scope, $rootScope, BaseController) {
