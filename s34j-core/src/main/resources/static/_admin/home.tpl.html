@@ -1,28 +1,26 @@
 <section ng-controller="HomeController" ng-if="!loading" flex layout-padding>
     <form name="homeForm">
-        <md-list layout-padding flex>
-            <md-list-item layout="row">
-                <md-input-container flex>
-                    <label>Buckets</label>
-                    <input name="filter" ng-model="filter" type="text">
-                    <div ng-messages="homeForm.filter.$error">
-                        <div ng-message="required">Please enter a value.</div>
-                        <div ng-message="invalid">Invalid bucket name.</div>
-                    </div>
-                </md-input-container>
-            </md-list-item>
-            <md-list-item ng-repeat="bucket in buckets | filter : filter"
-                          ng-href="#!/s3/{{bucket.Name}}"
-                          class="md-2-line">
-                <md-icon md-font-icon="fa fa-cloud" style="font-size: 18px;"></md-icon>
-                <div class="md-list-item-text">
-                    <h3>{{bucket.Name}}</h3>
-                    <p>{{bucket.CreationDate | date}}</p>
-                </div>
-                <md-button class="md-secondary md-icon-button" aria-label="Settings">
-                    <md-icon md-font-icon="fa fa-cog" style="font-size: 18px;"></md-icon>
+        <section layout="column">
+            <md-input-container>
+                <label>Buckets</label>
+                <input type="text" name="filter" ng-model="filter">
+            </md-input-container>
+            <md-grid-list md-cols-xs="1" md-cols-sm="2" md-cols-gt-md="3"
+                          md-row-height="8:1"
+                          md-gutter="12px" md-gutter-gt-sm="8px" ng-cloak flex>
+                <md-grid-tile class="blue" ng-repeat="bucket in buckets | filter : filter">
+                    <md-grid-tile-footer>
+                        <h3>{{bucket.Name}}</h3>
+                    </md-grid-tile-footer>
+                </md-grid-tile>
+            </md-grid-list>
+        </section>
+        <md-fab-speed-dial style="float:right; position:fixed; right: 10px; bottom: 10px;">
+            <md-fab-trigger>
+                <md-button aria-label="add" class="md-fab md-warn">
+                    <md-icon md-font-icon="fa fa-plus"></md-icon>
                 </md-button>
-            </md-list-item>
-        </md-list>
+            </md-fab-trigger>
+        </md-fab-speed-dial>
     </form>
 </section>
