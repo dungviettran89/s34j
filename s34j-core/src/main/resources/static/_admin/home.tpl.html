@@ -1,3 +1,28 @@
-<section layout="row" ng-controller="HomeController" layout-padding>
-    <h1>Home</h1>
+<section ng-controller="HomeController" ng-if="!loading" flex layout-padding>
+    <form name="homeForm">
+        <md-list layout-padding flex>
+            <md-list-item layout="row">
+                <md-input-container flex>
+                    <label>Buckets</label>
+                    <input name="filter" ng-model="filter" type="text">
+                    <div ng-messages="homeForm.filter.$error">
+                        <div ng-message="required">Please enter a value.</div>
+                        <div ng-message="invalid">Invalid bucket name.</div>
+                    </div>
+                </md-input-container>
+            </md-list-item>
+            <md-list-item ng-repeat="bucket in buckets | filter : filter"
+                          ng-href="#!/s3/{{bucket.Name}}"
+                          class="md-2-line">
+                <md-icon md-font-icon="fa fa-cloud" style="font-size: 18px;"></md-icon>
+                <div class="md-list-item-text">
+                    <h3>{{bucket.Name}}</h3>
+                    <p>{{bucket.CreationDate | date}}</p>
+                </div>
+                <md-button class="md-secondary md-icon-button" aria-label="Settings">
+                    <md-icon md-font-icon="fa fa-cog" style="font-size: 18px;"></md-icon>
+                </md-button>
+            </md-list-item>
+        </md-list>
+    </form>
 </section>

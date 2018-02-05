@@ -76,6 +76,7 @@ angular
                 s3ForcePathStyle: true,
                 signatureVersion: 'v4'
             });
+            $rootScope.loading = true;
             s3.listBuckets({}, function (err, data) {
                 $rootScope.loading = false;
                 $rootScope.s3 = s3;
@@ -93,6 +94,7 @@ angular
                     $rootScope.buckets = data.Buckets;
                     callback(true);
                 }
+                $rootScope.$apply();
             });
         };
         $rootScope.login = function (callback) {
@@ -139,6 +141,9 @@ angular
                 }
             })
         };
+        self.newBucket = function (name) {
+            console.log(name);
+        };
         self.start = function (callback) {
             if (!$rootScope.s3) {
                 $rootScope.login(callback);
@@ -151,19 +156,17 @@ angular
     .controller('HomeController', function ($scope, $rootScope, BaseController) {
         angular.extend($scope, BaseController);
         $scope.onAuthenticated = function () {
-            console.log('HomeController onAuthenticated')
+            console.log('HomeController onAuthenticated');
+            $rootScope.pageTitle = $rootScope.host;
         };
-
-        $rootScope.pageTitle = window.location.host;
         $scope.start($scope.onAuthenticated);
     })
     .controller('SettingsController', function ($scope, $rootScope, BaseController) {
         angular.extend($scope, BaseController);
         $scope.onAuthenticated = function () {
             console.log('SettingsController onAuthenticated')
+            $rootScope.pageTitle = 'Settings';
         };
-
-        $rootScope.pageTitle = 'Settings';
         $scope.start($scope.onAuthenticated);
     })
     .controller('BucketController', function ($scope, $rootScope, BaseController) {
