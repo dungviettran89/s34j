@@ -153,11 +153,32 @@ angular
         };
         return self;
     })
-    .controller('HomeController', function ($scope, $rootScope, BaseController) {
+    .controller('HomeController', function ($scope, $rootScope, $location, $mdDialog, BaseController) {
         angular.extend($scope, BaseController);
         $scope.onAuthenticated = function () {
             console.log('HomeController onAuthenticated');
             $rootScope.pageTitle = $rootScope.host;
+        };
+        $scope.openBucket = function (bucket) {
+            $location.path('/s3/' + bucket.Name);
+        };
+        $scope.newBucketClicked = function () {
+            var confirm = $mdDialog.prompt()
+                .title('What would you name your dog?')
+                .textContent('Bowser is a common name.')
+                .placeholder('Dog name')
+                .ariaLabel('Dog name')
+                .initialValue('Buddy')
+                .targetEvent(ev)
+                .required(true)
+                .ok('Okay!')
+                .cancel('I\'m a cat person');
+
+            $mdDialog.show(confirm).then(function (result) {
+                $scope.status = 'You decided to name your dog ' + result + '.';
+            }, function () {
+                $scope.status = 'You didn\'t name your dog.';
+            });
         };
         $scope.start($scope.onAuthenticated);
     })

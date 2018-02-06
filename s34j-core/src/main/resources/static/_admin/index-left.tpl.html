@@ -15,7 +15,7 @@
         <md-subheader ng-if="buckets.length" class="md-no-sticky">Buckets</md-subheader>
     </md-list>
     <section flex layout="column" style="overflow: hidden;">
-        <md-list flex style="overflow-y: scroll; margin-right: -17px; padding-right:10px">
+        <md-list flex style="overflow-y: scroll;">
             <md-list-item ng-repeat="bucket in buckets" ng-href="#!/s3/{{bucket.Name}}"
                           ng-click="toggleSideNav('left');">
                 <md-icon md-font-icon="fa fa-cloud" style="font-size: 18px;"></md-icon>

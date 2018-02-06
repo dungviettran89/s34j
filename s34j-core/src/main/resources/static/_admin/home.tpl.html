@@ -5,19 +5,26 @@
                 <label>Buckets</label>
                 <input type="text" name="filter" ng-model="filter">
             </md-input-container>
-            <md-grid-list md-cols-xs="1" md-cols-sm="2" md-cols-gt-md="3"
-                          md-row-height="8:1"
-                          md-gutter="12px" md-gutter-gt-sm="8px" ng-cloak flex>
-                <md-grid-tile class="blue" ng-repeat="bucket in buckets | filter : filter">
-                    <md-grid-tile-footer>
-                        <h3>{{bucket.Name}}</h3>
-                    </md-grid-tile-footer>
-                </md-grid-tile>
+            <md-grid-list md-cols="1" md-cols-gt-sm="2" md-cols-gt-md="3"
+                          md-row-height="8:1" md-gutter="12px" md-gutter-gt-sm="8px" ng-cloak flex>
+                <md-grid-tile ng-repeat="bucket in buckets | filter : filter"
+                              ng-click="openBucket(bucket);"
+                              layout="column" class="s34j-card-shadow md-clickable"
+                              style="background:white;cursor: pointer;">
+                    <md-icon md-font-icon="fa fa-cloud" style="font-size: 24px; padding:10px;"></md-icon>
+                    <section layout="column" flex style="width:80%;">
+                        <div style="margin: 5px 0 5px 0;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;">
+                            {{bucket.Name}}
+                        </div>
+                        <div style="font-size: 12px;color:#d3d3d3;font-style: italic;">
+                            {{bucket.CreationDate | date:'medium'}}
+                        </div>
+                    </section>
             </md-grid-list>
         </section>
-        <md-fab-speed-dial style="float:right; position:fixed; right: 10px; bottom: 10px;">
+        <md-fab-speed-dial style="fmoat:right; position:fixed; right: 10px; bottom: 10px;">
             <md-fab-trigger>
-                <md-button aria-label="add" class="md-fab md-warn">
+                <md-button ng-click="newBucketClicked();" aria-label="add" class="md-fab md-warn">
                     <md-icon md-font-icon="fa fa-plus"></md-icon>
                 </md-button>
             </md-fab-trigger>
