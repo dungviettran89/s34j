@@ -1,0 +1,24 @@
+<md-list class="bg-white s34j-card-shadow" layout-margin>
+    <md-subheader class="bg-white md-no-sticky">Connection</md-subheader>
+    <md-list-item>
+        <md-input-container class="s34j-input-no-error" flex>
+            <label>Host</label>
+            <input ng-model="$root.host" type="text" ng-readonly="true">
+        </md-input-container>
+    </md-list-item>
+    <md-list-item>
+        <md-input-container class="s34j-input-no-error" flex>
+            <label>Access Key</label>
+            <input ng-model="$root.accessKey" type="text" ng-readonly="true">
+        </md-input-container>
+    </md-list-item>
+    <md-list-item>
+        <md-input-container class="s34j-input-no-error" flex>
+            <label>Secret Key</label>
+            <input ng-model="$root.secretKey" type="{{showSecret?'text':'password'}}" ng-readonly="true">
+            <md-icon md-font-icon="fa {{showSecret?'fa-eye':'fa-eye-slash'}} s34j-cursor-pointer"
+                     ng-click="showSecret=!showSecret">
+            </md-icon>
+        </md-input-container>
+    </md-list-item>
+</md-list>

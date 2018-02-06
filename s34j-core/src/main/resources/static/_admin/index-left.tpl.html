@@ -2,35 +2,40 @@
     <md-toolbar>
         <div class="md-toolbar-tools">
             <md-button class="md-icon-button" aria-label="Buckets" ng-click="toggleSideNav('left');">
-                <md-icon md-font-icon="fa fa-angle-left" style="font-size: 18px;"></md-icon>
+                <md-icon md-font-icon="fa fa-angle-left s34j-icon"></md-icon>
             </md-button>
             <h2 flex md-truncate>Menu</h2>
         </div>
     </md-toolbar>
-    <md-list>
-        <md-list-item ng-href="#!/home" ng-click="toggleSideNav('left');">
-            <md-icon md-font-icon="fa fa-home" style="font-size: 18px;"></md-icon>
-            <p>Home</p>
-        </md-list-item>
-        <md-subheader ng-if="buckets.length" class="md-no-sticky">Buckets</md-subheader>
-    </md-list>
     <section flex layout="column" style="overflow: hidden;">
         <md-list flex style="overflow-y: scroll;">
-            <md-list-item ng-repeat="bucket in buckets" ng-href="#!/s3/{{bucket.Name}}"
+            <md-list-item ng-if="buckets.length">
+                <md-icon md-font-icon="fa fa-search s34j-icon"></md-icon>
+                <md-input-container class="s34j-input-no-error" flex>
+                    <label>Buckets</label>
+                    <input type="text" ng-model="$root.sideNavFilter">
+                </md-input-container>
+            </md-list-item>
+            <md-list-item ng-repeat="bucket in buckets | filter : $root.sideNavFilter "
+                          ng-href="#!/s3/{{bucket.Name}}"
                           ng-click="toggleSideNav('left');">
-                <md-icon md-font-icon="fa fa-cloud" style="font-size: 18px;"></md-icon>
+                <md-icon md-font-icon="fa fa-cloud" ></md-icon>
                 <p>{{bucket.Name}}</p>
             </md-list-item>
         </md-list>
     </section>
     <md-list>
         <md-subheader class="md-no-sticky">{{accessKey}}</md-subheader>
-        <md-list-item ng-href="#!/settings" ng-click="toggleSideNav('left');">
-            <md-icon md-font-icon="fa fa-cogs" style="font-size: 18px;"></md-icon>
+        <md-list-item ng-href="#!/home" ng-click="toggleSideNav('left');">
+            <md-icon md-font-icon="fa fa-home s34j-icon" ></md-icon>
+            <p>Home</p>
+        </md-list-item>
+        <md-list-item ng-if="s34j" ng-href="#!/settings" ng-click="toggleSideNav('left');">
+            <md-icon md-font-icon="fa fa-cogs s34j-icon" ></md-icon>
             <p>Settings</p>
         </md-list-item>
         <md-list-item ng-click="logout();">
-            <md-icon md-font-icon="fa fa-sign-out-alt" style="font-size: 18px;"></md-icon>
+            <md-icon md-font-icon="fa fa-sign-out-alt s34j-icon" ></md-icon>
             <p>Logout</p>
         </md-list-item>
     </md-list>

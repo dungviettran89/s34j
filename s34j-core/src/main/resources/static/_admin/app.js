@@ -86,6 +86,7 @@ angular
 
                 $rootScope.accessKey = auth.accessKey;
                 $rootScope.host = auth.host;
+                $rootScope.secretKey = auth.secretKey;
                 if (err) {
                     console.log(err);
                     callback(false);
@@ -152,6 +153,12 @@ angular
             }
         };
         return self;
+    })
+    .component('connectionInfo', {
+        templateUrl: 'connection-info.tpl.html',
+        controller: function ($scope) {
+
+        }
     })
     .controller('HomeController', function ($scope, $rootScope, $location, $mdDialog, BaseController) {
         angular.extend($scope, BaseController);

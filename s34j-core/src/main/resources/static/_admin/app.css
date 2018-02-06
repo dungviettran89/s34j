@@ -7,5 +7,22 @@
 }
 
 .s34j-card-shadow {
-    box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 2px 1px -1px rgba(0,0,0,.12);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .2), 0 1px 1px 0 rgba(0, 0, 0, .14), 0 2px 1px -1px rgba(0, 0, 0, .12);
+}
+
+.s34j-cursor-pointer {
+    cursor: pointer;
+}
+
+.bg-white {
+    background: white;
+}
+
+.s34j-icon {
+    font-size: 18px;
+}
+
+.s34j-input-no-error .md-errors-spacer {
+    height: 0 !important;
+    min-height: 0 !important;
 }

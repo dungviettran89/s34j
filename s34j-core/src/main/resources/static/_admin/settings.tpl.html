@@ -1,22 +1,3 @@
-<section layout="row" ng-controller="SettingsController" layout-padding flex>
-    <md-list ng-if="!loading" flex>
-        <md-list-item>
-            <md-input-container flex>
-                <label>Host</label>
-                <input ng-model="host" type="text" ng-readonly="true">
-            </md-input-container>
-        </md-list-item>
-        <md-list-item>
-            <md-input-container flex>
-                <label>Access Key</label>
-                <input ng-model="accessKey" type="text" ng-readonly="true">
-            </md-input-container>
-        </md-list-item>
-        <md-list-item>
-            <md-input-container flex>
-                <label>Secret Key</label>
-                <input ng-model="accessKey" type="password" ng-readonly="true">
-            </md-input-container>
-        </md-list-item>
-    </md-list>
+<section layout="column" ng-controller="SettingsController" layout-padding flex>
+    <connection-info ng-if="!loading"></connection-info>
 </section>
