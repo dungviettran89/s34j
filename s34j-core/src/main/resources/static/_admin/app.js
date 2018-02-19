@@ -17,7 +17,7 @@ angular
             if (window.location.host.indexOf('localhost') >= 0) {
                 $scope.accessKey = 'Q3AM3UQ867SPQQA43P2F';
                 $scope.secretKey = 'zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG';
-                $scope.host = window.location.protocol + '//' + window.location.host;
+                $scope.host = 'https://play.minio.io:9000';
             } else if (window.location.host.indexOf('s34j-demo.appspot.com') >= 0) {
                 $scope.accessKey = 'Q3AM3UQ867SPQQA43P2F';
                 $scope.secretKey = 'zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG';
@@ -60,7 +60,7 @@ angular
         };
         $rootScope.showLoginDialog = function (callback) {
             $mdDialog.show({
-                templateUrl: 'index-login.tpl.html',
+                templateUrl: 'dialog-login.tpl.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 fullscreen: true
@@ -160,6 +160,9 @@ angular
 
         }
     })
+    .controller('CreateBucketController', function ($scope, $rootScope, $mdDialog) {
+
+    })
     .controller('HomeController', function ($scope, $rootScope, $location, $mdDialog, BaseController) {
         angular.extend($scope, BaseController);
         $scope.onAuthenticated = function () {
@@ -170,21 +173,12 @@ angular
             $location.path('/s3/' + bucket.Name);
         };
         $scope.newBucketClicked = function () {
-            var confirm = $mdDialog.prompt()
-                .title('What would you name your dog?')
-                .textContent('Bowser is a common name.')
-                .placeholder('Dog name')
-                .ariaLabel('Dog name')
-                .initialValue('Buddy')
-                .targetEvent(ev)
-                .required(true)
-                .ok('Okay!')
-                .cancel('I\'m a cat person');
-
-            $mdDialog.show(confirm).then(function (result) {
-                $scope.status = 'You decided to name your dog ' + result + '.';
-            }, function () {
-                $scope.status = 'You didn\'t name your dog.';
+            $mdDialog.show({
+                templateUrl: 'dialog-create-bucket.tpl.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: true
+            }).then(function (success) {
+                if (success) callback();
             });
         };
         $scope.start($scope.onAuthenticated);

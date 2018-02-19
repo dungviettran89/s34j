@@ -1,0 +1,30 @@
+<md-dialog ng-controller="CreateBucketController" aria-label="Create Bucket" style="width: 400px">
+    <form name="createBucketForm" ng-cloak>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Create Bucket</h2>
+            </div>
+        </md-toolbar>
+
+        <md-dialog-content>
+            <div class="md-dialog-content">
+                <md-input-container class="md-block">
+                    <label>Name</label>
+                    <input required type="text" name="host" ng-model="host" ng-disabled="loading"/>
+                    <div ng-messages="createBucketForm.host.$error">
+                        <div ng-message="required">Please enter a value.</div>
+                        <div ng-message="forbidden">Incorrect.</div>
+                    </div>
+                </md-input-container>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <span flex></span>
+            <md-button aria-label="Create" class="md-raised {{loading?'md-accent':'md-primary'}}" ng-disabled="loading"
+                       ng-click="createClicked();">
+                <span ng-if="!loading">Create</span>
+                <span ng-if="loading"><i class="fa fa-spinner fa-spin"></i></span>
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

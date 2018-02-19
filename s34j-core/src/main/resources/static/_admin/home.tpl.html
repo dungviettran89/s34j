@@ -1,30 +1,31 @@
-<section ng-controller="HomeController" ng-if="!loading"
-         layout="column" layout-gt-sm="row" flex>
-    <md-list class="bg-white s34j-card-shadow" style="max-height: 700px;overflow-y: scroll;"
-             flex="70" layout-margin>
-        <md-list-item ng-if="buckets.length">
-            <md-icon md-font-icon="fa fa-search s34j-icon"></md-icon>
-            <md-input-container class="s34j-input-no-error" flex>
-                <label>Buckets</label>
-                <input type="text" ng-model="$root.sideNavFilter">
-            </md-input-container>
-        </md-list-item>
-        <md-list-item ng-repeat="bucket in buckets | filter : $root.sideNavFilter "
-                      ng-href="#!/s3/{{bucket.Name}}">
-            <md-icon md-font-icon="fa fa-cloud"></md-icon>
-            <p>{{bucket.Name}}</p>
-        </md-list-item>
-    </md-list>
-    <section layout="column" flex-gt-sm="35">
-        <connection-info></connection-info>
-        <div style="height:50px"></div>
+<div ng-controller="HomeController">
+    <section ng-if="!loading && buckets"
+             layout="column" layout-gt-sm="row" flex>
+        <md-list class="bg-white s34j-card-shadow"
+                 flex="70" layout-margin style="max-height: calc( 100% - 20px );overflow-y: scroll;">
+            <md-list-item ng-if="buckets.length">
+                <md-icon md-font-icon="fa fa-search s34j-icon"></md-icon>
+                <md-input-container class="s34j-input-no-error" flex>
+                    <label>Buckets</label>
+                    <input type="text" ng-model="$root.sideNavFilter">
+                </md-input-container>
+            </md-list-item>
+            <md-list-item ng-repeat="bucket in buckets | filter : $root.sideNavFilter "
+                          ng-href="#!/s3/{{bucket.Name}}">
+                <md-icon md-font-icon="fa fa-cloud"></md-icon>
+                <p>{{bucket.Name}}</p>
+            </md-list-item>
+        </md-list>
+        <section layout="column" flex-gt-sm="35">
+            <connection-info></connection-info>
+            <div style="height:50px"></div>
+        </section>
+        <md-fab-speed-dial style="float:right; position:fixed; right: 10px; bottom: 10px;">
+            <md-fab-trigger>
+                <md-button ng-click="newBucketClicked();" aria-label="add" class="md-fab md-warn">
+                    <md-icon md-font-icon="fa fa-plus"></md-icon>
+                </md-button>
+            </md-fab-trigger>
+        </md-fab-speed-dial>
     </section>
-    <md-fab-speed-dial style="float:right; position:fixed; right: 10px; bottom: 10px;">
-        <md-fab-trigger>
-            <md-button ng-click="newBucketClicked();" aria-label="add" class="md-fab md-warn">
-                <md-icon md-font-icon="fa fa-plus"></md-icon>
-            </md-button>
-        </md-fab-trigger>
-    </md-fab-speed-dial>
-
-</section>
+</div>
