@@ -1,8 +1,7 @@
 <div ng-controller="HomeController">
-    <section ng-if="!loading && buckets"
-             layout="column" layout-gt-sm="row" flex>
-        <md-list class="bg-white s34j-card-shadow"
-                 flex="70" layout-margin style="max-height: calc( 100% - 20px );overflow-y: scroll;">
+    <section ng-if="!loading && buckets" layout="column" layout-gt-sm="row" flex>
+        <md-list class="bg-white s34j-card-shadow" flex="70" layout-margin
+                 style="max-height: calc( 100% - 20px );overflow-y: scroll;">
             <md-list-item ng-if="buckets.length">
                 <md-icon md-font-icon="fa fa-search s34j-icon"></md-icon>
                 <md-input-container class="s34j-input-no-error" flex>

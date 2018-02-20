@@ -1,3 +1,24 @@
-<section layout="row" ng-controller="BucketController" layout-padding>
-    <h1>Bucket</h1>
-</section>
+<div ng-controller="BucketController">
+    <section layout="column" layout-gt-sm="row" flex>
+        <section layout="column" class="bg-white s34j-card-shadow" flex="70" layout-margin
+                 style="max-height: calc( 100% - 20px )">
+            <md-list style="padding-bottom: 0;margin-bottom: 0;">
+                <md-list-item>
+                    <md-input-container class="s34j-input-no-error" flex>
+                        <label>Prefix</label>
+                        <input type="text" ng-model="prefix">
+                    </md-input-container>
+                </md-list-item>
+            </md-list>
+            <md-list style=";overflow-y: scroll;padding-top:0;margin-top:0;">
+                <md-list-item ng-repeat="object in objects" ng-click="objectClicked(object);">
+                    <p>{{object.Key}}</p>
+                </md-list-item>
+            </md-list>
+        </section>
+        <section layout="column" flex-gt-sm="35">
+            <connection-info></connection-info>
+            <div style="height:50px"></div>
+        </section>
+    </section>
+</div>

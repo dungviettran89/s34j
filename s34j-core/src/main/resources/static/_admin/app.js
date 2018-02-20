@@ -211,10 +211,31 @@ angular
     })
     .controller('BucketController', function ($scope, $rootScope, BaseController, $routeParams) {
         angular.extend($scope, BaseController);
+        $scope.commonPrefixes = [];
+        $scope.objects = [];
+        $scope.pageSize = 50;
         $scope.onAuthenticated = function () {
-            console.log('BucketController onAuthenticated')
+            console.log('BucketController onAuthenticated');
             $rootScope.pageTitle = $rootScope.host + '/' + $routeParams.bucketName +
                 ($routeParams.objectName ? '/' + $routeParams.objectName : '');
+            $rootScope.loading = true;
+            $rootScope.s3.listObjectsV2({
+                Bucket: $routeParams.bucketName,
+                MaxKeys: $scope.pageSize
+            }, function (err, data) {
+                if (err) {
+                    $scope.onS3Error(err);
+                } else {
+                    console.log(data);
+                    $scope.objects = data.Contents;
+                    $scope.commonPrefixes = data.CommonPrefixes;
+                }
+                $rootScope.loading = false;
+                $scope.$apply();
+            });
+        };
+        $scope.objectClicked = function (object) {
+            console.log(object.Key + ' clicked.')
         };
         $scope.start($scope.onAuthenticated);
     });
