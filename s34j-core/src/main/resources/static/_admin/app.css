@@ -26,3 +26,15 @@
     height: 0 !important;
     min-height: 0 !important;
 }
+
+.s34j-top-progress {
+    float:left;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
+
+.s34j-top-progress .md-container {
+    height: 2px;
+}
