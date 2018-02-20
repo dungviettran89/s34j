@@ -209,30 +209,44 @@ angular
         };
         $scope.start($scope.onAuthenticated);
     })
-    .controller('BucketController', function ($scope, $rootScope, BaseController, $routeParams) {
+    .controller('BucketController', function ($scope, $rootScope, BaseController, $routeParams, $timeout) {
         angular.extend($scope, BaseController);
-        $scope.commonPrefixes = [];
         $scope.objects = [];
         $scope.pageSize = 50;
-        $scope.onAuthenticated = function () {
-            console.log('BucketController onAuthenticated');
-            $rootScope.pageTitle = $rootScope.host + '/' + $routeParams.bucketName +
-                ($routeParams.objectName ? '/' + $routeParams.objectName : '');
+        $scope.prefix = '';
+        $scope.loadObject = function () {
             $rootScope.loading = true;
             $rootScope.s3.listObjectsV2({
                 Bucket: $routeParams.bucketName,
-                MaxKeys: $scope.pageSize
+                MaxKeys: $scope.pageSize,
+                Prefix: $scope.prefix
             }, function (err, data) {
                 if (err) {
                     $scope.onS3Error(err);
                 } else {
                     console.log(data);
                     $scope.objects = data.Contents;
-                    $scope.commonPrefixes = data.CommonPrefixes;
+                    $scope.isTruncated = data.IsTruncated;
                 }
                 $rootScope.loading = false;
                 $scope.$apply();
             });
+        };
+        $scope.onPrefixKeyPress = function (ev) {
+            if ($scope.loadPromise) {
+                $timeout.cancel($scope.loadPromise);
+            }
+            if (ev && ev.charCode === 13) {
+                $scope.loadObject();
+            } else {
+                $scope.loadPromise = $timeout($scope.loadObject, 500);
+            }
+        };
+        $scope.onAuthenticated = function () {
+            console.log('BucketController onAuthenticated');
+            $rootScope.pageTitle = $rootScope.host + '/' + $routeParams.bucketName +
+                ($routeParams.objectName ? '/' + $routeParams.objectName : '');
+            $scope.loadObject();
         };
         $scope.objectClicked = function (object) {
             console.log(object.Key + ' clicked.')

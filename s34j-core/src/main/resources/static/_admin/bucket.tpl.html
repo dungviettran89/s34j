@@ -6,7 +6,7 @@
                 <md-list-item>
                     <md-input-container class="s34j-input-no-error" flex>
                         <label>Prefix</label>
-                        <input type="text" ng-model="prefix">
+                        <input type="text" ng-model="prefix" ng-keypress="onPrefixKeyPress($event);">
                     </md-input-container>
                 </md-list-item>
             </md-list>
