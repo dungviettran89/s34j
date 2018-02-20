@@ -10,9 +10,8 @@
             <div class="md-dialog-content">
                 <md-input-container class="md-block">
                     <label>Name</label>
-                    <input required type="text" name="newBucketName"
-                           ng-model="newBucketName" ng-disabled="loading"
-                           md-maxlength="63" md-minlength="3"
+                    <input required type="text" name="newBucketName" ng-model="newBucketName" ng-readonly="loading"
+                           ng-keypress="newBucketNameKeyPressed($event);" md-maxlength="63" md-minlength="3"
                            ng-pattern="/^[a-z0-9][a-z0-9\.\-]+[a-z0-9]$/"/>
                     <div ng-messages="createBucketForm.newBucketName.$error">
                         <div ng-message="required">Please enter a value.</div>

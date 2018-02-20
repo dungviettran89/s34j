@@ -161,6 +161,11 @@ angular
     .controller('CreateBucketController', function ($scope, $rootScope, $location, $mdDialog, BaseController) {
         angular.extend($scope, BaseController);
         $scope.loading = false;
+        $scope.newBucketNameKeyPressed = function (ev) {
+            if (ev && ev.keyCode === 13) {
+                $scope.createBucketClicked();
+            }
+        };
         $scope.createBucketClicked = function () {
             var bucketForm = $scope.createBucketForm;
             bucketForm.newBucketName.$setValidity('server', true);
