@@ -127,6 +127,11 @@ angular
             window.location.reload(true);
         };
     })
+    .component('connectionInfo', {
+        templateUrl: 'connection-info.tpl.html',
+        controller: function ($scope) {
+        }
+    })
     .service('BaseController', function ($rootScope, $timeout) {
         var self = {};
         self.onS3Error = function (err) {
