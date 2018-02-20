@@ -132,14 +132,13 @@ angular
         self.onS3Error = function (err) {
             console.log(err);
         };
-        self.listBuckets = function (callback) {
+        self.refreshBuckets = function () {
             $rootScope.loading = true;
             $rootScope.s3.listBuckets({}, function (err, data) {
-                if (err) {
-                    $scope.on(err);
-                } else {
-                    callback(data);
-                }
+                if (err) self.onS3Error(err);
+                else $rootScope.buckets = data.Buckets;
+                $rootScope.loading = false;
+                $rootScope.$apply();
             })
         };
         self.newBucket = function (name) {
@@ -154,14 +153,30 @@ angular
         };
         return self;
     })
-    .component('connectionInfo', {
-        templateUrl: 'connection-info.tpl.html',
-        controller: function ($scope) {
-
-        }
-    })
-    .controller('CreateBucketController', function ($scope, $rootScope, $mdDialog) {
-
+    .controller('CreateBucketController', function ($scope, $rootScope, $location, $mdDialog, BaseController) {
+        angular.extend($scope, BaseController);
+        $scope.loading = false;
+        $scope.createBucketClicked = function () {
+            var bucketForm = $scope.createBucketForm;
+            bucketForm.newBucketName.$setValidity('server', true);
+            if (!bucketForm.$valid) return;
+            console.log('Create Bucket ' + $scope.newBucketName);
+            $scope.loading = true;
+            $rootScope.s3.createBucket({
+                Bucket: $scope.newBucketName
+            }, function (err, data) {
+                if (err) {
+                    $scope.serverError = err.message;
+                    bucketForm.newBucketName.$setValidity('server', false);
+                } else {
+                    $location.path('/s3/' + $scope.newBucketName);
+                    $mdDialog.hide();
+                    $scope.refreshBuckets();
+                }
+                $scope.loading = false;
+                $scope.$apply();
+            });
+        };
     })
     .controller('HomeController', function ($scope, $rootScope, $location, $mdDialog, BaseController) {
         angular.extend($scope, BaseController);
@@ -177,8 +192,6 @@ angular
                 templateUrl: 'dialog-create-bucket.tpl.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: true
-            }).then(function (success) {
-                if (success) callback();
             });
         };
         $scope.start($scope.onAuthenticated);
@@ -191,10 +204,12 @@ angular
         };
         $scope.start($scope.onAuthenticated);
     })
-    .controller('BucketController', function ($scope, $rootScope, BaseController) {
+    .controller('BucketController', function ($scope, $rootScope, BaseController, $routeParams) {
         angular.extend($scope, BaseController);
         $scope.onAuthenticated = function () {
             console.log('BucketController onAuthenticated')
+            $rootScope.pageTitle = $rootScope.host + '/' + $routeParams.bucketName +
+                ($routeParams.objectName ? '/' + $routeParams.objectName : '');
         };
         $scope.start($scope.onAuthenticated);
     });

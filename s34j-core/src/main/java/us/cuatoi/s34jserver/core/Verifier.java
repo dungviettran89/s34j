@@ -20,7 +20,7 @@ public class Verifier {
         // Bucket names should be dns compatible.
         if (!name.matches("^[a-z0-9][a-z0-9\\.\\-]+[a-z0-9]$")) {
             String message = "bucket name does not follow Amazon S3 standards. For more information refer "
-                    + "http://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html";
+                    + " ";
             throw new S3Exception(ErrorCode.INVALID_BUCKET_NAME, message);
         }
     }
