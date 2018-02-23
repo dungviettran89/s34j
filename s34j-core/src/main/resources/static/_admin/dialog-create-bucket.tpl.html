@@ -34,8 +34,8 @@
             <md-button aria-label="Create" class="md-raised {{loading?'md-accent':'md-primary'}}"
                        ng-disabled="loading || !newBucketName"
                        ng-click="createBucketClicked();">
-                <span ng-if="!loading">Create</span>
-                <span ng-if="loading"><i class="fa fa-spinner fa-spin"></i></span>
+                <span ng-show="!loading">Create</span>
+                <span ng-show="loading"><i class="fa fa-spinner fa-spin"></i></span>
             </md-button>
         </md-dialog-actions>
     </form>

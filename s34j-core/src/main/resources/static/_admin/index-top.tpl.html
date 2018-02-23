@@ -5,10 +5,10 @@
     <h2 flex md-truncate>
         {{pageTitle}}
     </h2>
-    <md-button class="md-icon-button" aria-label="settings" ng-if="s34j" ng-href="#!/settings">
+    <md-button class="md-icon-button" aria-label="settings" ng-show="s34j" ng-href="#!/settings">
         <md-icon md-font-icon="fa fa-cog s34j-icon"></md-icon>
     </md-button>
     </div>
 </md-toolbar>
-<md-progress-linear ng-if="loading" md-mode="indeterminate" class="s34j-top-progress md-accent">
+<md-progress-linear ng-show="loading" md-mode="indeterminate" class="s34j-top-progress md-accent">
 </md-progress-linear>

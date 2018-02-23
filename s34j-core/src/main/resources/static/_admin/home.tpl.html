@@ -1,9 +1,9 @@
 <div ng-controller="HomeController">
-    <section ng-if="!loading && buckets" layout="column" layout-gt-sm="row" flex>
+    <section ng-show="!loading && buckets" layout="column" layout-gt-sm="row" flex>
         <section layout="column" class="bg-white s34j-card-shadow" flex="70" layout-margin
                  style="max-height: calc( 100% - 20px )">
             <md-list style="padding-bottom: 0;margin-bottom: 0;">
-                <md-list-item ng-if="buckets.length">
+                <md-list-item ng-show="buckets.length">
                     <md-icon md-font-icon="fa fa-search s34j-icon"></md-icon>
                     <md-input-container class="s34j-input-no-error" flex>
                         <label>Buckets</label>

@@ -9,7 +9,7 @@
     </md-toolbar>
     <section flex layout="column" style="overflow: hidden;">
         <md-list style="padding-bottom: 0;margin-bottom: 0;">
-            <md-list-item ng-if="buckets.length">
+            <md-list-item ng-show="buckets.length">
                 <md-icon md-font-icon="fa fa-search s34j-icon"></md-icon>
                 <md-input-container class="s34j-input-no-error" flex>
                     <label>Buckets</label>
@@ -32,7 +32,7 @@
             <md-icon md-font-icon="fa fa-home s34j-icon"></md-icon>
             <p>Home</p>
         </md-list-item>
-        <md-list-item ng-if="s34j" ng-href="#!/settings" ng-click="toggleSideNav('left');">
+        <md-list-item ng-show="s34j" ng-href="#!/settings" ng-click="toggleSideNav('left');">
             <md-icon md-font-icon="fa fa-cogs s34j-icon"></md-icon>
             <p>Settings</p>
         </md-list-item>
