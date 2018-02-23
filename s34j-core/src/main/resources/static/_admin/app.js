@@ -217,34 +217,86 @@ angular
     .controller('BucketController', function ($scope, $rootScope, BaseController, $routeParams, $timeout) {
         angular.extend($scope, BaseController);
         $scope.objects = [];
+        $scope.bucketName = $routeParams.bucketName;
+        $scope.objectName = $routeParams.objectName;
+        $scope.commonPrefixes = [];
         $scope.pageSize = 50;
-        $scope.prefix = '';
+        $scope.prefix = $routeParams.objectName;
         $scope.loadObject = function () {
             $rootScope.loading = true;
             $rootScope.s3.listObjectsV2({
-                Bucket: $routeParams.bucketName,
-                MaxKeys: $scope.pageSize,
-                Prefix: $scope.prefix
-            }, function (err, data) {
-                if (err) {
-                    $scope.onS3Error(err);
-                } else {
-                    console.log(data);
-                    $scope.objects = data.Contents;
-                    $scope.isTruncated = data.IsTruncated;
+                    Bucket: $routeParams.bucketName,
+                    MaxKeys: $scope.pageSize,
+                    Prefix: $scope.prefix,
+                    Delimiter: '/'
+                },
+                function (err, data) {
+                    if (err) {
+                        $scope.onS3Error(err);
+                    } else {
+                        console.log(data);
+                        $scope.objects = data.Contents;
+                        $scope.isTruncated = data.IsTruncated;
+                        $scope.nextContinuationToken = data.NextContinuationToken;
+                        $scope.commonPrefixes = data.CommonPrefixes;
+                    }
+                    $rootScope.loading = false;
+                    $scope.$apply();
                 }
-                $rootScope.loading = false;
-                $scope.$apply();
-            });
+            )
         };
-        $scope.onPrefixKeyPress = function (ev) {
+        $scope.loadMore = function () {
+            $rootScope.loading = true;
+            $rootScope.s3.listObjectsV2({
+                    Bucket: $routeParams.bucketName,
+                    MaxKeys: $scope.pageSize,
+                    Prefix: $scope.prefix,
+                    Delimiter: '/',
+                    ContinuationToken: $scope.nextContinuationToken
+                },
+                function (err, data) {
+                    if (err) {
+                        $scope.onS3Error(err);
+                    } else {
+                        console.log(data);
+                        $scope.objects = $scope.objects.concat(data.Contents);
+                        $scope.commonPrefixes = $scope.commonPrefixes.concat(data.CommonPrefixes);
+                        $scope.isTruncated = data.IsTruncated;
+                        $scope.nextContinuationToken = data.NextContinuationToken;
+                    }
+                    $rootScope.loading = false;
+                    $scope.$apply();
+                }
+            )
+        };
+        $scope.getIcon = function (name) {
+            var suffix = name.substr(name.lastIndexOf('.'));
+            switch (suffix) {
+                case'.png':
+                case'.jpg':
+                case'.jpeg':
+                    return 'fa-image';
+                case '.txt':
+                    return 'fa-file-alt';
+                default:
+                    return 'fa-file';
+            }
+        };
+        $scope.commonPrefixClicked = function (commonPrefix) {
+            $scope.prefix = commonPrefix.Prefix;
+            $scope.loadDelayed(100);
+        };
+        $scope.loadDelayed = function (delay) {
             if ($scope.loadPromise) {
                 $timeout.cancel($scope.loadPromise);
             }
+            $scope.loadPromise = $timeout($scope.loadObject, 500);
+        };
+        $scope.onPrefixKeyPress = function (ev) {
             if (ev && ev.charCode === 13) {
-                $scope.loadObject();
+                $scope.loadDelayed(100);
             } else {
-                $scope.loadPromise = $timeout($scope.loadObject, 500);
+                $scope.loadDelayed(500);
             }
         };
         $scope.onAuthenticated = function () {

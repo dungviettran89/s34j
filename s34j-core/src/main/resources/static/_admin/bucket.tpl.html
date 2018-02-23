@@ -11,8 +11,17 @@
                 </md-list-item>
             </md-list>
             <md-list style=";overflow-y: scroll;padding-top:0;margin-top:0;">
+                <md-list-item ng-repeat="commonPrefix in commonPrefixes"
+                              ng-href="#!/s3/{{bucketName}}/{{commonPrefix.Prefix}}">
+                    <md-icon md-font-icon="fa fa-folder s34j-icon"></md-icon>
+                    <p>{{commonPrefix.Prefix}}</p>
+                </md-list-item>
                 <md-list-item ng-repeat="object in objects" ng-click="objectClicked(object);">
+                    <md-icon md-font-icon="fa {{getIcon(object.Key)}} s34j-icon"></md-icon>
                     <p>{{object.Key}}</p>
+                </md-list-item>
+                <md-list-item ng-show="isTruncated && !loading" >
+                    <md-button class="md-warn" ng-click="loadMore();" style="width: 100%;">Load more</md-button>
                 </md-list-item>
             </md-list>
         </section>
