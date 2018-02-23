@@ -14,6 +14,12 @@
     cursor: pointer;
 }
 
+.s34j-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .bg-white {
     background: white;
 }
@@ -28,7 +34,7 @@
 }
 
 .s34j-top-progress {
-    float:left;
+    float: left;
     position: fixed;
     top: 0;
     left: 0;

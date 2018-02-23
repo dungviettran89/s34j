@@ -1,7 +1,7 @@
 <div ng-controller="BucketController">
     <section ng-show="buckets" layout="column" layout-gt-sm="row" flex>
         <section layout="column" class="bg-white s34j-card-shadow" flex="70" layout-margin
-                 style="max-height: calc( 100% - 20px )">
+                 style="max-height: calc( 100% - 20px );overflow-x: hidden;">
             <md-list style="padding-bottom: 0;margin-bottom: 0;">
                 <md-list-item>
                     <md-input-container class="s34j-input-no-error" flex>
@@ -10,17 +10,26 @@
                     </md-input-container>
                 </md-list-item>
             </md-list>
-            <md-list style=";overflow-y: scroll;padding-top:0;margin-top:0;">
+            <md-list class="md-dense" style=";overflow-y: scroll;padding-top:0;margin-top:0;">
                 <md-list-item ng-repeat="commonPrefix in commonPrefixes"
                               ng-href="#!/s3/{{bucketName}}/{{commonPrefix.Prefix}}">
                     <md-icon md-font-icon="fa fa-folder s34j-icon"></md-icon>
                     <p>{{commonPrefix.Prefix}}</p>
                 </md-list-item>
-                <md-list-item ng-repeat="object in objects" ng-click="objectClicked(object);">
+                <md-list-item ng-repeat="object in objects" ng-click="objectClicked(object);"
+                              class="md-2-line">
                     <md-icon md-font-icon="fa {{getIcon(object.Key)}} s34j-icon"></md-icon>
-                    <p>{{object.Key}}</p>
+                    <div class="md-list-item-text" layout="column">
+                        <span class="s34j-truncate" style="font-size: 15px;">
+                            {{object.Key}}
+                        </span>
+                        <p>
+                            <small>{{object.LastModified | date:'medium' }}</small>
+                            <span style="color:#3f51b5">{{ object.Size | bytes:2 }}</span>
+                        </p>
+                    </div>
                 </md-list-item>
-                <md-list-item ng-show="isTruncated && !loading" >
+                <md-list-item ng-show="isTruncated && !loading">
                     <md-button class="md-warn" ng-click="loadMore();" style="width: 100%;">Load more</md-button>
                 </md-list-item>
             </md-list>
