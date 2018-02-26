@@ -14,9 +14,15 @@
                         <md-icon md-font-icon="far fa-check-square s34j-icon"></md-icon>
                     </md-button>
                     <div class="md-list-item-text" layout="row">
-                        <p>{{selectCount()}} selected.</p>
-                        <md-button class="md-primary">Copy</md-button>
-                        <md-button class="md-accent">Delete</md-button>
+                        <p hide-xs> {{selectCount()}} selected.</p>
+                        <md-button class="md-primary">
+                            <md-icon md-font-icon="fa fa-copy"></md-icon>
+                            <span>Copy</span>
+                        </md-button>
+                        <md-button class="md-accent">
+                            <md-icon md-font-icon="fa fa-trash"></md-icon>
+                            <span>Delete</span>
+                        </md-button>
                     </div>
                     <md-button class="md-icon-button md-secondary" aria-label="de-select all" ng-click="selectNone();">
                         <md-icon md-font-icon="fa fa-times s34j-icon"></md-icon>

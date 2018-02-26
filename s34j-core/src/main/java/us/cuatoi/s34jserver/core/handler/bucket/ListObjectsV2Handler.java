@@ -46,6 +46,7 @@ public class ListObjectsV2Handler extends BucketHandler {
 
     @Override
     public Response handle() throws Exception {
+        verifyBucketExists();
         logger.debug("delimiter=" + delimiter);
         logger.debug("encodingType=" + encodingType);
         logger.debug("maxKeys=" + maxKeys);

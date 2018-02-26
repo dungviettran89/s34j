@@ -209,6 +209,7 @@ public class BucketHandler extends BaseHandler {
         } else {
             eTag = md5HashFile(path);
             ObjectMetadata metadata = new ObjectMetadata().seteTag(eTag);
+            Files.createDirectories(metadataFile.getParent());
             Files.write(metadataFile, DTOHelper.toPrettyJson(metadata).getBytes(StandardCharsets.UTF_8));
         }
         return eTag;
