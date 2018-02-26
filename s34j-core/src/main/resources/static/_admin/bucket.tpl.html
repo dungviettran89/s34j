@@ -40,7 +40,8 @@
                 </md-list-item>
                 <md-list-item ng-repeat="object in objects" ng-click="objectClicked(object,$index);" class="md-2-line">
                     <md-menu>
-                        <md-button class="md-icon-button" aria-label="menu" ng-click="$mdMenu.open($event);"
+                        <md-button class="md-icon-button" aria-label="menu"
+                                   ng-click="menuClicked($mdMenu,$event,object);"
                                    ng-attr-id="{{'menu-'+$index}}">
                             <md-icon md-font-icon="far {{getIcon(object.Key)}} s34j-icon"></md-icon>
                         </md-button>

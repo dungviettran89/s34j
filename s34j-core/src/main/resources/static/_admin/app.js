@@ -351,6 +351,12 @@ angular
                 angular.element('#menu-' + $index).triggerHandler('click');
             }, 0);
         };
+        $scope.menuClicked = function ($mdMenu, $event,object) {
+            if ($scope.isSelecting()) {
+                return $scope.selectObjectClicked(object);
+            }
+            $mdMenu.open($event);
+        };
         $scope.isSelecting = function () {
             for (var key in $scope.select) {
                 if ($scope.select[key]) {
