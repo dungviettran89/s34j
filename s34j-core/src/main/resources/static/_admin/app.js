@@ -142,6 +142,29 @@ angular
         controller: function ($scope) {
         }
     })
+    .service('ngCopy', ['$window', function ($window) {
+        var body = angular.element($window.document.body);
+        var textarea = angular.element('<textarea/>');
+        textarea.css({
+            position: 'fixed',
+            opacity: '0'
+        });
+
+        return function (toCopy) {
+            textarea.val(toCopy);
+            body.append(textarea);
+            textarea[0].select();
+
+            try {
+                var successful = document.execCommand('copy');
+                if (!successful) throw successful;
+            } catch (err) {
+                window.prompt("Copy to clipboard: Ctrl+C, Enter", toCopy);
+            }
+
+            textarea.remove();
+        }
+    }])
     .service('BaseController', function ($rootScope, $timeout) {
         var self = {};
         self.onS3Error = function (err) {
@@ -224,7 +247,8 @@ angular
         };
         $scope.start($scope.onAuthenticated);
     })
-    .controller('BucketController', function ($scope, $rootScope, BaseController, $routeParams, $timeout) {
+    .controller('BucketController', function ($scope, $rootScope, BaseController, $routeParams, $timeout, $window,
+                                              $mdToast, ngCopy) {
         angular.extend($scope, BaseController);
         $scope.objects = [];
         $scope.bucketName = $routeParams.bucketName;
@@ -232,6 +256,7 @@ angular
         $scope.commonPrefixes = [];
         $scope.pageSize = 50;
         $scope.prefix = $routeParams.objectName;
+        $scope.select = {};
         $scope.loadObject = function () {
             $rootScope.loading = true;
             $rootScope.s3.listObjectsV2({
@@ -280,6 +305,9 @@ angular
             )
         };
         $scope.getIcon = function (name) {
+            if ($scope.isSelecting()) {
+                return $scope.select[name] ? 'fa-check-square' : 'fa-square';
+            }
             var suffix = name.substr(name.lastIndexOf('.'));
             switch (suffix) {
                 case'.png':
@@ -315,8 +343,43 @@ angular
                 ($routeParams.objectName ? '/' + $routeParams.objectName : '');
             $scope.loadObject();
         };
-        $scope.objectClicked = function (object) {
-            console.log(object.Key + ' clicked.')
+        $scope.objectClicked = function (object, $index) {
+            if ($scope.isSelecting()) {
+                return $scope.selectObjectClicked(object);
+            }
+            $timeout(function () {
+                angular.element('#menu-' + $index).triggerHandler('click');
+            }, 0);
+        };
+        $scope.isSelecting = function () {
+            for (var key in $scope.select) {
+                if ($scope.select[key]) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        $scope.selectObjectClicked = function (object) {
+            $scope.select[object.Key] = !$scope.select[object.Key];
+        };
+        $scope.openObjectClicked = function (object) {
+            var params = {Bucket: $scope.bucketName, Key: object.Key, Expires: 180};
+            var url = $rootScope.s3.getSignedUrl('getObject', params);
+            $window.open(url, '_blank');
+        };
+        $scope.copyLink = function (object, isPublic) {
+            var url = $rootScope.host + '/' + $scope.bucketName + '/' + object.Key;
+            if (isPublic) {
+                var params = {Bucket: $scope.bucketName, Key: object.Key, Expires: 180};
+                url = $rootScope.s3.getSignedUrl('getObject', params);
+            }
+            ngCopy(url);
+            $mdToast.show(
+                $mdToast.simple()
+                    .textContent('Link copied to Clipboard!')
+                    .position('top right')
+                    .hideDelay(3000)
+            );
         };
         $scope.start($scope.onAuthenticated);
     });
