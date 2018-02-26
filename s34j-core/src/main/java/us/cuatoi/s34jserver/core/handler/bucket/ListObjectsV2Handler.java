@@ -81,7 +81,7 @@ public class ListObjectsV2Handler extends BucketHandler {
         for (Path path : visitor.getObjects()) {
             logger.trace("Found: " + path);
             ContentsXml cd = new ContentsXml();
-            cd.setKey(path.toString());
+            cd.setKey(bucketDir.relativize(path).toString());
             cd.setStorageClass(S3Constants.STORAGE_CLASS);
             cd.setOwner(getOwner(path));
             cd.setLastModified(PathHelper.getLastModifiedString(path));

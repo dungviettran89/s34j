@@ -295,7 +295,12 @@ angular
                     } else {
                         console.log(data);
                         $scope.objects = $scope.objects.concat(data.Contents);
-                        $scope.commonPrefixes = $scope.commonPrefixes.concat(data.CommonPrefixes);
+                        for (var i = 0; i < data.CommonPrefixes.length; i++) {
+                            var prefix = data.CommonPrefixes[i];
+                            if (!$.inArray(prefix, $scope.commonPrefixes)) {
+                                $scope.commonPrefixes.push(prefix);
+                            }
+                        }
                         $scope.isTruncated = data.IsTruncated;
                         $scope.nextContinuationToken = data.NextContinuationToken;
                     }
@@ -314,6 +319,8 @@ angular
                 case'.jpg':
                 case'.jpeg':
                     return 'fa-image';
+                case '.mp4':
+                    return 'fa-file-video';
                 case '.txt':
                     return 'fa-file-alt';
                 default:
@@ -351,7 +358,7 @@ angular
                 angular.element('#menu-' + $index).triggerHandler('click');
             }, 0);
         };
-        $scope.menuClicked = function ($mdMenu, $event,object) {
+        $scope.menuClicked = function ($mdMenu, $event, object) {
             if ($scope.isSelecting()) {
                 return $scope.selectObjectClicked(object);
             }

@@ -120,16 +120,8 @@ public class ObjectVisitor {
 
         if (handlePrefix(fileName)) return;
 
-        if (isNotBlank(continuationToken)) {
-            if (compare(fileName, continuationToken) < 0) {
-                logger.trace("Skip due to continuationToken: " + fileName);
-                return;
-            }
-        } else if (isNotBlank(startAfter)) {
-            if (compare(fileName, startAfter) <= 0) {
-                logger.trace("Skip due to startAfter: " + fileName);
-                return;
-            }
+        if (handleNextTokens(fileName)) {
+            return;
         }
 
         if (isNotBlank(suffix)) {
@@ -137,6 +129,11 @@ public class ObjectVisitor {
                 logger.trace("Skip due to suffix: " + fileName);
                 return;
             }
+        }
+
+        if (handleDelimiter(fileName)) {
+            logger.trace("Skip due to delimiter: " + fileName);
+            return;
         }
 
         if (objects.size() < maxKeys) {
@@ -156,6 +153,7 @@ public class ObjectVisitor {
 
         //check prefix
         if (handlePrefix(dirName)) return;
+
         if (handleDelimiter(dirName)) {
             logger.trace("Skip due to delimiter: " + dirName);
             return;
@@ -170,6 +168,21 @@ public class ObjectVisitor {
         for (Path child : sortedChilds) {
             visit(child);
         }
+    }
+
+    private boolean handleNextTokens(String dirName) {
+        if (isNotBlank(continuationToken) && isNotBlank(dirName)) {
+            if (compare(dirName, continuationToken) < 0) {
+                logger.trace("Skip due to continuationToken: " + dirName);
+                return true;
+            }
+        } else if (isNotBlank(startAfter)) {
+            if (compare(dirName, startAfter) <= 0) {
+                logger.trace("Skip due to startAfter: " + dirName);
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean handlePrefix(String dirName) {
