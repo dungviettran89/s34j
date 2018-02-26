@@ -381,5 +381,23 @@ angular
                     .hideDelay(3000)
             );
         };
+        $scope.selectNone = function () {
+            $scope.select = {};
+        };
+        $scope.selectAll = function () {
+            for (var i in $scope.objects) {
+                var object = $scope.objects[i];
+                $scope.select[object.Key] = true;
+            }
+        };
+        $scope.selectCount = function () {
+            var count = 0;
+            for (var key in $scope.select) {
+                if ($scope.select[key]) {
+                    count++;
+                }
+            }
+            return count;
+        };
         $scope.start($scope.onAuthenticated);
     });

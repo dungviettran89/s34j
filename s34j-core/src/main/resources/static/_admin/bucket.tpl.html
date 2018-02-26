@@ -3,11 +3,24 @@
         <section layout="column" class="bg-white s34j-card-shadow" flex="70" layout-margin
                  style="max-height: calc( 100% - 20px );overflow-x: hidden;">
             <md-list style="padding-bottom: 0;margin-bottom: 0;">
-                <md-list-item>
+                <md-list-item ng-show="!isSelecting()">
                     <md-input-container class="s34j-input-no-error" flex>
                         <label>Prefix</label>
                         <input type="text" ng-model="prefix" ng-keypress="onPrefixKeyPress($event);">
                     </md-input-container>
+                </md-list-item>
+                <md-list-item ng-show="isSelecting()" style="height: 70px">
+                    <md-button class="md-icon-button md-primary" aria-label="select all" ng-click="selectAll();">
+                        <md-icon md-font-icon="far fa-check-square s34j-icon"></md-icon>
+                    </md-button>
+                    <div class="md-list-item-text" layout="row">
+                        <p>{{selectCount()}} selected.</p>
+                        <md-button class="md-primary">Copy</md-button>
+                        <md-button class="md-accent">Delete</md-button>
+                    </div>
+                    <md-button class="md-icon-button md-secondary" aria-label="de-select all" ng-click="selectNone();">
+                        <md-icon md-font-icon="fa fa-times s34j-icon"></md-icon>
+                    </md-button>
                 </md-list-item>
             </md-list>
             <md-list class="md-dense" style=";overflow-y: scroll;padding-top:0;margin-top:0;">
@@ -21,7 +34,7 @@
                 </md-list-item>
                 <md-list-item ng-repeat="object in objects" ng-click="objectClicked(object,$index);" class="md-2-line">
                     <md-menu>
-                        <md-button class="md-icon-button" aria-label="icon" ng-click="$mdMenu.open($event);"
+                        <md-button class="md-icon-button" aria-label="menu" ng-click="$mdMenu.open($event);"
                                    ng-attr-id="{{'menu-'+$index}}">
                             <md-icon md-font-icon="far {{getIcon(object.Key)}} s34j-icon"></md-icon>
                         </md-button>
@@ -48,6 +61,7 @@
                                 <md-button ng-click="copyLink(object,true);" class="md-primary">
                                     <md-icon md-font-icon="fa fa-external-link-alt"></md-icon>
                                     Signed Link
+                                    <small>(expires in 7 days.)</small>
                                 </md-button>
                             </md-menu-item>
                             <md-menu-item>
