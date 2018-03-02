@@ -31,6 +31,9 @@
         </md-dialog-content>
         <md-dialog-actions layout="row">
             <span flex></span>
+            <md-button aria-label="Cancel" class="md-raised" ng-click="cancel();">
+                <span>Cancel</span>
+            </md-button>
             <md-button aria-label="Create" class="md-raised {{loading?'md-accent':'md-primary'}}"
                        ng-disabled="loading || !newBucketName"
                        ng-click="createBucketClicked();">

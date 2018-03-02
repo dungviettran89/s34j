@@ -7,6 +7,9 @@ angular.module('S34J')
                 $scope.createBucketClicked();
             }
         };
+        $scope.cancel = function () {
+            $mdDialog.hide();
+        };
         $scope.createBucketClicked = function () {
             var bucketForm = $scope.createBucketForm;
             bucketForm.newBucketName.$setValidity('server', true);

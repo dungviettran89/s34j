@@ -1,6 +1,12 @@
 angular.module('S34J')
+    .controller('NewFileController', function ($scope, $rootScope, $mdDialog, $routeParams) {
+        $scope.bucketName = $routeParams.bucketName;
+        $scope.cancel = function () {
+            $mdDialog.hide();
+        };
+    })
     .controller('BucketController', function ($scope, $rootScope, BaseController, $routeParams, $timeout, $window,
-                                              $mdToast, ngCopy) {
+                                              $mdToast, ngCopy, $mdDialog) {
         angular.extend($scope, BaseController);
         $scope.objects = [];
         $scope.bucketName = $routeParams.bucketName;
@@ -163,6 +169,13 @@ angular.module('S34J')
                 }
             }
             return count;
+        };
+        $scope.showNewFileDialog = function () {
+            $mdDialog.show({
+                templateUrl: 'dialog-new-file.tpl.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: true
+            });
         };
         $scope.start($scope.onAuthenticated);
     });
