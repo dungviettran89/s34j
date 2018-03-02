@@ -1,9 +1,18 @@
 angular.module('S34J')
-    .controller('NewFileController', function ($scope, $rootScope, $mdDialog, $routeParams) {
+    .controller('NewFileController', function ($scope, $rootScope, $mdDialog, $routeParams, $timeout) {
         $scope.bucketName = $routeParams.bucketName;
         $scope.cancel = function () {
             $mdDialog.hide();
         };
+        $scope.uploadSelectedFile = function () {
+            console.log('Upload file.');
+        };
+        $scope.fileChanged = function (element) {
+            console.log('File selected', element);
+        };
+        $timeout(function () {
+            document.getElementById("newFileDialog_newFile").click();
+        }, 1000);
     })
     .controller('BucketController', function ($scope, $rootScope, BaseController, $routeParams, $timeout, $window,
                                               $mdToast, ngCopy, $mdDialog) {

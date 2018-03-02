@@ -20,6 +20,8 @@
                         <div ng-message="server">{{serverError}}</div>
                     </div>
                 </md-input-container>
+                <input id="newFileDialog_newFile" ng-model="newFile" type="file" style="display:none;"
+                       onchange="angular.element(this).scope().fileChanged(this)"/>
             </div>
         </md-dialog-content>
         <md-dialog-actions layout="row">
@@ -28,8 +30,8 @@
                 <span>Cancel</span>
             </md-button>
             <md-button aria-label="Create" class="md-raised {{loading?'md-accent':'md-primary'}}"
-                       ng-disabled="loading || !newBucketName"
-                       ng-click="createBucketClicked();">
+                       ng-disabled="loading || !newFileName"
+                       ng-click="uploadSelectedFile();">
                 <span ng-show="!loading">Upload</span>
                 <span ng-show="loading"><i class="fa fa-spinner fa-spin"></i></span>
             </md-button>
