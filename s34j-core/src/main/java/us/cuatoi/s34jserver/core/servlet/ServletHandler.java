@@ -26,7 +26,9 @@ import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -259,7 +261,7 @@ public class ServletHandler {
         request.setFormParameters(formParameters);
     }
 
-    private void parseObjectInformation(HttpServletRequest servletRequest, Request request) {
+    private void parseObjectInformation(HttpServletRequest servletRequest, Request request) throws UnsupportedEncodingException {
         String uri = servletRequest.getRequestURI();
         request.setUri(uri);
         request.setQueryString(servletRequest.getQueryString());
@@ -276,6 +278,7 @@ public class ServletHandler {
             bucketName = substring(uri, 1, secondSlash);
             logger.trace("bucketName=" + bucketName);
             objectName = substring(uri, secondSlash + 1);
+            objectName = URLDecoder.decode(objectName, "UTF-8");
             logger.trace("objectName=" + objectName);
         }
         request.setBucketName(bucketName);

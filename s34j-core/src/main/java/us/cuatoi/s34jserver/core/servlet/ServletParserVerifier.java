@@ -13,6 +13,7 @@ import us.cuatoi.s34jserver.core.helper.PathHelper;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -39,7 +40,7 @@ public class ServletParserVerifier {
     }
 
     public void verifyHeaders() throws Exception {
-        URL url = new URL(request.getUrl());
+        URL url = new URL(URLDecoder.decode(request.getUrl(), "UTF-8"));
 
         String authorizationHeader = request.getHeader("authorization");
         if (isBlank(authorizationHeader)) {
