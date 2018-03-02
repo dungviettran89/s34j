@@ -44,3 +44,10 @@
 .s34j-top-progress .md-container {
     height: 2px;
 }
+
+.s34j-fixed-bottom-right {
+    float: right;
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+}

@@ -1,0 +1,42 @@
+<md-dialog ng-controller="CreateBucketController" aria-label="Create Bucket" style="width: 400px">
+    <form name="createBucketForm" ng-cloak>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Create Bucket</h2>
+            </div>
+        </md-toolbar>
+
+        <md-dialog-content>
+            <div class="md-dialog-content">
+                <md-input-container class="md-block">
+                    <label>Name</label>
+                    <input required type="text" name="newBucketName" ng-model="newBucketName" ng-readonly="loading"
+                           ng-keypress="newBucketNameKeyPressed($event);" md-maxlength="63" md-minlength="3"
+                           ng-pattern="/^[a-z0-9][a-z0-9\.\-]+[a-z0-9]$/"/>
+                    <div ng-messages="createBucketForm.newBucketName.$error">
+                        <div ng-message="required">Please enter a value.</div>
+                        <div ng-message="server">{{serverError}}</div>
+                        <div ng-message-exp="['maxlength','minlength']">Bucket name must be at least 3 and no more than
+                            63 characters long.
+                        </div>
+                        <div ng-message="pattern">Bucket name does not follow Amazon S3 standards. Click
+                            <a href="http://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html"
+                               target="_blank">here</a>
+                            for more information.
+                        </div>
+
+                    </div>
+                </md-input-container>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <span flex></span>
+            <md-button aria-label="Create" class="md-raised {{loading?'md-accent':'md-primary'}}"
+                       ng-disabled="loading || !newBucketName"
+                       ng-click="createBucketClicked();">
+                <span ng-show="!loading">Create</span>
+                <span ng-show="loading"><i class="fa fa-spinner fa-spin"></i></span>
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>
