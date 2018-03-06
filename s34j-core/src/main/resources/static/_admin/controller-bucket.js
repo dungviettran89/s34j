@@ -1,18 +1,32 @@
 angular.module('S34J')
-    .controller('NewFileController', function ($scope, $rootScope, $mdDialog, $routeParams, $timeout) {
+    .controller('NewFileController', function ($scope, $rootScope, $mdDialog, $routeParams, $timeout, file, prefix) {
         $scope.bucketName = $routeParams.bucketName;
+        $scope.file = file;
+        $scope.newFileName = prefix + file.name;
         $scope.cancel = function () {
-            $mdDialog.hide();
+            $mdDialog.hide(false);
         };
         $scope.uploadSelectedFile = function () {
-            console.log('Upload file.');
+            console.log('Uploading ' + $scope.newFileName);
+            $scope.newFileForm.newFileName.$setValidity('server', true);
+            $scope.loading = true;
+
+            $rootScope.s3.upload({
+                Body: file,
+                Bucket: $scope.bucketName,
+                Key: $scope.newFileName,
+                ContentType: file.type
+            }, function (err, data) {
+                if (err) {
+                    $scope.serverError = err.message;
+                    $scope.newFileForm.newFileName.$setValidity('server', false);
+                } else {
+                    $mdDialog.hide(true);
+                }
+                $scope.loading = false;
+                $scope.$apply();
+            });
         };
-        $scope.fileChanged = function (element) {
-            console.log('File selected', element);
-        };
-        $timeout(function () {
-            document.getElementById("newFileDialog_newFile").click();
-        }, 1000);
     })
     .controller('BucketController', function ($scope, $rootScope, BaseController, $routeParams, $timeout, $window,
                                               $mdToast, ngCopy, $mdDialog) {
@@ -179,12 +193,36 @@ angular.module('S34J')
             }
             return count;
         };
+        $scope.hidePrefix = function (name) {
+            if (!$scope.prefix) return name;
+            if ($scope.prefix.lastIndexOf('/') <= 0) return name;
+
+            var remove = $scope.prefix;
+            var lastSlash = remove.lastIndexOf('/');
+            remove = remove.substr(0, lastSlash + 1);
+            name = name.replace(remove, '');
+            return name;
+        };
         $scope.showNewFileDialog = function () {
-            $mdDialog.show({
-                templateUrl: 'dialog-new-file.tpl.html',
-                parent: angular.element(document.body),
-                clickOutsideToClose: true
-            });
+            $('<input type="file">').on('change', function () {
+                console.log(this.files);
+                if (this.files.length === 1) {
+                    $mdDialog.show({
+                        templateUrl: 'dialog-new-file.tpl.html',
+                        controller: 'NewFileController',
+                        locals: {
+                            file: this.files[0],
+                            prefix: $scope.prefix
+                        },
+                        parent: angular.element(document.body),
+                        clickOutsideToClose: true
+                    }).then(function (uploaded) {
+                        if (uploaded) {
+                            $scope.loadObject();
+                        }
+                    });
+                }
+            }).click();
         };
         $scope.start($scope.onAuthenticated);
     });

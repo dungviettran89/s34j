@@ -1,4 +1,4 @@
-<md-dialog ng-controller="NewFileController" aria-label="Create Bucket" style="width: 400px">
+<md-dialog aria-label="Create Bucket" style="width: 768px">
     <form name="newFileForm" ng-cloak>
         <md-toolbar>
             <div class="md-toolbar-tools">
@@ -12,16 +12,15 @@
                     <label>Bucket Name</label>
                     <input type="text" name="bucketName" ng-readonly="true" ng-model="bucketName"/>
                 </md-input-container>
-                <md-input-container class="md-block">
+                <md-input-container class="md-block s34j-input-hint">
                     <label>File Name</label>
                     <input required type="text" name="newFileName" ng-model="newFileName"/>
-                    <div ng-messages="createBucketForm.newFileName.$error">
+                    <div class="hint" ng-if="newFileForm.$valid">Use delimiter / to create virtual folder structure.</div>
+                    <div ng-messages="newFileForm.newFileName.$error">
                         <div ng-message="required">Please enter a value.</div>
                         <div ng-message="server">{{serverError}}</div>
                     </div>
                 </md-input-container>
-                <input id="newFileDialog_newFile" ng-model="newFile" type="file" style="display:none;"
-                       onchange="angular.element(this).scope().fileChanged(this)"/>
             </div>
         </md-dialog-content>
         <md-dialog-actions layout="row">

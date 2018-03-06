@@ -279,6 +279,8 @@ public class ServletHandler {
             logger.trace("bucketName=" + bucketName);
             objectName = substring(uri, secondSlash + 1);
             objectName = URLDecoder.decode(objectName, "UTF-8");
+            objectName = replace(objectName,"//","/");
+            objectName = startsWith(objectName, "/") ? substring(objectName, 1) : objectName;
             logger.trace("objectName=" + objectName);
         }
         request.setBucketName(bucketName);

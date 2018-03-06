@@ -36,7 +36,7 @@
                                ng-href="#!/s3/{{bucketName}}/{{commonPrefix.Prefix}}">
                         <md-icon md-font-icon="fa fa-folder-open s34j-icon"></md-icon>
                     </md-button>
-                    <p>{{commonPrefix.Prefix}}</p>
+                    <p>{{hidePrefix(commonPrefix.Prefix)}}</p>
                 </md-list-item>
                 <md-list-item ng-repeat="object in objects" ng-click="objectClicked(object,$index);" class="md-2-line">
                     <md-menu>
@@ -81,7 +81,7 @@
                     </md-menu>
                     <div class="md-list-item-text" layout="column">
                         <span class="s34j-truncate" style="font-size: 15px;">
-                            {{object.Key}}
+                            {{hidePrefix(object.Key)}}
                         </span>
                         <p>
                             <small>{{object.LastModified | date:'medium' }}</small>
