@@ -2,7 +2,7 @@ angular.module('S34J')
     .controller('NewFileController', function ($scope, $rootScope, $mdDialog, $routeParams, $timeout, file, prefix) {
         $scope.bucketName = $routeParams.bucketName;
         $scope.file = file;
-        $scope.newFileName = prefix + file.name;
+        $scope.newFileName = prefix ? (prefix + file.name) : (file.name);
         $scope.cancel = function () {
             $mdDialog.hide(false);
         };
