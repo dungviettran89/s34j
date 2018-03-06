@@ -188,8 +188,11 @@ public class ServletParserVerifier {
         Path content = request.getContent();
         logger.trace("Checking " + content);
         long contentLength = Files.size(content);
-        if (isNotBlank(providedSha256)) {
-            String computedSha256 = contentLength > 0 ? PathHelper.sha256HashFile(content) : AWS4SignerBase.EMPTY_BODY_SHA256;
+        if (isNotBlank(providedSha256) &&
+                !equalsIgnoreCase(providedSha256, S3Constants.UNSIGNED_PAYLOAD)) {
+            String computedSha256 = contentLength > 0 ?
+                    PathHelper.sha256HashFile(content) :
+                    AWS4SignerBase.EMPTY_BODY_SHA256;
             if (!equalsIgnoreCase(computedSha256, providedSha256)) {
                 logger.info("X_AMZ_CONTENT_SHA256_MISMATCH: providedSha256=" + providedSha256);
                 logger.info("X_AMZ_CONTENT_SHA256_MISMATCH: computedSha256=" + computedSha256);
