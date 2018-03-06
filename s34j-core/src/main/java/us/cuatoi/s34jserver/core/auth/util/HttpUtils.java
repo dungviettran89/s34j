@@ -6,6 +6,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+
 /**
  * Various Http helper routines
  */
@@ -15,12 +17,12 @@ public class HttpUtils {
      * Makes a http request to the specified endpoint
      */
     public static String invokeHttpRequest(URL endpointUrl,
-                                         String httpMethod,
-                                         Map<String, String> headers,
-                                         String requestBody) {
+                                           String httpMethod,
+                                           Map<String, String> headers,
+                                           String requestBody) {
         HttpURLConnection connection = createHttpConnection(endpointUrl, httpMethod, headers);
         try {
-            if ( requestBody != null ) {
+            if (requestBody != null) {
                 DataOutputStream wr = new DataOutputStream(
                         connection.getOutputStream());
                 wr.writeBytes(requestBody);
@@ -32,7 +34,7 @@ public class HttpUtils {
         }
         return executeHttpRequest(connection);
     }
-    
+
     public static String executeHttpRequest(HttpURLConnection connection) {
         try {
             // Get Response
@@ -42,7 +44,7 @@ public class HttpUtils {
             } catch (IOException e) {
                 is = connection.getErrorStream();
             }
-            
+
             BufferedReader rd = new BufferedReader(new InputStreamReader(is));
             String line;
             StringBuffer response = new StringBuffer();
@@ -60,17 +62,17 @@ public class HttpUtils {
             }
         }
     }
-    
+
     public static HttpURLConnection createHttpConnection(URL endpointUrl,
                                                          String httpMethod,
                                                          Map<String, String> headers) {
         try {
             HttpURLConnection connection = (HttpURLConnection) endpointUrl.openConnection();
             connection.setRequestMethod(httpMethod);
-            
-            if ( headers != null ) {
+
+            if (headers != null) {
                 System.out.println("--------- Request headers ---------");
-                for ( String headerKey : headers.keySet() ) {
+                for (String headerKey : headers.keySet()) {
                     System.out.println(headerKey + ": " + headers.get(headerKey));
                     connection.setRequestProperty(headerKey, headers.get(headerKey));
                 }
@@ -84,16 +86,16 @@ public class HttpUtils {
             throw new RuntimeException("Cannot create connection. " + e.getMessage(), e);
         }
     }
-    
+
     public static String urlEncode(String url, boolean keepPathSlash) {
         String encoded;
         try {
-            encoded = URLEncoder.encode(url, "UTF-8");
+            encoded = URLEncoder.encode(trimToEmpty(url), "UTF-8");
             encoded = encoded.replace("+", "%20");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("UTF-8 encoding is not supported.", e);
         }
-        if ( keepPathSlash ) {
+        if (keepPathSlash) {
             encoded = encoded.replace("%2F", "/");
         }
         return encoded;
