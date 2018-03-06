@@ -29,7 +29,15 @@
                     </md-button>
                 </md-list-item>
             </md-list>
-            <md-list class="md-dense" style=";overflow-y: scroll;padding-top:0;margin-top:0;">
+            <md-list class="md-dense" style="overflow-y: scroll;padding-top:0;margin-top:0;">
+                <md-list-item ng-if="shouldShowParent()"
+                              ng-href="#!/s3/{{bucketName}}/{{getParent(prefix)}}">
+                    <md-button class="md-icon-button" aria-label="icon"
+                               ng-href="#!/s3/{{bucketName}}/{{getParent(prefix)}}">
+                        <md-icon md-font-icon="fa fa-folder-open s34j-icon"></md-icon>
+                    </md-button>
+                    <p>...</p>
+                </md-list-item>
                 <md-list-item ng-repeat="commonPrefix in commonPrefixes"
                               ng-href="#!/s3/{{bucketName}}/{{commonPrefix.Prefix}}">
                     <md-button class="md-icon-button" aria-label="icon"

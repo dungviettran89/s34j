@@ -194,14 +194,19 @@ angular.module('S34J')
             return count;
         };
         $scope.hidePrefix = function (name) {
-            if (!$scope.prefix) return name;
-            if ($scope.prefix.lastIndexOf('/') <= 0) return name;
-
-            var remove = $scope.prefix;
-            var lastSlash = remove.lastIndexOf('/');
-            remove = remove.substr(0, lastSlash + 1);
-            name = name.replace(remove, '');
-            return name;
+            var parent = $scope.getParent(name);
+            return parent ? name.replace(parent, '') : name;
+        };
+        $scope.shouldShowParent = function(){
+            return $scope.prefix && $scope.prefix.indexOf('/') > 0;
+        };
+        $scope.getParent = function (name) {
+            if (name.lastIndexOf('/') === name.length - 1) {
+                name = name.substr(0, name.length - 1);
+            }
+            if (!name) return "";
+            if (name.lastIndexOf('/') <= 0) return "";
+            return name.substr(0, name.lastIndexOf('/') + 1);
         };
         $scope.showNewFileDialog = function () {
             $('<input type="file">').on('change', function () {
