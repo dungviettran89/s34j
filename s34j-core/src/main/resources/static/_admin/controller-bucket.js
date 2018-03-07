@@ -92,20 +92,22 @@ angular.module('S34J')
         };
         $scope.getIcon = function (name) {
             if ($scope.isSelecting()) {
-                return $scope.select[name] ? 'fa-check-square' : 'fa-square';
+                return $scope.select[name] ? 'far fa-check-square' : 'far fa-square';
             }
             var suffix = name.substr(name.lastIndexOf('.'));
             switch (suffix) {
                 case'.png':
                 case'.jpg':
                 case'.jpeg':
-                    return 'fa-image';
+                    return 'far fa-image';
                 case '.mp4':
-                    return 'fa-file-video';
+                    return 'far fa-file-video';
                 case '.txt':
-                    return 'fa-file-alt';
+                    return 'far fa-file-alt';
+                case '.apk':
+                    return 'fab fa-android';
                 default:
-                    return 'fa-file';
+                    return 'far fa-file';
             }
         };
         $scope.commonPrefixClicked = function (commonPrefix) {
@@ -135,14 +137,14 @@ angular.module('S34J')
             if ($scope.isSelecting()) {
                 return $scope.selectObjectClicked(object);
             }
+            $scope.openMenu(object, $index);
+        };
+        $scope.openMenu = function(object, $index){
             $timeout(function () {
                 angular.element('#menu-' + $index).triggerHandler('click');
             }, 0);
         };
         $scope.menuClicked = function ($mdMenu, $event, object) {
-            if ($scope.isSelecting()) {
-                return $scope.selectObjectClicked(object);
-            }
             $mdMenu.open($event);
         };
         $scope.isSelecting = function () {

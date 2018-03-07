@@ -15,10 +15,6 @@
                     </md-button>
                     <div class="md-list-item-text" layout="row">
                         <p hide-xs> {{selectCount()}} selected.</p>
-                        <md-button class="md-primary">
-                            <md-icon md-font-icon="fa fa-copy"></md-icon>
-                            <span>Copy</span>
-                        </md-button>
                         <md-button class="md-accent">
                             <md-icon md-font-icon="fa fa-trash"></md-icon>
                             <span>Delete</span>
@@ -46,54 +42,57 @@
                     </md-button>
                     <p>{{hidePrefix(commonPrefix.Prefix)}}</p>
                 </md-list-item>
-                <md-list-item ng-repeat="object in objects" ng-click="objectClicked(object,$index);" class="md-2-line">
-                    <md-menu>
-                        <md-button class="md-icon-button" aria-label="menu"
-                                   ng-click="menuClicked($mdMenu,$event,object);"
-                                   ng-attr-id="{{'menu-'+$index}}">
-                            <md-icon md-font-icon="far {{getIcon(object.Key)}} s34j-icon"></md-icon>
-                        </md-button>
-                        <md-menu-content>
-                            <md-menu-item>
-                                <md-button ng-click="selectObjectClicked(object);">
-                                    <md-icon md-font-icon="far fa-check-square"></md-icon>
-                                    Select
-                                </md-button>
-                            </md-menu-item>
-                            <md-menu-item>
-                                <md-button ng-click="openObjectClicked(object);">
-                                    <md-icon md-font-icon="fa fa-eye"></md-icon>
-                                    Open
-                                </md-button>
-                            </md-menu-item>
-                            <md-menu-item>
-                                <md-button ng-click="copyLink(object);" class="md-primary">
-                                    <md-icon md-font-icon="fa fa-link"></md-icon>
-                                    Direct Link
-                                </md-button>
-                            </md-menu-item>
-                            <md-menu-item>
-                                <md-button ng-click="copyLink(object,true);" class="md-primary">
-                                    <md-icon md-font-icon="fa fa-external-link-alt"></md-icon>
-                                    Signed Link
-                                    <small>(expires in 7 days.)</small>
-                                </md-button>
-                            </md-menu-item>
-                            <md-menu-item>
-                                <md-button class="md-accent">
-                                    <md-icon md-font-icon="fa fa-trash"></md-icon>
-                                    Delete
-                                </md-button>
-                            </md-menu-item>
-                        </md-menu-content>
-                    </md-menu>
-                    <div class="md-list-item-text" layout="column">
+                <md-list-item ng-repeat="object in objects" class="md-2-line" ng-click="selectObjectClicked(object);"
+                              ng-dblclick="openMenu(object, $index)">
+                    <md-button class="md-icon-button" aria-label="menu" ng-click="selectObjectClicked(object);">
+                        <md-icon md-font-icon="{{getIcon(object.Key)}} s34j-icon"></md-icon>
+                    </md-button>
+                    <div class="md-list-item-text" layout="column" style="max-width: calc(100% - 50px);">
                         <span class="s34j-truncate" style="font-size: 15px;">
                             {{hidePrefix(object.Key)}}
                         </span>
                         <p>
                             <small>{{object.LastModified | date:'medium' }}</small>
                             <span style="color:#3f51b5">{{ object.Size | bytes:2 }}</span>
+                            <md-menu style="float:right;">
+                                <md-button class="md-icon-button" ng-click="menuClicked($mdMenu,$event,object);"
+                                           ng-attr-id="{{'menu-'+$index}}" style="width: 24px;height: 24px;padding:0;">
+                                    <md-icon md-font-icon="fa fa-caret-down"></md-icon>
+                                </md-button>
+                                <md-menu-content>
+                                    <md-menu-item>
+                                        <md-button ng-click="openObjectClicked(object);">
+                                            <md-icon md-font-icon="fa fa-eye"></md-icon>
+                                            Open
+                                        </md-button>
+                                    </md-menu-item>
+                                    <md-menu-item>
+                                        <md-button ng-click="selectObjectClicked(object);">
+                                            <md-icon md-font-icon="far fa-check-square"></md-icon>
+                                            Select
+                                        </md-button>
+                                    </md-menu-item>
+                                    <md-menu-item>
+                                        <md-button ng-click="copyLink(object);" class="md-primary">
+                                            <md-icon md-font-icon="fa fa-link"></md-icon>
+                                            Direct Link
+                                        </md-button>
+                                    </md-menu-item>
+                                    <md-menu-item>
+                                        <md-button ng-click="copyLink(object,true);" class="md-primary">
+                                            <md-icon md-font-icon="fa fa-external-link-alt"></md-icon>
+                                            Signed Link
+                                            <small>(expires in 7 days.)</small>
+                                        </md-button>
+                                    </md-menu-item>
+                                    <md-menu-item>
+                                        <md-button class="md-accent">
+                                            <md-icon md-font-icon="fa fa-trash"></md-icon>
+                                            Delete
+                                        </md-button>
+                                    </md-menu-item>
+                                </md-menu-content>
+                            </md-menu>
                         </p>
                     </div>
                 </md-list-item>
