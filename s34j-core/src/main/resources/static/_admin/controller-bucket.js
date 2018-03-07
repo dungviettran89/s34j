@@ -35,7 +35,7 @@ angular.module('S34J')
         $scope.bucketName = $routeParams.bucketName;
         $scope.objectName = $routeParams.objectName;
         $scope.commonPrefixes = [];
-        $scope.pageSize = 50;
+        $scope.pageSize = 32;
         $scope.prefix = $routeParams.objectName;
         $scope.select = {};
         $scope.loadObject = function () {
