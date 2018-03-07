@@ -167,6 +167,7 @@ angular.module('S34J')
                 .cancel('Cancel');
 
             $mdDialog.show(confirmDialog).then(function () {
+                $scope.loading = true;
                 console.log("Deleting " + object.Key);
                 $rootScope.s3.deleteObject({
                     Bucket: $scope.bucketName,
@@ -188,6 +189,8 @@ angular.module('S34J')
                                 .hideDelay(3000)
                         );
                     }
+                    $scope.loading = false;
+                    $scope.$apply();
                 });
             }, function () {
             });
@@ -206,6 +209,7 @@ angular.module('S34J')
                 .cancel('Cancel');
             $mdDialog.show(confirmDialog).then(function () {
                 console.log('Deleting ', params.Delete.Objects);
+                $scope.loading = true;
                 $rootScope.s3.deleteObjects(params, function (err, data) {
                     if (err) {
                         $mdDialog.show($mdDialog.alert()
@@ -218,11 +222,14 @@ angular.module('S34J')
                         $scope.loadObject();
                         $mdToast.show(
                             $mdToast.simple()
-                                .textContent('Object deleted.')
+                                .textContent('Objects deleted.')
                                 .position('top right')
                                 .hideDelay(3000)
                         );
+                        $scope.select = {};
                     }
+                    $scope.loading = false;
+                    $scope.$apply();
                 });
             }, function () {
             });
