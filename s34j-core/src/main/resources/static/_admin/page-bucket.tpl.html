@@ -15,7 +15,7 @@
                     </md-button>
                     <div class="md-list-item-text" layout="row">
                         <p hide-xs> {{selectCount()}} selected.</p>
-                        <md-button class="md-accent">
+                        <md-button class="md-accent" ng-click="deleteSelectedObjects();">
                             <md-icon md-font-icon="fa fa-trash"></md-icon>
                             <span>Delete</span>
                         </md-button>
@@ -86,7 +86,7 @@
                                         </md-button>
                                     </md-menu-item>
                                     <md-menu-item>
-                                        <md-button class="md-accent">
+                                        <md-button class="md-accent" ng-click="deleteObject(object);">
                                             <md-icon md-font-icon="fa fa-trash"></md-icon>
                                             Delete
                                         </md-button>

@@ -139,7 +139,7 @@ angular.module('S34J')
             }
             $scope.openMenu(object, $index);
         };
-        $scope.openMenu = function(object, $index){
+        $scope.openMenu = function (object, $index) {
             $timeout(function () {
                 angular.element('#menu-' + $index).triggerHandler('click');
             }, 0);
@@ -157,6 +157,75 @@ angular.module('S34J')
         };
         $scope.selectObjectClicked = function (object) {
             $scope.select[object.Key] = !$scope.select[object.Key];
+        };
+        $scope.deleteObject = function (object) {
+            var confirmDialog = $mdDialog.confirm()
+                .title('Delete Object')
+                .textContent('Do you want to delete ' + object.Key)
+                .ariaLabel('Delete Object')
+                .ok('Delete')
+                .cancel('Cancel');
+
+            $mdDialog.show(confirmDialog).then(function () {
+                console.log("Deleting " + object.Key);
+                $rootScope.s3.deleteObject({
+                    Bucket: $scope.bucketName,
+                    Key: object.Key
+                }, function (err, data) {
+                    if (err) {
+                        $mdDialog.show($mdDialog.alert()
+                            .clickOutsideToClose(true)
+                            .title('Error')
+                            .textContent(err.message)
+                            .ariaLabel('Can not delete')
+                            .ok('OK'));
+                    } else {
+                        $scope.loadObject();
+                        $mdToast.show(
+                            $mdToast.simple()
+                                .textContent('Object deleted.')
+                                .position('top right')
+                                .hideDelay(3000)
+                        );
+                    }
+                });
+            }, function () {
+            });
+        };
+        $scope.deleteSelectedObjects = function () {
+            var params = {Bucket: $scope.bucketName, Delete: {Objects: [], Quiet: true}};
+            for (var k in $scope.select) {
+                if ($scope.select[k] === true)
+                    params.Delete.Objects.push({Key:k});
+            }
+            var confirmDialog = $mdDialog.confirm()
+                .title('Delete Object')
+                .textContent('Do you want to delete ' + params.Delete.Objects.length + ' objects?')
+                .ariaLabel('Delete Object')
+                .ok('Delete')
+                .cancel('Cancel');
+            $mdDialog.show(confirmDialog).then(function () {
+                console.log('Deleting ', params.Delete.Objects);
+                $rootScope.s3.deleteObjects(params, function (err, data) {
+                    if (err) {
+                        $mdDialog.show($mdDialog.alert()
+                            .clickOutsideToClose(true)
+                            .title('Error')
+                            .textContent(err.message)
+                            .ariaLabel('Can not delete')
+                            .ok('OK'));
+                    } else {
+                        $scope.loadObject();
+                        $mdToast.show(
+                            $mdToast.simple()
+                                .textContent('Object deleted.')
+                                .position('top right')
+                                .hideDelay(3000)
+                        );
+                    }
+                });
+            }, function () {
+            });
         };
         $scope.openObjectClicked = function (object) {
             var params = {Bucket: $scope.bucketName, Key: object.Key, Expires: 180};
@@ -199,7 +268,7 @@ angular.module('S34J')
             var parent = $scope.getParent(name);
             return parent ? name.replace(parent, '') : name;
         };
-        $scope.shouldShowParent = function(){
+        $scope.shouldShowParent = function () {
             return $scope.prefix && $scope.prefix.indexOf('/') > 0;
         };
         $scope.getParent = function (name) {
@@ -222,7 +291,6 @@ angular.module('S34J')
                             prefix: $scope.prefix
                         },
                         parent: angular.element(document.body),
-                        clickOutsideToClose: true
                     }).then(function (uploaded) {
                         if (uploaded) {
                             $scope.loadObject();
