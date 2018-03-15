@@ -13,9 +13,6 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
  */
 public class HttpUtils {
 
-    /**
-     * Makes a http request to the specified endpoint
-     */
     public static String invokeHttpRequest(URL endpointUrl,
                                            String httpMethod,
                                            Map<String, String> headers,

@@ -5,17 +5,13 @@ public class S3Exception extends RuntimeException {
     private String name = "InternalError";
     private String description = "Internal error. Please try again";
 
-    /**
-     * Constructors
-     */
+    //Constructors
 
     public S3Exception(ErrorCode errorCode) {
         this(errorCode, errorCode.getDescription());
     }
 
-    /**
-     * Constructors
-     */
+    //Constructors
 
     public S3Exception(ErrorCode errorCode, String description) {
         this.statusCode = errorCode.getStatusCode();
@@ -23,9 +19,7 @@ public class S3Exception extends RuntimeException {
         this.description = description;
     }
 
-    /**
-     * Getters
-     */
+    //Getters
     public int getStatusCode() {
         return statusCode;
     }
@@ -38,9 +32,7 @@ public class S3Exception extends RuntimeException {
         return description;
     }
 
-    /**
-     * Setters
-     */
+    //Setters
     public S3Exception setStatusCode(int statusCode) {
         this.statusCode = statusCode;
         return this;

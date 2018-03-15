@@ -38,7 +38,7 @@ public class AWS4SignerForQueryParameterAuth extends AWS4SignerBase {
      *            The user's AWS Access Key.
      * @param awsSecretKey
      *            The user's AWS Secret Key.
-     * @param date
+     * @param date Date to generate
      * @return The computed authorization string for the request. This value
      *         needs to be set as the header 'Authorization' on the subsequent
      *         HTTP request.

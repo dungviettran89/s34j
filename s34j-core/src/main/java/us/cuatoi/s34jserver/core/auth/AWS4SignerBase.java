@@ -66,7 +66,7 @@ public abstract class AWS4SignerBase {
         dateStampFormat.setTimeZone(new SimpleTimeZone(0, "UTC"));
     }
     
-    /**
+    /*
      * Returns the canonical collection of header names that will be included in
      * the signature. For AWS4, all header names must be included in the process
      * in sorted canonicalized order.
@@ -75,7 +75,7 @@ public abstract class AWS4SignerBase {
         return getCanonicalizeHeaderNames(headers.keySet());
     }
 
-    /**
+    /*
      * Returns the canonical collection of header names that will be included in
      * the signature. For AWS4, all header names must be included in the process
      * in sorted canonicalized order.
@@ -94,7 +94,7 @@ public abstract class AWS4SignerBase {
         return buffer.toString();
     }
 
-    /**
+    /*
      * Computes the canonical headers with values for the request. For AWS4, all
      * headers must be included in the signing process.
      */
@@ -120,7 +120,7 @@ public abstract class AWS4SignerBase {
         return buffer.toString();
     }
     
-    /**
+    /*
      * Returns the canonical request string to go into the signer process; this 
        consists of several canonical sub-parts.
      * @return
@@ -141,7 +141,7 @@ public abstract class AWS4SignerBase {
         return canonicalRequest;
     }
     
-    /**
+    /*
      * Returns the canonicalized resource path for the service endpoint.
      */
     protected static String getCanonicalizedResourcePath(URL endpoint) {
@@ -161,7 +161,7 @@ public abstract class AWS4SignerBase {
         }
     }
     
-    /**
+    /*
      * Examines the specified query string parameters and returns a
      * canonicalized form.
      * <p>
@@ -213,7 +213,7 @@ public abstract class AWS4SignerBase {
         return stringToSign;
     }
     
-    /**
+    /*
      * Hashes the string contents (assumed to be UTF-8) using the SHA-256
      * algorithm.
      */
@@ -227,7 +227,7 @@ public abstract class AWS4SignerBase {
         }
     }
     
-    /**
+    /*
      * Hashes the byte array using the SHA-256 algorithm.
      */
     public static byte[] hash(byte[] data) {
