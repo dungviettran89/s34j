@@ -26,6 +26,7 @@ dependencies {
     compile('com.google.guava:guava:23.3-jre')
     compile('com.google.code.gson:gson:2.8.2')
 
+    testCompile('no.uis.nio:nio-fs-webdav:1.1.7')
     testCompile('junit:junit:4.12')
     testCompile('org.slf4j:slf4j-simple:1.7.25')
 }
