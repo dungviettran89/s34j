@@ -37,3 +37,11 @@ dependencies {
 springBoot {
 	executable = true
 }
+
+apply plugin: 'findbugs'
+tasks.withType(FindBugs) {
+	reports {
+		xml.enabled false
+		html.enabled true
+	}
+}

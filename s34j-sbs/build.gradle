@@ -1,38 +1,49 @@
 buildscript {
+    ext {
+        springBootVersion = '1.5.9.RELEASE'
+    }
     repositories {
         mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
 
 group = 'us.cuatoi.s34j'
 version = '0.2.0-SNAPSHOT'
 sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
 }
 
+
 dependencies {
-    compile('org.apache.commons:commons-lang3:3.6')
-    compile('org.slf4j:slf4j-api:1.7.25')
-    compile('commons-io:commons-io:2.6')
-    compile('com.google.guava:guava:23.3-jre')
-    compile('com.google.code.gson:gson:2.8.2')
-    compile('org.modelmapper:modelmapper:1.1.2')
-    compile('org.apache.httpcomponents:httpclient:4.5.4')
-    compile('com.google.http-client:google-http-client-xml:1.23.0')
-    compile('joda-time:joda-time:2.9.9')
+    compile('org.springframework.boot:spring-boot-starter')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
 
-    compileOnly('javax.servlet:javax.servlet-api:3.1.0')
-    compileOnly('org.springframework:spring-core:4.3.13.+')
+bootRepackage {
+    enabled = false
+}
 
-    testCompile('junit:junit:4.12')
-    testCompile('org.slf4j:slf4j-simple:1.7.25')
+/**
+ * Find bugs plugins
+ */
+
+apply plugin: 'findbugs'
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled false
+        html.enabled true
+    }
 }
 
 /**
@@ -70,9 +81,9 @@ uploadArchives {
             }
 
             pom.project {
-                name 'S3 For Java'
+                name 'S34J Simple Block Storage'
                 packaging 'jar'
-                description 'An implementation of Amazon S3 written in Java.'
+                description 'A simple block storage which implement a subset of S3 API'
                 url 'https://s34j.cuatoi.us'
 
                 scm {
