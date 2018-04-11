@@ -5,6 +5,7 @@ import java.io.InputStream;
 
 public interface Store {
     boolean has(String key);
+    long size(String key) throws IOException;
     void save(String key, InputStream is) throws IOException;
     InputStream load(String key) throws IOException;
     boolean delete(String key) throws IOException;

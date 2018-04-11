@@ -31,11 +31,19 @@ public class NioStore implements Store {
 
     @Override
     public boolean has(String key) {
+        logger.info("has(): key=" + key);
         return Files.exists(getFile(key));
     }
 
     @Override
+    public long size(String key) throws IOException {
+        logger.info("size(): key=" + key);
+        return Files.size(getFile(key));
+    }
+
+    @Override
     public void save(String key, InputStream is) throws IOException {
+        logger.info("save(): key=" + key);
         Path file = getFile(key);
         logger.info("save(): is=" + is);
         Preconditions.checkNotNull(is);
@@ -55,27 +63,35 @@ public class NioStore implements Store {
 
     @Override
     public InputStream load(String key) throws IOException {
+        logger.info("load(): key=" + key);
         return Files.newInputStream(getFile(key));
     }
 
     @Override
     public boolean delete(String key) throws IOException {
+        logger.info("delete(): key=" + key);
         return Files.deleteIfExists(getFile(key));
     }
 
     @Override
     public long getTotal() throws IOException {
-        return Files.getFileStore(baseDir).getTotalSpace();
+        long totalSpace = Files.getFileStore(baseDir).getTotalSpace();
+        logger.info("getTotal(): totalSpace=" + totalSpace);
+        return totalSpace;
     }
 
     @Override
     public long getUsed() throws IOException {
-        return getTotal() - getAvailable();
+        long used = getTotal() - getAvailable();
+        logger.info("getUsed(): used=" + used);
+        return used;
     }
 
     @Override
     public long getAvailable() throws IOException {
-        return Files.getFileStore(baseDir).getUsableSpace();
+        long usableSpace = Files.getFileStore(baseDir).getUsableSpace();
+        logger.info("getAvailable(): usableSpace=" + usableSpace);
+        return usableSpace;
 
     }
 }
