@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.sbs.core;
+package us.cuatoi.s34j.sbs.server;
 
 import org.junit.Test;
 
