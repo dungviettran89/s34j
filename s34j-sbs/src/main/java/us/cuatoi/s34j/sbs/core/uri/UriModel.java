@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.sbs.server.uri;
+package us.cuatoi.s34j.sbs.core.uri;
 
 import com.google.gson.Gson;
 import org.springframework.data.annotation.Id;
@@ -18,7 +18,7 @@ public class UriModel {
     private String scheme;
     private String userInfo;
     private String host;
-    private String port;
+    private int port;
     private String path;
     private String query;
     private String fragment;
@@ -63,11 +63,11 @@ public class UriModel {
         this.host = host;
     }
 
-    public String getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(int port) {
         this.port = port;
     }
 

@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.sbs.server.uri;
+package us.cuatoi.s34j.sbs.core.uri;
 
 import org.springframework.data.repository.CrudRepository;
 
