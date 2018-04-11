@@ -1,0 +1,4 @@
+rootProject.name = 's34j-example'
+include 's34j-gae'
+include 's34j-war'
+
