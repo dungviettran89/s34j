@@ -71,6 +71,7 @@ public class BlockController {
      * @param request  raw request to parse prefix from
      * @param pageSize limit the response size
      * @param token    the next token used for paging
+     * @return list of block which has the same prefix and continuation token if applicable
      */
     @RequestMapping(value = "/**", method = RequestMethod.GET, params = {"list", "!attribute"}, produces = "application/json; charset=utf-8")
     @ResponseBody

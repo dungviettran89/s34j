@@ -44,14 +44,13 @@ bootRepackage {
  * Find bugs plugins
  */
 
-//TODO: enable this
-//apply plugin: 'findbugs'
-//tasks.withType(FindBugs) {
-//    reports {
-//        xml.enabled false
-//        html.enabled true
-//    }
-//}
+apply plugin: 'findbugs'
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled false
+        html.enabled true
+    }
+}
 
 /**
  * Maven deployment configuration
