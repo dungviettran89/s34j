@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.sbs.core.uri;
+package us.cuatoi.s34j.sbs.core.store;
 
 import com.google.gson.Gson;
 import org.springframework.data.annotation.Id;
@@ -7,7 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Lob;
 
 @Entity
-public class UriModel {
+public class StoreModel {
     @Id
     @javax.persistence.Id
     private String name;

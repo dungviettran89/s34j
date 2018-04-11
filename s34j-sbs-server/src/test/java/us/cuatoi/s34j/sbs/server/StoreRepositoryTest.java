@@ -5,23 +5,23 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import us.cuatoi.s34j.sbs.core.uri.UriModel;
-import us.cuatoi.s34j.sbs.core.uri.UriRepository;
+import us.cuatoi.s34j.sbs.core.store.StoreModel;
+import us.cuatoi.s34j.sbs.core.store.StoreRepository;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class UriRepositoryTest {
+public class StoreRepositoryTest {
     @Autowired
-    private UriRepository uriRepository;
+    private StoreRepository storeRepository;
 
     @Test
     public void testSaveLoad() {
-        UriModel uri = new UriModel();
+        StoreModel uri = new StoreModel();
         uri.setName("test");
         uri.setType("file");
         uri.setScheme("file");
         uri.setPath("data");
-        uriRepository.save(uri);
+        storeRepository.save(uri);
 
         uri.setName("test-2");
         uri.setType("webdav");
@@ -29,11 +29,11 @@ public class UriRepositoryTest {
         uri.setUserInfo("test:test");
         uri.setPath("/");
         uri.setPort(443);
-        uriRepository.save(uri);
-        for (UriModel uriModel : uriRepository.findAll()) {
-            System.out.println(uriModel);
+        storeRepository.save(uri);
+        for (StoreModel storeModel : storeRepository.findAll()) {
+            System.out.println(storeModel);
         }
-        uriRepository.delete("test");
-        uriRepository.delete("test-2");
+        storeRepository.delete("test");
+        storeRepository.delete("test-2");
     }
 }
