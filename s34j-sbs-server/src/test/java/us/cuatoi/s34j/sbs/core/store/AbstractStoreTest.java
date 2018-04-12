@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
@@ -16,14 +17,16 @@ import static org.junit.Assert.*;
 
 public abstract class AbstractStoreTest {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     @Rule
     public final ExpectedException exception = ExpectedException.none();
     private Store store;
 
     @Before
-    public void setUp() {
-        store = getStore();
+    public void setUp() throws IOException {
+        if (store == null) {
+            store = getStore();
+        }
     }
 
     @Test
@@ -70,5 +73,5 @@ public abstract class AbstractStoreTest {
         assertFalse(store.has(testKey));
     }
 
-    protected abstract Store getStore();
+    protected abstract Store getStore() throws IOException;
 }

@@ -118,4 +118,11 @@ public class NioStore extends Store {
         }
 
     }
+
+    @Override
+    public String toString() {
+        return "NioStore{" +
+                "baseDir=" + baseDir +
+                '}';
+    }
 }
