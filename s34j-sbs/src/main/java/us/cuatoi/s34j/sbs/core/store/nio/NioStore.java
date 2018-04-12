@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import us.cuatoi.s34j.sbs.core.StoreHelper;
 import us.cuatoi.s34j.sbs.core.store.Store;
 import us.cuatoi.s34j.sbs.core.store.StoreException;
 
@@ -13,7 +14,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class NioStore extends Store {
+public class NioStore implements Store {
 
     private static final Logger logger = LoggerFactory.getLogger(NioStore.class);
     private final Path baseDir;
@@ -30,7 +31,7 @@ public class NioStore extends Store {
     @Override
     public boolean has(String key) {
         logger.info("has(): key=" + key);
-        validateKey(key);
+        StoreHelper.validateKey(key);
         boolean exists = Files.exists(baseDir.resolve(key));
         logger.info("has(): exists=" + exists);
         return exists;
@@ -39,7 +40,7 @@ public class NioStore extends Store {
     @Override
     public long size(String key) {
         logger.info("size(): key=" + key);
-        validateKey(key);
+        StoreHelper.validateKey(key);
         try {
             long size = Files.size(baseDir.resolve(key));
             logger.info("size(): size=" + size);
@@ -53,7 +54,7 @@ public class NioStore extends Store {
     @Override
     public void load(String key, FileConsumer consumer) {
         logger.info("load(): key=" + key);
-        validateKey(key);
+        StoreHelper.validateKey(key);
         try (InputStream is = Files.newInputStream(baseDir.resolve(key))) {
             consumer.accept(is);
         } catch (IOException ex) {
@@ -65,7 +66,7 @@ public class NioStore extends Store {
     @Override
     public void save(String key, InputStream stream) {
         logger.info("save(): key=" + key);
-        validateKey(key);
+        StoreHelper.validateKey(key);
         try (OutputStream os = Files.newOutputStream(baseDir.resolve(key))) {
             long total = ByteStreams.copy(stream, os);
             logger.info("save(): total=" + total);
@@ -78,7 +79,7 @@ public class NioStore extends Store {
     @Override
     public boolean delete(String key) {
         logger.info("delete(): key=" + key);
-        validateKey(key);
+        StoreHelper.validateKey(key);
         try {
             return Files.deleteIfExists(baseDir.resolve(key));
         } catch (IOException ex) {
