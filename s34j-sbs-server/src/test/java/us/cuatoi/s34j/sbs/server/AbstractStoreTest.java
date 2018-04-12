@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.sbs.core.store;
+package us.cuatoi.s34j.sbs.server;
 
 import com.google.common.io.CharStreams;
 import org.junit.Before;
@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import us.cuatoi.s34j.sbs.core.store.Store;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

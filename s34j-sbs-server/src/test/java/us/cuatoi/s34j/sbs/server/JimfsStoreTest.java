@@ -1,9 +1,10 @@
-package us.cuatoi.s34j.sbs.core.store.nio;
+package us.cuatoi.s34j.sbs.server;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
-import us.cuatoi.s34j.sbs.core.store.AbstractStoreTest;
 import us.cuatoi.s34j.sbs.core.store.Store;
+import us.cuatoi.s34j.sbs.core.store.nio.NioConfiguration;
+import us.cuatoi.s34j.sbs.core.store.nio.NioStoreProvider;
 
 public class JimfsStoreTest extends AbstractStoreTest {
 
