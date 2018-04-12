@@ -2,11 +2,10 @@ package us.cuatoi.s34j.sbs.core.store.nio;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.cuatoi.s34j.sbs.core.store.Store;
-import us.cuatoi.s34j.sbs.core.store.StoreHelper;
+import us.cuatoi.s34j.sbs.core.store.StoreException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,14 +13,12 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static java.nio.file.StandardOpenOption.CREATE;
+public class NioStore extends Store {
 
-public class NioStore implements Store {
-
-    public static final Logger logger = LoggerFactory.getLogger(NioStore.class);
+    private static final Logger logger = LoggerFactory.getLogger(NioStore.class);
     private final Path baseDir;
 
-    public NioStore(Path baseDir) {
+    NioStore(Path baseDir) {
         logger.info("NioStore(): baseDir=" + baseDir);
         Preconditions.checkNotNull(baseDir);
         Preconditions.checkArgument(Files.exists(baseDir));
@@ -29,69 +26,96 @@ public class NioStore implements Store {
         this.baseDir = baseDir;
     }
 
+
     @Override
     public boolean has(String key) {
         logger.info("has(): key=" + key);
-        return Files.exists(getFile(key));
+        validateKey(key);
+        boolean exists = Files.exists(baseDir.resolve(key));
+        logger.info("has(): exists=" + exists);
+        return exists;
     }
 
     @Override
-    public long size(String key) throws IOException {
+    public long size(String key) {
         logger.info("size(): key=" + key);
-        return Files.size(getFile(key));
-    }
-
-    @Override
-    public void save(String key, InputStream is) throws IOException {
-        logger.info("save(): key=" + key);
-        Path file = getFile(key);
-        logger.info("save(): is=" + is);
-        Preconditions.checkNotNull(is);
-        try (OutputStream os = Files.newOutputStream(file, CREATE)) {
-            long count = ByteStreams.copy(is, os);
-            logger.info("save(): count=" + count);
+        validateKey(key);
+        try {
+            long size = Files.size(baseDir.resolve(key));
+            logger.info("size(): size=" + size);
+            return size;
+        } catch (IOException ex) {
+            logger.error("size(): ex=" + ex, ex);
+            throw new StoreException(ex);
         }
     }
 
-    private Path getFile(String key) {
-        logger.debug("getFile(): key=" + key);
-        Preconditions.checkArgument(StringUtils.isNotBlank(key));
-        String normalizedKey = StoreHelper.normalizeKey(key);
-        logger.debug("getFile(): normalizedKey=" + normalizedKey);
-        return baseDir.resolve(normalizedKey);
-    }
-
     @Override
-    public InputStream load(String key) throws IOException {
+    public void load(String key, FileConsumer consumer) {
         logger.info("load(): key=" + key);
-        return Files.newInputStream(getFile(key));
+        validateKey(key);
+        try (InputStream is = Files.newInputStream(baseDir.resolve(key))) {
+            consumer.accept(is);
+        } catch (IOException ex) {
+            logger.error("load(): ex=" + ex, ex);
+            throw new StoreException(ex);
+        }
     }
 
     @Override
-    public boolean delete(String key) throws IOException {
+    public void save(String key, InputStream stream) {
+        logger.info("save(): key=" + key);
+        validateKey(key);
+        try (OutputStream os = Files.newOutputStream(baseDir.resolve(key))) {
+            long total = ByteStreams.copy(stream, os);
+            logger.info("save(): total=" + total);
+        } catch (IOException ex) {
+            logger.error("save(): ex=" + ex, ex);
+            throw new StoreException(ex);
+        }
+    }
+
+    @Override
+    public boolean delete(String key) {
         logger.info("delete(): key=" + key);
-        return Files.deleteIfExists(getFile(key));
+        validateKey(key);
+        try {
+            return Files.deleteIfExists(baseDir.resolve(key));
+        } catch (IOException ex) {
+            logger.error("save(): ex=" + ex, ex);
+            throw new StoreException(ex);
+        }
     }
 
     @Override
-    public long getTotal() throws IOException {
-        long totalSpace = Files.getFileStore(baseDir).getTotalSpace();
-        logger.info("getTotal(): totalSpace=" + totalSpace);
-        return totalSpace;
+    public long getTotal() {
+        try {
+            long totalSpace = Files.getFileStore(baseDir).getTotalSpace();
+            logger.info("getTotal(): totalSpace=" + totalSpace);
+            return totalSpace;
+        } catch (IOException ex) {
+            logger.error("getTotal(): ex=" + ex, ex);
+            throw new StoreException(ex);
+        }
     }
 
     @Override
-    public long getUsed() throws IOException {
+    public long getUsed() {
         long used = getTotal() - getAvailable();
         logger.info("getUsed(): used=" + used);
         return used;
     }
 
     @Override
-    public long getAvailable() throws IOException {
-        long usableSpace = Files.getFileStore(baseDir).getUsableSpace();
-        logger.info("getAvailable(): usableSpace=" + usableSpace);
-        return usableSpace;
+    public long getAvailable() {
+        try {
+            long usableSpace = Files.getFileStore(baseDir).getUsableSpace();
+            logger.info("getAvailable(): usableSpace=" + usableSpace);
+            return usableSpace;
+        } catch (IOException ex) {
+            logger.error("getAvailable(): ex=" + ex, ex);
+            throw new StoreException(ex);
+        }
 
     }
 }
