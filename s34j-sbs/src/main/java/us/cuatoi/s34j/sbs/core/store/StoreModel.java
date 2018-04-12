@@ -12,16 +12,9 @@ public class StoreModel {
     @javax.persistence.Id
     private String name;
     private String type;
+    private String uri;
     @Lob
-    private String environmentJson;
-
-    private String scheme;
-    private String userInfo;
-    private String host;
-    private int port;
-    private String path;
-    private String query;
-    private String fragment;
+    private String json;
 
     public String getName() {
         return name;
@@ -39,68 +32,20 @@ public class StoreModel {
         this.type = type;
     }
 
-    public String getScheme() {
-        return scheme;
+    public String getUri() {
+        return uri;
     }
 
-    public void setScheme(String scheme) {
-        this.scheme = scheme;
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
-    public String getUserInfo() {
-        return userInfo;
+    public String getJson() {
+        return json;
     }
 
-    public void setUserInfo(String userInfo) {
-        this.userInfo = userInfo;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public String getQuery() {
-        return query;
-    }
-
-    public void setQuery(String query) {
-        this.query = query;
-    }
-
-    public String getFragment() {
-        return fragment;
-    }
-
-    public void setFragment(String fragment) {
-        this.fragment = fragment;
-    }
-
-    public String getEnvironmentJson() {
-        return environmentJson;
-    }
-
-    public void setEnvironmentJson(String environmentJson) {
-        this.environmentJson = environmentJson;
+    public void setJson(String json) {
+        this.json = json;
     }
 
     @Override

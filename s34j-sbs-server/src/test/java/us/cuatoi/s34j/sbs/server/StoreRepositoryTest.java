@@ -18,17 +18,15 @@ public class StoreRepositoryTest {
     public void testSaveLoad() {
         StoreModel uri = new StoreModel();
         uri.setName("test");
-        uri.setType("file");
-        uri.setScheme("file");
-        uri.setPath("data");
+        uri.setType("nio");
+        uri.setJson(null);
+        uri.setUri("jimfs://");
         storeRepository.save(uri);
 
         uri.setName("test-2");
         uri.setType("webdav");
-        uri.setScheme("https");
-        uri.setUserInfo("test:test");
-        uri.setPath("/");
-        uri.setPort(443);
+        uri.setJson("{username:'test',password:'test'}");
+        uri.setUri("https://dav.box.net/dav/");
         storeRepository.save(uri);
         for (StoreModel storeModel : storeRepository.findAll()) {
             System.out.println(storeModel);
