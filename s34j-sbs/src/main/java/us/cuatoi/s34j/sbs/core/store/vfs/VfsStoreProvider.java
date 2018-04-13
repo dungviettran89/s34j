@@ -6,6 +6,7 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.VFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.sbs.core.store.Store;
@@ -25,6 +26,9 @@ public class VfsStoreProvider implements StoreProvider<VfsConfiguration> {
 
     private static final Logger logger = LoggerFactory.getLogger(VfsStoreProvider.class);
 
+    @Value("${s34j.sbs.vfs.defaultTotalBytes:104857600}")
+    private long defaultTotalBytes;
+
     @Override
     public String getType() {
         return "vfs";
@@ -43,10 +47,14 @@ public class VfsStoreProvider implements StoreProvider<VfsConfiguration> {
         logger.info("createStore() config=" + config);
         try {
             FileObject folder = VFS.getManager().resolveFile(URI.create(uri));
+            logger.info("createStore() folder=" + folder);
+            logger.info("createStore() folder.exists=" + folder.exists());
             if (!folder.exists()) {
                 folder.createFolder();
             }
-            return new VfsStore(folder);
+            long totalBytes = config != null ? config.getTotalBytes() : defaultTotalBytes;
+            logger.info("createStore() totalBytes=" + totalBytes);
+            return new VfsStore(folder, totalBytes);
         } catch (FileSystemException vfsException) {
             throw new StoreException(vfsException);
         }

@@ -22,7 +22,7 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class StoreInformationUpdaterTest {
-    public static final Logger logger = LoggerFactory.getLogger(StoreInformationUpdaterTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(StoreInformationUpdaterTest.class);
     @Autowired
     private StoreInformationUpdater storeInformationUpdater;
     @Autowired
@@ -31,25 +31,24 @@ public class StoreInformationUpdaterTest {
     private ConfigurationRepository configurationRepository;
 
     @Test
-    public void testUpdateStorageInformation() {
+    public void testCheckAvailability() {
         InformationModel information = new InformationModel();
         information.setName("unknown-information");
         information.setActive(true);
-        information.setTotalBytes(2);
         information.setAvailableBytes(1);
         information.setUsedBytes(1);
         informationRepository.save(information);
-        storeInformationUpdater.perform();
+        storeInformationUpdater.updateAvailability();
         for (ConfigurationModel config : configurationRepository.findAll()) {
             InformationModel info = informationRepository.findOne(config.getName());
-            logger.info("testUpdateStorageInformation() info=" + info);
+            logger.info("testCheckAvailability() info=" + info);
             assertNotNull(info);
             assertEquals(info.getName(), config.getName());
         }
 
         List<InformationModel> sortedInformation = informationRepository.findByActiveOrderByAvailableBytesDesc(true, new PageRequest(0, 2));
         for (InformationModel sorted : sortedInformation) {
-            logger.info("testUpdateStorageInformation() sorted=" + sorted);
+            logger.info("testCheckAvailability() sorted=" + sorted);
             assertNotNull(sorted);
 
         }

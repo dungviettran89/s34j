@@ -86,7 +86,6 @@ public class NioStore implements Store {
         }
     }
 
-    @Override
     public long getTotalBytes() {
         try {
             long totalSpace = Files.getFileStore(baseDir).getTotalSpace();
@@ -99,14 +98,7 @@ public class NioStore implements Store {
     }
 
     @Override
-    public long getUsedBytes() {
-        long used = getTotalBytes() - getAvailableBytes();
-        logger.info("getUsedBytes(): used=" + used);
-        return used;
-    }
-
-    @Override
-    public long getAvailableBytes() {
+    public long getAvailableBytes(long usedByte) {
         try {
             long usableSpace = Files.getFileStore(baseDir).getUsableSpace();
             logger.info("getAvailableBytes(): usableSpace=" + usableSpace);

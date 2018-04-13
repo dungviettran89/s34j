@@ -2,6 +2,8 @@ package us.cuatoi.s34j.sbs.core.operation;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +18,13 @@ import us.cuatoi.s34j.sbs.core.store.model.InformationModel;
 import us.cuatoi.s34j.sbs.core.store.model.InformationRepository;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.OutputStream;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
 public class StoreInformationUpdater {
@@ -40,53 +45,68 @@ public class StoreInformationUpdater {
     @SchedulerLock(name = "StoreInformationUpdater", lockAtMostFor = (updateIntervalMinutes + 1) * 60 * 1000)
     @PostConstruct
     @VisibleForTesting
-    public void perform() {
-        List<String> configuredStores = new ArrayList<>();
-        for (ConfigurationModel config : configurationRepository.findAll()) {
-            updateInformation(config);
-            configuredStores.add(config.getName());
-        }
-        logger.info("perform() updatedCount=" + configuredStores.size());
+    public void updateAvailability() {
+        Iterable<ConfigurationModel> allStores = configurationRepository.findAll();
+        Set<String> checkedStores = Lists
+                .newArrayList(allStores)
+                .parallelStream()
+                .map((config) -> {
+                    updateAvailability(config);
+                    return config.getName();
+                })
+                .collect(Collectors.toSet());
+        logger.info("updateAvailability() updatedCount=" + checkedStores.size());
 
-        List<InformationModel> unknownInformation = new ArrayList<>();
-        for (InformationModel info : informationRepository.findAll()) {
-            if (!configuredStores.contains(info.getName())) {
-                info.setActive(false);
-                unknownInformation.add(info);
-                logger.info("perform() unknownInformation=" + info);
-            }
-        }
-        informationRepository.save(unknownInformation);
-        logger.info("perform() unknownCount=" + unknownInformation.size());
+        Iterable<InformationModel> allInfos = informationRepository.findAll();
+        long unknownCount = Lists.newArrayList(allInfos).stream()
+                .filter((info) -> !checkedStores.contains(info.getName()))
+                .peek((unknownInformation) -> {
+                    logger.info("updateAvailability() unknownInformation=" + unknownInformation);
+                    unknownInformation.setActive(false);
+                    informationRepository.save(unknownInformation);
+                })
+                .count();
+        logger.info("updateAvailability() unknownCount=" + unknownCount);
 
     }
 
-    private void updateInformation(ConfigurationModel config) {
-        logger.info("updateInformation() config=" + config);
+    private void updateAvailability(ConfigurationModel config) {
+        logger.info("updateAvailability() config=" + config);
         Preconditions.checkNotNull(config);
-        if (isBlank(config.getName())) {
-            logger.info("updateInformation() name=" + config.getName());
-            return;
-        }
+        Preconditions.checkArgument(isNotBlank(config.getName()));
 
+        Store store = storeCache.getStore(config.getName());
+        Preconditions.checkNotNull(store);
+
+
+        boolean active = false;
+        Stopwatch watch = Stopwatch.createStarted();
         try {
-            Store store = storeCache.getStore(config.getName());
-            InformationModel information = new InformationModel();
-            information.setName(config.getName());
-            information.setAvailableBytes(store.getAvailableBytes());
-            information.setTotalBytes(store.getTotalBytes());
-            information.setUsedBytes(store.getUsedBytes());
-            information.setActive(true);
-            informationRepository.save(information);
-            logger.info("updateInformation() information=" + information);
-        } catch (Exception canNotLoadInformationException) {
-            logger.warn("updateInformation() canNotLoadInformationException=" + canNotLoadInformationException,
-                    canNotLoadInformationException);
-            InformationModel information = new InformationModel();
-            information.setName(config.getName());
-            information.setActive(false);
-            informationRepository.save(information);
-            logger.info("updateInformation() information=" + information);
+            logger.info("updateAvailability() storeToTest=" + store);
+            byte[] oneMB = new byte[1024 * 1024];
+            String testKey = UUID.randomUUID().toString();
+            logger.info("updateAvailability() testKey=" + testKey);
+            try (OutputStream os = store.save(testKey)) {
+                os.write(oneMB);
+            }
+            store.delete(testKey);
+            active = true;
+        } catch (Exception writeException) {
+            logger.warn("updateAvailability() writeException=" + writeException, writeException);
         }
+        logger.info("updateAvailability() active=" + active);
+        logger.info("updateAvailability() latency=" + watch.elapsed(TimeUnit.MILLISECONDS));
+
+        InformationModel info = informationRepository.findOne(config.getName());
+        if (info == null) {
+            info = new InformationModel();
+            info.setName(config.getName());
+        }
+        info.setActive(active);
+        info.setLatency(watch.elapsed(TimeUnit.MILLISECONDS));
+        informationRepository.save(info);
+        logger.info("updateAvailability() info=" + info);
+
     }
+
 }

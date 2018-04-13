@@ -21,10 +21,10 @@ public class InformationModel {
     @javax.persistence.Id
     private String name;
     private boolean active;
-    private long totalBytes;
     private long usedBytes;
     @Indexed
     private long availableBytes;
+    private long latency;
 
     public String getName() {
         return name;
@@ -42,14 +42,6 @@ public class InformationModel {
         this.active = active;
     }
 
-    public long getTotalBytes() {
-        return totalBytes;
-    }
-
-    public void setTotalBytes(long totalBytes) {
-        this.totalBytes = totalBytes;
-    }
-
     public long getUsedBytes() {
         return usedBytes;
     }
@@ -64,6 +56,14 @@ public class InformationModel {
 
     public void setAvailableBytes(long availableBytes) {
         this.availableBytes = availableBytes;
+    }
+
+    public long getLatency() {
+        return latency;
+    }
+
+    public void setLatency(long latency) {
+        this.latency = latency;
     }
 
     @Override

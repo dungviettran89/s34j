@@ -50,13 +50,6 @@ public abstract class AbstractStoreTest {
 
     @Test
     public void testSimpleOperation() throws IOException {
-        logger.info("testSimpleOperation() store.total=" + store.getTotalBytes());
-        assertTrue(store.getTotalBytes() >= 0);
-        logger.info("testSimpleOperation() store.available=" + store.getAvailableBytes());
-        assertTrue(store.getAvailableBytes() >= 0);
-        logger.info("testSimpleOperation() store.used=" + store.getUsedBytes());
-        assertTrue(store.getUsedBytes() >= 0);
-
         String testKey = "test.txt";
         byte[] testBytes = testKey.getBytes(StandardCharsets.UTF_8);
         try (OutputStream os = store.save(testKey)) {
@@ -71,6 +64,9 @@ public abstract class AbstractStoreTest {
             String read = CharStreams.toString(new InputStreamReader(is, StandardCharsets.UTF_8));
             assertEquals(testKey, read);
         }
+
+        logger.info("testSimpleOperation() store.availableBytes=" + store.getAvailableBytes(0));
+
         assertTrue(store.delete(testKey));
         assertFalse(store.has(testKey));
     }

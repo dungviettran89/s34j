@@ -17,15 +17,17 @@ import java.io.OutputStream;
  */
 public class VfsStore implements Store {
 
-    public static final Logger logger = LoggerFactory.getLogger(VfsStore.class);
-    public static final long oneGB = 1024 * 1024 * 1024;
+    private static final Logger logger = LoggerFactory.getLogger(VfsStore.class);
     private final FileObject file;
+    private final long totalBytes;
 
-    public VfsStore(FileObject folder) throws FileSystemException {
+    public VfsStore(FileObject folder, long totalBytes) throws FileSystemException {
         logger.info("VfsStore() folder=" + folder);
         Preconditions.checkNotNull(folder);
         Preconditions.checkArgument(folder.isFolder());
+        Preconditions.checkArgument(totalBytes > 0);
         this.file = folder;
+        this.totalBytes = totalBytes;
     }
 
     @Override
@@ -89,17 +91,10 @@ public class VfsStore implements Store {
     }
 
     @Override
-    public long getTotalBytes() {
-        return 2 * oneGB;
-    }
-
-    @Override
-    public long getUsedBytes() {
-        return oneGB;
-    }
-
-    @Override
-    public long getAvailableBytes() {
-        return oneGB;
+    public long getAvailableBytes(long usedByte) {
+        logger.info("getAvailableBytes(): usedByte=" + usedByte);
+        long availableBytes = totalBytes - usedByte;
+        logger.info("getAvailableBytes(): availableBytes=" + availableBytes);
+        return availableBytes > 0 ? availableBytes : 0;
     }
 }
