@@ -86,17 +86,6 @@ public class NioStore implements Store {
         }
     }
 
-    public long getTotalBytes() {
-        try {
-            long totalSpace = Files.getFileStore(baseDir).getTotalSpace();
-            logger.info("getTotalBytes(): totalSpace=" + totalSpace);
-            return totalSpace;
-        } catch (IOException ex) {
-            logger.error("getTotalBytes(): ex=" + ex, ex);
-            throw new StoreException(ex);
-        }
-    }
-
     @Override
     public long getAvailableBytes(long usedByte) {
         try {
