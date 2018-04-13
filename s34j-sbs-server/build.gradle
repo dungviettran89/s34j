@@ -31,10 +31,12 @@ dependencies {
 	testCompile('com.google.jimfs:jimfs:1.1')
 	//for JPA
 	compile('org.springframework.boot:spring-boot-starter-data-jpa')
-	runtime('com.h2database:h2')
+	compile('net.javacrumbs.shedlock:shedlock-provider-jdbc-template:0.18.2')
+	compile('com.h2database:h2')
 
 	//for MongoDB
 //	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
+//	compile('net.javacrumbs.shedlock:shedlock-provider-mongo:0.18.2')
 //	compile('de.flapdoodle.embed:de.flapdoodle.embed.mongo:1.50.5')
 //	compile('cz.jirutka.spring:embedmongo-spring:1.3.1')
 }

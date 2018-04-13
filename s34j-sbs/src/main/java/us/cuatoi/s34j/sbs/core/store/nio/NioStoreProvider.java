@@ -46,6 +46,7 @@ public class NioStoreProvider implements StoreProvider<NioConfiguration> {
         } catch (FileSystemNotFoundException resolveException) {
             logger.info("getBaseDir() resolveException=" + resolveException);
             try {
+                config = config == null ? new NioConfiguration() : config;
                 return FileSystems.newFileSystem(baseUri, config).getPath(baseUri.getPath());
             } catch (Exception newFileStoreException) {
                 logger.info("getBaseDir() newFileStoreException=" + newFileStoreException);

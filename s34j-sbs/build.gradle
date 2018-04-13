@@ -33,6 +33,15 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-web')
     compileOnly('org.springframework.boot:spring-boot-starter-data-jpa')
     compileOnly('org.springframework.boot:spring-boot-starter-data-mongodb')
+
+    //storage
+    compileOnly('org.apache.commons:commons-vfs2:2.2')
+
+    //schedule locker
+    compile('net.javacrumbs.shedlock:shedlock-spring:0.18.2')
+    compileOnly('net.javacrumbs.shedlock:shedlock-provider-mongo:0.18.2')
+    compileOnly('net.javacrumbs.shedlock:shedlock-provider-jdbc-template:0.18.2')
+
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 

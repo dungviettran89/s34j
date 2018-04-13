@@ -16,18 +16,18 @@ public class ConfigurationRepositoryTest {
 
     @Test
     public void testSaveLoad() {
-        ConfigurationModel uri = new ConfigurationModel();
-        uri.setName("test");
-        uri.setType("nio");
-        uri.setJson(null);
-        uri.setUri("jimfs://");
-        configurationRepository.save(uri);
+        ConfigurationModel config = new ConfigurationModel();
+        config.setName("test");
+        config.setType("nio");
+        config.setJson(null);
+        config.setUri("jimfs://");
+        configurationRepository.save(config);
 
-        uri.setName("test-2");
-        uri.setType("webdav");
-        uri.setJson("{username:'test',password:'test'}");
-        uri.setUri("https://dav.box.net/dav/");
-        configurationRepository.save(uri);
+        config.setName("test-2");
+        config.setType("webdav");
+        config.setJson("{username:'test',password:'test'}");
+        config.setUri("https://dav.box.net/dav/");
+        configurationRepository.save(config);
         for (ConfigurationModel configurationModel : configurationRepository.findAll()) {
             System.out.println(configurationModel);
         }
