@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
-import us.cuatoi.s34j.sbs.core.operation.StoreInformationUpdater;
+import us.cuatoi.s34j.sbs.core.operation.AvailabilityUpdater;
 import us.cuatoi.s34j.sbs.core.store.model.ConfigurationModel;
 import us.cuatoi.s34j.sbs.core.store.model.ConfigurationRepository;
 import us.cuatoi.s34j.sbs.core.store.model.InformationModel;
@@ -21,10 +21,10 @@ import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class StoreInformationUpdaterTest {
-    private static final Logger logger = LoggerFactory.getLogger(StoreInformationUpdaterTest.class);
+public class AvailabilityUpdaterTest {
+    private static final Logger logger = LoggerFactory.getLogger(AvailabilityUpdaterTest.class);
     @Autowired
-    private StoreInformationUpdater storeInformationUpdater;
+    private AvailabilityUpdater availabilityUpdater;
     @Autowired
     private InformationRepository informationRepository;
     @Autowired
@@ -38,7 +38,7 @@ public class StoreInformationUpdaterTest {
         information.setAvailableBytes(1);
         information.setUsedBytes(1);
         informationRepository.save(information);
-        storeInformationUpdater.updateAvailability();
+        availabilityUpdater.updateAll();
         for (ConfigurationModel config : configurationRepository.findAll()) {
             InformationModel info = informationRepository.findOne(config.getName());
             logger.info("testCheckAvailability() info=" + info);

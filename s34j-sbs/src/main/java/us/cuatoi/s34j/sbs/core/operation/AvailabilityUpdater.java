@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
-public class StoreInformationUpdater {
+public class AvailabilityUpdater {
 
-    private static final Logger logger = LoggerFactory.getLogger(StoreInformationUpdater.class);
+    private static final Logger logger = LoggerFactory.getLogger(AvailabilityUpdater.class);
     private static final int updateIntervalMinutes = 5;
     @Autowired
     private ConfigurationRepository configurationRepository;
@@ -42,18 +42,16 @@ public class StoreInformationUpdater {
      * Perform the update of the information of stores
      */
     @Scheduled(cron = "0 */" + updateIntervalMinutes + " * * * *")
-    @SchedulerLock(name = "StoreInformationUpdater", lockAtMostFor = (updateIntervalMinutes + 1) * 60 * 1000)
+    @SchedulerLock(name = "AvailabilityUpdater", lockAtMostFor = (updateIntervalMinutes + 1) * 60 * 1000)
     @PostConstruct
     @VisibleForTesting
-    public void updateAvailability() {
+    public void updateAll() {
         Iterable<ConfigurationModel> allStores = configurationRepository.findAll();
         Set<String> checkedStores = Lists
                 .newArrayList(allStores)
                 .parallelStream()
-                .map((config) -> {
-                    updateAvailability(config);
-                    return config.getName();
-                })
+                .peek(this::updateOne)
+                .map(ConfigurationModel::getName)
                 .collect(Collectors.toSet());
         logger.info("updateAvailability() updatedCount=" + checkedStores.size());
 
@@ -70,7 +68,7 @@ public class StoreInformationUpdater {
 
     }
 
-    private void updateAvailability(ConfigurationModel config) {
+    private void updateOne(ConfigurationModel config) {
         logger.info("updateAvailability() config=" + config);
         Preconditions.checkNotNull(config);
         Preconditions.checkArgument(isNotBlank(config.getName()));
@@ -78,7 +76,8 @@ public class StoreInformationUpdater {
         Store store = storeCache.getStore(config.getName());
         Preconditions.checkNotNull(store);
 
-
+        //check availability by test write
+        //we may need to evaluate to use 2 flag instead: canRead and canWrite
         boolean active = false;
         Stopwatch watch = Stopwatch.createStarted();
         try {
@@ -97,6 +96,7 @@ public class StoreInformationUpdater {
         logger.info("updateAvailability() active=" + active);
         logger.info("updateAvailability() latency=" + watch.elapsed(TimeUnit.MILLISECONDS));
 
+        //save information
         InformationModel info = informationRepository.findOne(config.getName());
         if (info == null) {
             info = new InformationModel();
@@ -106,7 +106,6 @@ public class StoreInformationUpdater {
         info.setLatency(watch.elapsed(TimeUnit.MILLISECONDS));
         informationRepository.save(info);
         logger.info("updateAvailability() info=" + info);
-
     }
 
 }
