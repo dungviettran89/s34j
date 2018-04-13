@@ -1,7 +1,7 @@
 package us.cuatoi.s34j.sbs.core.store;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Store interface to save block into external store, which can be nio based or webdav based.
@@ -26,19 +26,17 @@ public interface Store {
 
     /**
      * Load the block to an input stream
+     *  @param key      of the block
      *
-     * @param key      of the block
-     * @param consumer to read the content
      */
-    void load(String key, FileConsumer consumer);
+    InputStream load(String key);
 
     /**
      * Save the block as the form of input stream
+     *  @param key    of the block
      *
-     * @param key    of the block
-     * @param stream content of the block
      */
-    void save(String key, InputStream stream);
+    OutputStream save(String key);
 
     /**
      * Delete the block if exists
@@ -53,23 +51,20 @@ public interface Store {
      *
      * @return total bytes of the store
      */
-    long getTotal();
+    long getTotalBytes();
 
     /**
      * Get used space of the store
      *
      * @return used bytes of the store
      */
-    long getUsed();
+    long getUsedBytes();
 
     /**
      * Get available space of the store
      *
      * @return available bytes of the store
      */
-    long getAvailable();
+    long getAvailableBytes();
 
-    interface FileConsumer {
-        void accept(InputStream is) throws IOException;
-    }
 }

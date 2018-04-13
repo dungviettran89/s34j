@@ -1,7 +1,6 @@
 package us.cuatoi.s34j.sbs.core.store.nio;
 
 import com.google.common.base.Preconditions;
-import com.google.common.io.ByteStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.cuatoi.s34j.sbs.core.StoreHelper;
@@ -52,27 +51,26 @@ public class NioStore implements Store {
     }
 
     @Override
-    public void load(String key, FileConsumer consumer) {
+    public InputStream load(String key) {
         logger.info("load(): key=" + key);
         StoreHelper.validateKey(key);
-        try (InputStream is = Files.newInputStream(baseDir.resolve(key))) {
-            consumer.accept(is);
-        } catch (IOException ex) {
-            logger.error("load(): ex=" + ex, ex);
-            throw new StoreException(ex);
+        try {
+            return Files.newInputStream(baseDir.resolve(key));
+        } catch (IOException openException) {
+            logger.error("load(): openException=" + openException);
+            throw new StoreException(openException);
         }
     }
 
     @Override
-    public void save(String key, InputStream stream) {
+    public OutputStream save(String key) {
         logger.info("save(): key=" + key);
         StoreHelper.validateKey(key);
-        try (OutputStream os = Files.newOutputStream(baseDir.resolve(key))) {
-            long total = ByteStreams.copy(stream, os);
-            logger.info("save(): total=" + total);
-        } catch (IOException ex) {
-            logger.error("save(): ex=" + ex, ex);
-            throw new StoreException(ex);
+        try {
+            return Files.newOutputStream(baseDir.resolve(key));
+        } catch (IOException openException) {
+            logger.error("save(): openException=" + openException);
+            throw new StoreException(openException);
         }
     }
 
@@ -89,32 +87,32 @@ public class NioStore implements Store {
     }
 
     @Override
-    public long getTotal() {
+    public long getTotalBytes() {
         try {
             long totalSpace = Files.getFileStore(baseDir).getTotalSpace();
-            logger.info("getTotal(): totalSpace=" + totalSpace);
+            logger.info("getTotalBytes(): totalSpace=" + totalSpace);
             return totalSpace;
         } catch (IOException ex) {
-            logger.error("getTotal(): ex=" + ex, ex);
+            logger.error("getTotalBytes(): ex=" + ex, ex);
             throw new StoreException(ex);
         }
     }
 
     @Override
-    public long getUsed() {
-        long used = getTotal() - getAvailable();
-        logger.info("getUsed(): used=" + used);
+    public long getUsedBytes() {
+        long used = getTotalBytes() - getAvailableBytes();
+        logger.info("getUsedBytes(): used=" + used);
         return used;
     }
 
     @Override
-    public long getAvailable() {
+    public long getAvailableBytes() {
         try {
             long usableSpace = Files.getFileStore(baseDir).getUsableSpace();
-            logger.info("getAvailable(): usableSpace=" + usableSpace);
+            logger.info("getAvailableBytes(): usableSpace=" + usableSpace);
             return usableSpace;
         } catch (IOException ex) {
-            logger.error("getAvailable(): ex=" + ex, ex);
+            logger.error("getAvailableBytes(): ex=" + ex, ex);
             throw new StoreException(ex);
         }
 

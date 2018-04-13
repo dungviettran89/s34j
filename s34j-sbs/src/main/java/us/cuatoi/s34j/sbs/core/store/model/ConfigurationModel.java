@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.sbs.core.store;
+package us.cuatoi.s34j.sbs.core.store.model;
 
 import com.google.gson.Gson;
 import org.springframework.data.annotation.Id;
@@ -6,8 +6,11 @@ import org.springframework.data.annotation.Id;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 
+/**
+ * Store the configuration of a store. StoreProvider must be able to use this information to construct a new store
+ */
 @Entity
-public class StoreModel {
+public class ConfigurationModel {
     @Id
     @javax.persistence.Id
     private String name;

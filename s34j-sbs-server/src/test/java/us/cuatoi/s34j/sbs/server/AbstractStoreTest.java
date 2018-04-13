@@ -9,9 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.cuatoi.s34j.sbs.core.store.Store;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
@@ -48,28 +49,28 @@ public abstract class AbstractStoreTest {
     }
 
     @Test
-    public void testSimpleOperation() {
-        logger.info("testSimpleOperation() store.total=" + store.getTotal());
-        assertTrue(store.getTotal() >= 0);
-        logger.info("testSimpleOperation() store.available=" + store.getAvailable());
-        assertTrue(store.getAvailable() >= 0);
-        logger.info("testSimpleOperation() store.used=" + store.getUsed());
-        assertTrue(store.getUsed() >= 0);
+    public void testSimpleOperation() throws IOException {
+        logger.info("testSimpleOperation() store.total=" + store.getTotalBytes());
+        assertTrue(store.getTotalBytes() >= 0);
+        logger.info("testSimpleOperation() store.available=" + store.getAvailableBytes());
+        assertTrue(store.getAvailableBytes() >= 0);
+        logger.info("testSimpleOperation() store.used=" + store.getUsedBytes());
+        assertTrue(store.getUsedBytes() >= 0);
 
         String testKey = "test.txt";
         byte[] testBytes = testKey.getBytes(StandardCharsets.UTF_8);
-        store.save(testKey, new ByteArrayInputStream(testBytes));
+        try (OutputStream os = store.save(testKey)) {
+            os.write(testBytes);
+        }
         logger.info("testSimpleOperation() store.has=" + store.has(testKey));
         assertTrue(store.has(testKey));
         logger.info("testSimpleOperation() store.size=" + store.size(testKey));
         assertTrue(store.size(testKey) > 0);
 
-        store.load(testKey, (is) -> {
+        try (InputStream is = store.load(testKey)) {
             String read = CharStreams.toString(new InputStreamReader(is, StandardCharsets.UTF_8));
-            logger.info("testSimpleOperation() read=" + read);
             assertEquals(testKey, read);
-        });
-
+        }
         assertTrue(store.delete(testKey));
         assertFalse(store.has(testKey));
     }
