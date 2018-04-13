@@ -27,6 +27,7 @@ public interface Store {
     /**
      * Load the block to an input stream
      *  @param key      of the block
+     *  @return input stream to read content of the block.
      *
      */
     InputStream load(String key);
@@ -34,7 +35,7 @@ public interface Store {
     /**
      * Save the block as the form of input stream
      *  @param key    of the block
-     *
+     * @return stream which can used to write to block.
      */
     OutputStream save(String key);
 
