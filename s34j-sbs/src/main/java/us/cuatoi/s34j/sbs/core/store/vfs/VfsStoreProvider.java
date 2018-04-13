@@ -39,7 +39,7 @@ public class VfsStoreProvider implements StoreProvider<VfsConfiguration> {
     public Store createStore(String uri, VfsConfiguration config) {
         logger.info("createStore() uri=" + uri);
         Preconditions.checkNotNull(uri);
-        Preconditions.checkNotNull(isNotEmpty(uri));
+        Preconditions.checkArgument(isNotEmpty(uri));
         logger.info("createStore() config=" + config);
         try {
             FileObject folder = VFS.getManager().resolveFile(URI.create(uri));
