@@ -27,8 +27,11 @@ dependencies {
 	compile project(':s34j-sbs')
 
 	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('com.google.jimfs:jimfs:1.1')
+	compile('org.apache.commons:commons-vfs2:2.2')
+
 	testCompile('org.springframework.boot:spring-boot-starter-test')
-	testCompile('com.google.jimfs:jimfs:1.1')
+
 	//for JPA
 	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('net.javacrumbs.shedlock:shedlock-provider-jdbc-template:0.18.2')

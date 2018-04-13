@@ -27,7 +27,7 @@ public abstract class AbstractStoreTest {
     @Before
     public void setUp() throws IOException {
         if (store == null) {
-            store = getStore();
+            store = newStore();
         }
     }
 
@@ -75,5 +75,5 @@ public abstract class AbstractStoreTest {
         assertFalse(store.has(testKey));
     }
 
-    protected abstract Store getStore() throws IOException;
+    protected abstract Store newStore() throws IOException;
 }

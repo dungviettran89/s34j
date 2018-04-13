@@ -11,7 +11,7 @@ public class JimfsStoreTest extends AbstractStoreTest {
     private static Store store;
 
     @Override
-    protected Store getStore() {
+    protected Store newStore() {
         if (store == null) {
             Jimfs.newFileSystem("test", Configuration.unix());
             store = new NioStoreProvider().createStore("jimfs://test/", new NioConfiguration());
