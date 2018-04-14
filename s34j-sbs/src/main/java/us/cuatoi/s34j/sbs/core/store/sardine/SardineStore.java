@@ -10,10 +10,9 @@ import us.cuatoi.s34j.sbs.core.StoreHelper;
 import us.cuatoi.s34j.sbs.core.store.Store;
 import us.cuatoi.s34j.sbs.core.store.StoreException;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -103,24 +102,13 @@ public class SardineStore implements Store {
     }
 
     @Override
-    public OutputStream save(String key) {
+    public void save(String key, InputStream is) {
         logger.info("save(): key=" + key);
         StoreHelper.validateKey(key);
         try {
-            Path tempFile = Files.createTempFile("sardine-", ".tmp");
-            logger.info("save(): tempFile=" + tempFile);
-            return new BufferedOutputStream(Files.newOutputStream(tempFile)) {
-                @Override
-                public void close() throws IOException {
-                    super.close();
-                    logger.info("save().close(): tempFile=" + tempFile);
-                    Sardine sardine = SardineFactory.begin(user, password);
-                    sardine.enablePreemptiveAuthentication(URI.create(url).getHost());
-                    sardine.put(url + key, Files.newInputStream(tempFile));
-                    Files.delete(tempFile);
-                    logger.info("save().close() saved. ");
-                }
-            };
+            Sardine sardine = SardineFactory.begin(user, password);
+            sardine.enablePreemptiveAuthentication(URI.create(url).getHost());
+            sardine.put(url + key, is);
         } catch (Exception exception) {
             logger.error("save(): exception=" + exception, exception);
             throw new StoreException(exception);

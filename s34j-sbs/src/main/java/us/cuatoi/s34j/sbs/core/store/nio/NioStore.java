@@ -1,6 +1,7 @@
 package us.cuatoi.s34j.sbs.core.store.nio;
 
 import com.google.common.base.Preconditions;
+import com.google.common.io.ByteStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.cuatoi.s34j.sbs.core.StoreHelper;
@@ -63,11 +64,12 @@ public class NioStore implements Store {
     }
 
     @Override
-    public OutputStream save(String key) {
+    public void save(String key, InputStream is) {
         logger.info("save(): key=" + key);
         StoreHelper.validateKey(key);
-        try {
-            return Files.newOutputStream(baseDir.resolve(key));
+        try (OutputStream os = Files.newOutputStream(baseDir.resolve(key))) {
+            long length = ByteStreams.copy(is, os);
+            logger.info("save(): length=" + length);
         } catch (IOException openException) {
             logger.error("save(): openException=" + openException);
             throw new StoreException(openException);

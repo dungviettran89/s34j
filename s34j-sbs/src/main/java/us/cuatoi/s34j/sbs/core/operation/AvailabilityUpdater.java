@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,8 @@ import us.cuatoi.s34j.sbs.core.store.model.InformationModel;
 import us.cuatoi.s34j.sbs.core.store.model.InformationRepository;
 
 import javax.annotation.PostConstruct;
-import java.io.OutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -82,14 +84,15 @@ public class AvailabilityUpdater {
         Stopwatch watch = Stopwatch.createStarted();
         try {
             logger.info("updateAvailability() storeToTest=" + store);
-            byte[] oneMB = new byte[1024 * 1024];
+            byte[] testBytes = new byte[1024 * 1024];
             String testKey = UUID.randomUUID().toString();
             logger.info("updateAvailability() testKey=" + testKey);
-            try (OutputStream os = store.save(testKey)) {
-                os.write(oneMB);
+            store.save(testKey, new ByteArrayInputStream(testBytes));
+            try (InputStream is = store.load(testKey)) {
+                long length = ByteStreams.copy(is, ByteStreams.nullOutputStream());
+                active = length == testBytes.length;
             }
             store.delete(testKey);
-            active = true;
         } catch (Exception writeException) {
             logger.warn("updateAvailability() writeException=" + writeException, writeException);
         }

@@ -9,10 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.cuatoi.s34j.sbs.core.store.Store;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
@@ -52,9 +52,7 @@ public abstract class AbstractStoreTest {
     public void testSimpleOperation() throws IOException {
         String testKey = "test.txt";
         byte[] testBytes = testKey.getBytes(StandardCharsets.UTF_8);
-        try (OutputStream os = store.save(testKey)) {
-            os.write(testBytes);
-        }
+        store.save(testKey, new ByteArrayInputStream(testBytes));
         logger.info("testSimpleOperation() store.has=" + store.has(testKey));
         assertTrue(store.has(testKey));
         logger.info("testSimpleOperation() store.size=" + store.size(testKey));

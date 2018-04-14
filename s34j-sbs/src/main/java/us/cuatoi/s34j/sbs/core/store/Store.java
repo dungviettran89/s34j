@@ -1,7 +1,6 @@
 package us.cuatoi.s34j.sbs.core.store;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * Store interface to save block into external store, which can be nio based or webdav based.
@@ -35,9 +34,9 @@ public interface Store {
     /**
      * Save the block as the form of input stream
      *  @param key    of the block
-     * @return stream which can used to write to block.
+     * @param is the stream to save
      */
-    OutputStream save(String key);
+    void save(String key, InputStream is);
 
     /**
      * Delete the block if exists

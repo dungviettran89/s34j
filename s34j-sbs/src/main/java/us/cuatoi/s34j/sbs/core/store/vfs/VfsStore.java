@@ -1,6 +1,7 @@
 package us.cuatoi.s34j.sbs.core.store.vfs;
 
 import com.google.common.base.Preconditions;
+import com.google.common.io.ByteStreams;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.slf4j.Logger;
@@ -67,12 +68,13 @@ public class VfsStore implements Store {
     }
 
     @Override
-    public OutputStream save(String key) {
+    public void save(String key, InputStream is) {
         logger.info("save(): key=" + key);
         StoreHelper.validateKey(key);
-        try {
-            return file.resolveFile(key).getContent().getOutputStream();
-        } catch (FileSystemException exception) {
+        try (OutputStream os = file.resolveFile(key).getContent().getOutputStream()) {
+            long length = ByteStreams.copy(is, os);
+            logger.info("save(): length=" + length);
+        } catch (Exception exception) {
             logger.warn("save(): exception=" + exception);
             throw new StoreException(exception);
         }
