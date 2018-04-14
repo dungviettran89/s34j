@@ -144,7 +144,7 @@ public class BlockSaver {
     @Scheduled(cron = "0 */" + updateIntervalMinutes + " * * * *")
     @SchedulerLock(name = "AvailabilityUpdater", lockAtMostFor = (updateIntervalMinutes + 1) * 60 * 1000)
     public void updateBlockCount() {
-        long updated = keyRepository.streamAllByBlockCountLessThan(targetCount)
+        long updated = keyRepository.findAllByBlockCountLessThan(targetCount).stream()
                 .filter((k) -> targetCount - k.getBlockCount() > 0)
                 .peek(k -> updateBlockCount(k.getName(), k.getVersion(), targetCount - k.getBlockCount()))
                 .count();
@@ -161,8 +161,7 @@ public class BlockSaver {
         String internalKey = key + "-" + version;
         logger.info("updateBlockCount() internalKey=" + internalKey);
 
-        List<String> currentStores = blockRepository
-                .streamAllByKeyNameAndKeyVersion(key, version)
+        List<String> currentStores = blockRepository.findByKeyNameAndKeyVersion(key, version).stream()
                 .map(BlockModel::getStoreName)
                 .collect(Collectors.toList());
         logger.info("updateBlockCount() currentStores=" + currentStores);

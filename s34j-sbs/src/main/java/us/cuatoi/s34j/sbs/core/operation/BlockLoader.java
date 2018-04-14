@@ -38,10 +38,8 @@ public class BlockLoader {
             throw new FileNotFoundException();
         }
 
-        List<String> availableStores = blockRepository
-                .streamAllByKeyNameAndKeyVersion(keyModel.getName(), keyModel.getVersion())
-                .map(BlockModel::getStoreName)
-                .collect(Collectors.toList());
+        List<String> availableStores = blockRepository.findByKeyNameAndKeyVersion(keyModel.getName(), keyModel.getVersion())
+                .stream().map(BlockModel::getStoreName).collect(Collectors.toList());
         logger.info("load() availableStores=" + availableStores);
         if (availableStores == null || availableStores.size() == 0) {
             keyRepository.delete(keyModel);
@@ -51,7 +49,7 @@ public class BlockLoader {
 
         String internalKey = keyModel.getName() + "-" + keyModel.getVersion();
         logger.info("load() internalKey=" + internalKey);
-        InputStream inputStream = informationRepository.streamAllByActiveOrderByAvailableBytesDesc(true)
+        InputStream inputStream = informationRepository.findByActiveOrderByAvailableBytesDesc(true).stream()
                 .filter((i) -> availableStores.contains(i.getName()))
                 .sorted(Comparator.comparingLong(InformationModel::getLatency))
                 .map(InformationModel::getName)

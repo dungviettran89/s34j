@@ -37,7 +37,7 @@ public class UsedBytesUpdater {
     }
 
     private void updateOne(String name) {
-        long usedBytes = blockRepository.streamAllByStoreName(name)
+        long usedBytes = blockRepository.findByStoreName(name).stream()
                 .mapToLong(BlockModel::getSize)
                 .sum();
         InformationModel info = informationRepository.findOne(name);

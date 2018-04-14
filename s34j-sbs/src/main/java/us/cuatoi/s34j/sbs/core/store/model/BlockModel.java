@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.util.UUID;
 
 /**
  * Indicate a block which was stored on a store
@@ -13,12 +14,13 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "BlockModel",
         indexes = {
-                @javax.persistence.Index(name = "i_BlockModel_storeName", columnList = "storeName")
+                @javax.persistence.Index(name = "i_BlockModel_storeName", columnList = "storeName"),
+                @javax.persistence.Index(name = "i_BlockModel_nameAndVersion", columnList = "keyName,keyVersion")
         })
 public class BlockModel {
     @Id
     @javax.persistence.Id
-    private String id;
+    private String id = UUID.randomUUID().toString();
     private String keyName;
     private String keyVersion;
     @Indexed
