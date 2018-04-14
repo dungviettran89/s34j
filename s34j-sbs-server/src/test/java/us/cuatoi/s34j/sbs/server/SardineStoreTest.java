@@ -1,5 +1,6 @@
 package us.cuatoi.s34j.sbs.server;
 
+import org.apache.commons.vfs2.FileSystemException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import us.cuatoi.s34j.sbs.core.store.sardine.SardineStoreProvider;
 import us.cuatoi.s34j.sbs.core.store.vfs.VfsStoreProvider;
 
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+import static us.cuatoi.s34j.sbs.server.VfsTmpStoreTest.createVfsTestDir;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -29,11 +31,10 @@ public class SardineStoreTest extends AbstractStoreTest {
     private String password;
 
     @Override
-    protected Store newStore() {
+    protected Store newStore() throws FileSystemException {
         if (store == null) {
             if (equalsIgnoreCase(url, "unavailable")) {
-                logger.warn("Test property not available. Testing VFS Mem instead");
-                store = vfsStoreProvider.createStore("ram:///test/", null);
+                store = vfsStoreProvider.createStore(createVfsTestDir("ram:///test/"), null);
             } else {
                 SardineConfiguration config = new SardineConfiguration();
                 config.setUser(user);
