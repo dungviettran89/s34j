@@ -50,7 +50,6 @@ public class UsedBytesUpdaterTest {
 
         blockRepository.delete(bms);
 
-
         usedBytesUpdater.update();
         im = informationRepository.findOne(im.getName());
         usedBytes = im.getUsedBytes();

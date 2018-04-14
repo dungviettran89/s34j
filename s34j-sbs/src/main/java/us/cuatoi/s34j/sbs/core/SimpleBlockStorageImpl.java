@@ -9,18 +9,4 @@ public class SimpleBlockStorageImpl implements SimpleBlockStorage {
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
-    @Override
-    public long getTotalBytes() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public long getUsedBytes() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public long getAvailableBytes() {
-        throw new UnsupportedOperationException();
-    }
 }

@@ -15,6 +15,7 @@ public class KeyModel {
     private String name;
     private String version;
     private long size;
+    private long blockCount;
 
     public String getName() {
         return name;
@@ -38,6 +39,14 @@ public class KeyModel {
 
     public void setSize(long size) {
         this.size = size;
+    }
+
+    public long getBlockCount() {
+        return blockCount;
+    }
+
+    public void setBlockCount(long blockCount) {
+        this.blockCount = blockCount;
     }
 
     @Override
