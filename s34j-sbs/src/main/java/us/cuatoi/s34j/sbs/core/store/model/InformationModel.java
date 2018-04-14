@@ -20,6 +20,7 @@ public class InformationModel {
     @Id
     @javax.persistence.Id
     private String name;
+    @Indexed
     private boolean active;
     private long usedBytes;
     @Indexed

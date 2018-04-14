@@ -13,6 +13,32 @@ public class KeyModel {
     @Id
     @javax.persistence.Id
     private String name;
+    private String version;
+    private long size;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
 
     @Override
     public String toString() {
