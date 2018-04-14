@@ -1,9 +1,9 @@
 package us.cuatoi.s34j.sbs.core.store.sardine;
 
-import com.github.sardine.DavResource;
 import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;
 import com.google.common.base.Preconditions;
+import com.google.common.io.CountingInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.cuatoi.s34j.sbs.core.StoreHelper;
@@ -13,7 +13,6 @@ import us.cuatoi.s34j.sbs.core.store.StoreException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -38,55 +37,6 @@ public class SardineStore implements Store {
         this.url = endsWith(url, "/") ? url : url + "/";
         this.user = user;
         this.password = password;
-        try {
-            Sardine sardine = SardineFactory.begin(user, password);
-            boolean baseFolderExists = sardine.exists(url);
-            logger.info("SardineStore() baseFolderExists=" + baseFolderExists);
-            if (!baseFolderExists) {
-                sardine.createDirectory(url);
-                logger.info("SardineStore() createdUrl=" + url);
-            }
-        } catch (IOException sardineException) {
-            logger.warn("SardineStore() sardineException=" + sardineException, sardineException);
-            throw new StoreException(sardineException);
-
-        }
-    }
-
-    @Override
-    public boolean has(String key) {
-        logger.info("has(): key=" + key);
-        StoreHelper.validateKey(key);
-        try {
-            boolean exists = SardineFactory.begin(user, password).exists(url + key);
-            logger.info("has(): exists=" + exists);
-            return exists;
-        } catch (IOException exception) {
-            logger.error("has(): exception=" + exception, exception);
-            throw new StoreException(exception);
-        }
-    }
-
-    @Override
-    public long size(String key) {
-        logger.info("size(): key=" + key);
-        StoreHelper.validateKey(key);
-        try {
-            List<DavResource> resources = SardineFactory.begin(user, password).list(url + key);
-            logger.info("size(): resources=" + resources);
-            Preconditions.checkNotNull(resources);
-            Preconditions.checkArgument(resources.size() == 1);
-            DavResource resource = resources.get(0);
-            logger.info("size(): resource=" + resource);
-            Preconditions.checkNotNull(resource);
-            Long length = resource.getContentLength();
-            logger.info("size(): length=" + length);
-            Preconditions.checkNotNull(length);
-            return length;
-        } catch (IOException exception) {
-            logger.error("size(): exception=" + exception, exception);
-            throw new StoreException(exception);
-        }
     }
 
     @Override
@@ -102,13 +52,15 @@ public class SardineStore implements Store {
     }
 
     @Override
-    public void save(String key, InputStream is) {
+    public long save(String key, InputStream is) {
         logger.info("save(): key=" + key);
         StoreHelper.validateKey(key);
         try {
             Sardine sardine = SardineFactory.begin(user, password);
             sardine.enablePreemptiveAuthentication(URI.create(url).getHost());
-            sardine.put(url + key, is);
+            CountingInputStream cis = new CountingInputStream(is);
+            sardine.put(url + key, cis);
+            return cis.getCount();
         } catch (Exception exception) {
             logger.error("save(): exception=" + exception, exception);
             throw new StoreException(exception);

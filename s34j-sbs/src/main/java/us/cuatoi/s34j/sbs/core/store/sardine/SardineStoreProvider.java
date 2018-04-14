@@ -32,7 +32,6 @@ public class SardineStoreProvider implements StoreProvider<SardineConfiguration>
     public Store createStore(String uriString, SardineConfiguration config) {
         logger.info("createStore() uriString=" + uriString);
         Preconditions.checkArgument(isNotBlank(uriString));
-        ;
         logger.info("createStore() config=" + config);
         Preconditions.checkNotNull(config);
         return new SardineStore(uriString, config.getUser(), config.getPassword());

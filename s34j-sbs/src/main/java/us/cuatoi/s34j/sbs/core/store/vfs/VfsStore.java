@@ -32,30 +32,6 @@ public class VfsStore implements Store {
     }
 
     @Override
-    public boolean has(String key) {
-        logger.info("has(): key=" + key);
-        StoreHelper.validateKey(key);
-        try {
-            return file.resolveFile(key).exists();
-        } catch (FileSystemException exception) {
-            logger.warn("has(): exception=" + exception);
-            throw new StoreException(exception);
-        }
-    }
-
-    @Override
-    public long size(String key) {
-        logger.info("size(): key=" + key);
-        StoreHelper.validateKey(key);
-        try {
-            return file.resolveFile(key).getContent().getSize();
-        } catch (FileSystemException exception) {
-            logger.warn("size(): exception=" + exception);
-            throw new StoreException(exception);
-        }
-    }
-
-    @Override
     public InputStream load(String key) {
         logger.info("load(): key=" + key);
         StoreHelper.validateKey(key);
@@ -68,12 +44,13 @@ public class VfsStore implements Store {
     }
 
     @Override
-    public void save(String key, InputStream is) {
+    public long save(String key, InputStream is) {
         logger.info("save(): key=" + key);
         StoreHelper.validateKey(key);
         try (OutputStream os = file.resolveFile(key).getContent().getOutputStream()) {
             long length = ByteStreams.copy(is, os);
             logger.info("save(): length=" + length);
+            return length;
         } catch (Exception exception) {
             logger.warn("save(): exception=" + exception);
             throw new StoreException(exception);

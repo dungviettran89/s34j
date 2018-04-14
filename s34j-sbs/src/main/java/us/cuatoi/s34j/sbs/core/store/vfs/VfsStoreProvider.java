@@ -49,9 +49,6 @@ public class VfsStoreProvider implements StoreProvider<VfsConfiguration> {
             FileObject folder = VFS.getManager().resolveFile(URI.create(uri));
             logger.info("createStore() folder=" + folder);
             logger.info("createStore() folder.exists=" + folder.exists());
-            if (!folder.exists()) {
-                folder.createFolder();
-            }
             long totalBytes = config != null ? config.getTotalBytes() : defaultTotalBytes;
             logger.info("createStore() totalBytes=" + totalBytes);
             return new VfsStore(folder, totalBytes);

@@ -7,11 +7,9 @@ import us.cuatoi.s34j.sbs.core.store.Store;
 import us.cuatoi.s34j.sbs.core.store.StoreException;
 import us.cuatoi.s34j.sbs.core.store.StoreProvider;
 
+import java.io.IOException;
 import java.net.URI;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 
 @Service
 public class NioStoreProvider implements StoreProvider<NioConfiguration> {
@@ -32,27 +30,27 @@ public class NioStoreProvider implements StoreProvider<NioConfiguration> {
     public Store createStore(String uriString, NioConfiguration config) {
         logger.info("createStore() uriString=" + uriString);
         logger.info("createStore() config=" + config);
-        Path baseDir = getBaseDir(uriString, config);
+        URI baseUri = URI.create(uriString);
+        Path baseDir = getBaseDir(baseUri, config);
         logger.info("createStore() baseDir=" + baseDir);
-        NioStore path = new NioStore(baseDir);
+        NioStore path = new NioStore(baseDir, config);
         logger.info("createStore() path=" + path);
         return path;
     }
 
-    private Path getBaseDir(String uriString, NioConfiguration config) {
-        URI baseUri = URI.create(uriString);
+    private Path getBaseDir(URI baseUri, NioConfiguration config) {
         try {
             return Paths.get(baseUri);
-        } catch (FileSystemNotFoundException resolveException) {
-            logger.info("getBaseDir() resolveException=" + resolveException);
+        } catch (FileSystemNotFoundException ex) {
             try {
-                config = config == null ? new NioConfiguration() : config;
-                return FileSystems.newFileSystem(baseUri, config).getPath(baseUri.getPath());
-            } catch (Exception newFileStoreException) {
-                logger.info("getBaseDir() newFileStoreException=" + newFileStoreException);
-                throw new StoreException(newFileStoreException);
+                FileSystem newFileSystem = FileSystems.newFileSystem(baseUri, config);
+                logger.info("getBaseDir() newFileSystem=" + newFileSystem);
+                return newFileSystem.getPath(baseUri.getPath());
+            } catch (IOException newFileSystemException) {
+                logger.error("getBaseDir() newFileSystemException=" + newFileSystemException, newFileSystemException);
+                throw new StoreException(newFileSystemException);
             }
-
         }
     }
+
 }

@@ -18,38 +18,15 @@ public class NioStore implements Store {
 
     private static final Logger logger = LoggerFactory.getLogger(NioStore.class);
     private final Path baseDir;
+    private final NioConfiguration config;
 
-    NioStore(Path baseDir) {
+    NioStore(Path baseDir, NioConfiguration config) {
         logger.info("NioStore(): baseDir=" + baseDir);
         Preconditions.checkNotNull(baseDir);
-        Preconditions.checkArgument(Files.exists(baseDir));
-        Preconditions.checkArgument(Files.isDirectory(baseDir));
         this.baseDir = baseDir;
+        this.config = config;
     }
 
-
-    @Override
-    public boolean has(String key) {
-        logger.info("has(): key=" + key);
-        StoreHelper.validateKey(key);
-        boolean exists = Files.exists(baseDir.resolve(key));
-        logger.info("has(): exists=" + exists);
-        return exists;
-    }
-
-    @Override
-    public long size(String key) {
-        logger.info("size(): key=" + key);
-        StoreHelper.validateKey(key);
-        try {
-            long size = Files.size(baseDir.resolve(key));
-            logger.info("size(): size=" + size);
-            return size;
-        } catch (IOException ex) {
-            logger.error("size(): ex=" + ex, ex);
-            throw new StoreException(ex);
-        }
-    }
 
     @Override
     public InputStream load(String key) {
@@ -64,12 +41,13 @@ public class NioStore implements Store {
     }
 
     @Override
-    public void save(String key, InputStream is) {
+    public long save(String key, InputStream is) {
         logger.info("save(): key=" + key);
         StoreHelper.validateKey(key);
         try (OutputStream os = Files.newOutputStream(baseDir.resolve(key))) {
             long length = ByteStreams.copy(is, os);
             logger.info("save(): length=" + length);
+            return length;
         } catch (IOException openException) {
             logger.error("save(): openException=" + openException);
             throw new StoreException(openException);
@@ -82,14 +60,20 @@ public class NioStore implements Store {
         StoreHelper.validateKey(key);
         try {
             return Files.deleteIfExists(baseDir.resolve(key));
-        } catch (IOException ex) {
-            logger.error("save(): ex=" + ex, ex);
-            throw new StoreException(ex);
+        } catch (Exception deleteException) {
+            logger.warn("delete(): deleteException=" + deleteException, deleteException);
+            return false;
         }
     }
 
     @Override
     public long getAvailableBytes(long usedByte) {
+        if (config != null && config.containsKey("totalBytes")) {
+            //overrides using total bytes if need, in case of S3 nio
+            long totalBytes = Long.parseLong(config.get("totalBytes"));
+            return totalBytes > usedByte ? totalBytes - usedByte : 0;
+        }
+
         try {
             long usableSpace = Files.getFileStore(baseDir).getUsableSpace();
             logger.info("getAvailableBytes(): usableSpace=" + usableSpace);

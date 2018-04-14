@@ -12,16 +12,18 @@ public class SardineConfiguration implements Serializable {
         return user;
     }
 
-    public void setUser(String user) {
+    public SardineConfiguration setUser(String user) {
         this.user = user;
+        return this;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public SardineConfiguration setPassword(String password) {
         this.password = password;
+        return this;
     }
 
     @Override

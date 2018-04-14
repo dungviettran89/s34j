@@ -41,7 +41,7 @@ public class AvailabilityUpdater {
     private StoreCache storeCache;
 
     /**
-     * Perform the update of the information of stores
+     * Update store availability
      */
     @Scheduled(cron = "0 */" + updateIntervalMinutes + " * * * *")
     @SchedulerLock(name = "AvailabilityUpdater", lockAtMostFor = (updateIntervalMinutes + 1) * 60 * 1000)
@@ -75,24 +75,28 @@ public class AvailabilityUpdater {
         Preconditions.checkNotNull(config);
         Preconditions.checkArgument(isNotBlank(config.getName()));
 
-        Store store = storeCache.getStore(config.getName());
-        Preconditions.checkNotNull(store);
-
+        long usedBytes = getUsedBytes(config.getName());
+        logger.info("updateAvailability() usedBytes=" + usedBytes);
         //check availability by test write
         //we may need to evaluate to use 2 flag instead: canRead and canWrite
         boolean active = false;
+        long availableBytes = 0;
         Stopwatch watch = Stopwatch.createStarted();
         try {
+            Store store = storeCache.getStore(config.getName());
+            Preconditions.checkNotNull(store);
             logger.info("updateAvailability() storeToTest=" + store);
             byte[] testBytes = new byte[1024 * 1024];
             String testKey = UUID.randomUUID().toString();
             logger.info("updateAvailability() testKey=" + testKey);
-            store.save(testKey, new ByteArrayInputStream(testBytes));
+            long count = store.save(testKey, new ByteArrayInputStream(testBytes));
+            active = count == testBytes.length;
+            availableBytes = store.getAvailableBytes(usedBytes);
             try (InputStream is = store.load(testKey)) {
                 long length = ByteStreams.copy(is, ByteStreams.nullOutputStream());
-                active = length == testBytes.length;
+                active = active && length == testBytes.length;
             }
-            store.delete(testKey);
+            active = active && store.delete(testKey);
         } catch (Exception writeException) {
             logger.warn("updateAvailability() writeException=" + writeException, writeException);
         }
@@ -100,15 +104,26 @@ public class AvailabilityUpdater {
         logger.info("updateAvailability() latency=" + watch.elapsed(TimeUnit.MILLISECONDS));
 
         //save information
-        InformationModel info = informationRepository.findOne(config.getName());
-        if (info == null) {
-            info = new InformationModel();
-            info.setName(config.getName());
-        }
+        InformationModel info = getInformation(config.getName());
+        info.setAvailableBytes(availableBytes);
         info.setActive(active);
         info.setLatency(watch.elapsed(TimeUnit.MILLISECONDS));
         informationRepository.save(info);
         logger.info("updateAvailability() info=" + info);
+    }
+
+    private long getUsedBytes(String name) {
+        InformationModel info = getInformation(name);
+        return info.getUsedBytes();
+    }
+
+    private InformationModel getInformation(String name) {
+        InformationModel info = informationRepository.findOne(name);
+        if (info == null) {
+            info = new InformationModel();
+            info.setName(name);
+        }
+        return info;
     }
 
 }

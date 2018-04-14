@@ -8,22 +8,6 @@ import java.io.InputStream;
 public interface Store {
 
     /**
-     * Check if the store has a particular key
-     *
-     * @param key to check
-     * @return true if the key is available
-     */
-    boolean has(String key);
-
-    /**
-     * Check the size of the block
-     *
-     * @param key of the block
-     * @return size of the block.
-     */
-    long size(String key);
-
-    /**
      * Load the block to an input stream
      *  @param key      of the block
      *  @return input stream to read content of the block.
@@ -33,10 +17,11 @@ public interface Store {
 
     /**
      * Save the block as the form of input stream
-     *  @param key    of the block
+     * @param key    of the block
      * @param is the stream to save
+     * @return byte counts
      */
-    void save(String key, InputStream is);
+    long save(String key, InputStream is);
 
     /**
      * Delete the block if exists

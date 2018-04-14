@@ -15,7 +15,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractStoreTest {
 
@@ -34,18 +35,13 @@ public abstract class AbstractStoreTest {
     @Test
     public void testKeyWithNotSupportedChars() {
         exception.expect(IllegalArgumentException.class);
-        store.has("key with not supported chars");
+        store.save("key with not supported chars", new ByteArrayInputStream(new byte[1024]));
     }
 
     @Test
     public void testKeyWithSlash() {
         exception.expect(IllegalArgumentException.class);
-        store.has("key/with/slash");
-    }
-
-    @Test
-    public void testValidKey() {
-        store.has("valid.key.with.dot");
+        store.save("key/with/slash", new ByteArrayInputStream(new byte[1024]));
     }
 
     @Test
@@ -53,20 +49,12 @@ public abstract class AbstractStoreTest {
         String testKey = "test.txt";
         byte[] testBytes = testKey.getBytes(StandardCharsets.UTF_8);
         store.save(testKey, new ByteArrayInputStream(testBytes));
-        logger.info("testSimpleOperation() store.has=" + store.has(testKey));
-        assertTrue(store.has(testKey));
-        logger.info("testSimpleOperation() store.size=" + store.size(testKey));
-        assertTrue(store.size(testKey) > 0);
-
         try (InputStream is = store.load(testKey)) {
             String read = CharStreams.toString(new InputStreamReader(is, StandardCharsets.UTF_8));
             assertEquals(testKey, read);
         }
-
         logger.info("testSimpleOperation() store.availableBytes=" + store.getAvailableBytes(0));
-
         assertTrue(store.delete(testKey));
-        assertFalse(store.has(testKey));
     }
 
     protected abstract Store newStore() throws IOException;
