@@ -70,7 +70,7 @@ public class BlockSaver {
         return shortlistedStores;
     }
 
-    public void save(String key, InputStream input) {
+    public long save(String key, InputStream input) {
         logger.info("save() key=" + key);
         StoreHelper.validateKey(key);
         logger.info("save() input=" + input);
@@ -91,20 +91,25 @@ public class BlockSaver {
             throw new StoreException("Can not save to any store.");
         }
 
+        long length = inputCount.getCount();
+        logger.info("save() length=" + length);
+
         KeyModel keyModel = new KeyModel();
         keyModel.setName(key);
-        keyModel.setSize(inputCount.getCount());
+        keyModel.setSize(length);
         keyModel.setVersion(version);
         keyModel.setBlockCount(blockCount);
         keyRepository.save(keyModel);
         logger.info("save() keyModel=" + keyModel);
+        return length;
 
     }
 
     private boolean saveToStore(String key, String version, String storeName, Path tempFile) {
         try (InputStream is = Files.newInputStream(tempFile)) {
             logger.info("save() storeName=" + storeName);
-            long size = storeCache.getStore(storeName).save(key, is);
+            String internalKey = key + "-" + version;
+            long size = storeCache.getStore(storeName).save(internalKey, is);
             logger.info("save() size=" + size);
             BlockModel block = new BlockModel();
             block.setKeyName(key);
@@ -153,6 +158,8 @@ public class BlockSaver {
         Preconditions.checkArgument(isNotBlank(version));
         logger.info("updateBlockCount() more=" + more);
         Preconditions.checkArgument(more > 0);
+        String internalKey = key + "-" + version;
+        logger.info("updateBlockCount() internalKey=" + internalKey);
 
         List<String> currentStores = blockRepository
                 .streamAllByKeyNameAndKeyVersion(key, version)
@@ -165,7 +172,7 @@ public class BlockSaver {
         }
 
         Path tempFile;
-        try (InputStream is = storeCache.getStore(currentStores.get(0)).load(key)) {
+        try (InputStream is = storeCache.getStore(currentStores.get(0)).load(internalKey)) {
             tempFile = saveToTemp(is);
         } catch (IOException saveToTempException) {
             logger.warn("updateBlockCount() saveToTempException=" + saveToTempException);
