@@ -43,5 +43,7 @@ public class UsedBytesUpdater {
         InformationModel info = informationRepository.findOne(name);
         info.setUsedBytes(usedBytes);
         informationRepository.save(info);
+        logger.info("updateOne() info=" + info);
+
     }
 }
