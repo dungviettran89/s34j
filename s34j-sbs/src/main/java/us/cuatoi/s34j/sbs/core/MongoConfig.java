@@ -16,7 +16,7 @@ import java.net.URI;
 @EnableMongoRepositories
 class MongoConfig {
 
-    @Value("${spring.data.mongodb.uri}")
+    @Value("${spring.data.mongodb.uri:mongodb://localhost/test}")
     private String mongoUri;
 
     @Bean
