@@ -28,5 +28,6 @@ public class BlockSaverTest {
             availabilityUpdater.updateAll();
         }
         blockSaver.save(UUID.randomUUID().toString(), new ByteArrayInputStream(new byte[1024 * 1024]));
+        blockSaver.updateBlockCount();
     }
 }

@@ -69,6 +69,8 @@ class TestConfigurator {
         VFS.getManager().resolveFile(URI.create("ram://vfs-1/")).createFolder();
         createStore("vfs-2", "vfs", "tmp://vfs-2/");
         VFS.getManager().resolveFile(URI.create("tmp://vfs-2/")).createFolder();
+        createStore("vfs-3", "vfs", "ram://vfs-3/");
+        VFS.getManager().resolveFile(URI.create("ram://vfs-3/")).createFolder();
 
 
         if (isNotBlank(webDavUrl)) {
