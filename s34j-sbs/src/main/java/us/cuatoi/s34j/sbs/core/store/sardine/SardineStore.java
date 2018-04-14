@@ -11,6 +11,9 @@ import us.cuatoi.s34j.sbs.core.store.Store;
 import us.cuatoi.s34j.sbs.core.store.StoreException;
 
 import java.io.*;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -104,18 +107,20 @@ public class SardineStore implements Store {
         logger.info("save(): key=" + key);
         StoreHelper.validateKey(key);
         try {
-            PipedInputStream is = new PipedInputStream();
-            PipedOutputStream os = new PipedOutputStream();
-            os.connect(is);
-            executor.submit(() -> {
-                try {
-                    SardineFactory.begin(user, password).put(url + key, is);
-                    logger.error("save().submit(): Saved=" + url);
-                } catch (IOException closingError) {
-                    logger.error("save().submit(): closingError=" + closingError, closingError);
+            Path tempFile = Files.createTempFile("sardine-", ".tmp");
+            logger.info("save(): tempFile=" + tempFile);
+            return new BufferedOutputStream(Files.newOutputStream(tempFile)) {
+                @Override
+                public void close() throws IOException {
+                    super.close();
+                    logger.info("save().close(): tempFile=" + tempFile);
+                    Sardine sardine = SardineFactory.begin(user, password);
+                    sardine.enablePreemptiveAuthentication(URI.create(url).getHost());
+                    sardine.put(url + key, Files.newInputStream(tempFile));
+                    Files.delete(tempFile);
+                    logger.info("save().close() saved. ");
                 }
-            });
-            return os;
+            };
         } catch (Exception exception) {
             logger.error("save(): exception=" + exception, exception);
             throw new StoreException(exception);
@@ -127,7 +132,7 @@ public class SardineStore implements Store {
         logger.info("delete(): key=" + key);
         StoreHelper.validateKey(key);
         try {
-            SardineFactory.begin(user, password).delete(url+key);
+            SardineFactory.begin(user, password).delete(url + key);
             return true;
         } catch (IOException exception) {
             logger.error("delete(): getAvailableBytes=" + exception, exception);
