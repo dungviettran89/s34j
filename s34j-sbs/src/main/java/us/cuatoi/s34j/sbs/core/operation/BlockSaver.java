@@ -37,6 +37,7 @@ public class BlockSaver {
     private static final Logger logger = LoggerFactory.getLogger(BlockSaver.class);
     public static final String CANDIDATE = "candidate";
     private static final int updateIntervalMinutes = 10;
+
     @Autowired
     private BlockRepository blockRepository;
     @Autowired
@@ -45,14 +46,19 @@ public class BlockSaver {
     private InformationRepository informationRepository;
     @Autowired
     private StoreCache storeCache;
+    @Autowired
+    private DeleteRepository deleteRepository;
     @Value("${s34j.sbs.initialCount:2}")
     private int initialCount;
     @Value("${s34j.sbs.targetCount:4}")
     private int targetCount;
+    @Value("${s34j.sbs.maxBlockUpdatePerIteration:128}")
+    private int maxBlockUpdatePerIteration;
+
     private LoadingCache<String, List<InformationModel>> candidateCaches = CacheBuilder.newBuilder()
             .build(new CacheLoader<String, List<InformationModel>>() {
                 @Override
-                public List<InformationModel> load(String key) throws Exception {
+                public List<InformationModel> load(String key) {
                     PageRequest page = new PageRequest(0, targetCount + 1);
                     List<InformationModel> candidates = informationRepository.findByActiveOrderByAvailableBytesDesc(true, page)
                             .stream().sorted(Comparator.comparingLong(InformationModel::getLatency)).collect(Collectors.toList());
@@ -77,32 +83,61 @@ public class BlockSaver {
         Preconditions.checkNotNull(input);
 
         CountingInputStream inputCount = new CountingInputStream(input);
-        Path tempFile = saveToTemp(inputCount);
+        Path tempFile = null;
+        try {
+            tempFile = saveToTemp(inputCount);
+            List<String> candidateStores = getSaveCandidates();
+            logger.info("save() candidateStores=" + candidateStores);
+            Preconditions.checkNotNull(candidateStores);
+            Preconditions.checkArgument(candidateStores.size() > 0);
+            final String version = UUID.randomUUID().toString() + "-" + System.currentTimeMillis();
+            Path finalTempFile = tempFile;
+            long blockCount = candidateStores.parallelStream()
+                    .filter((storeName) -> saveToStore(key, version, storeName, finalTempFile)).count();
+            logger.info("save() blockCount=" + blockCount);
+            if (blockCount == 0) {
+                throw new StoreException("Can not save to any store.");
+            }
 
-        List<String> candidateStores = getSaveCandidates();
-        logger.info("save() candidateStores=" + candidateStores);
-        Preconditions.checkNotNull(candidateStores);
-        Preconditions.checkArgument(candidateStores.size() > 0);
-        final String version = System.currentTimeMillis() + UUID.randomUUID().toString();
-        long blockCount = candidateStores.parallelStream()
-                .filter((storeName) -> saveToStore(key, version, storeName, tempFile)).count();
-        logger.info("save() blockCount=" + blockCount);
-        if (blockCount == 0) {
-            throw new StoreException("Can not save to any store.");
+            long length = inputCount.getCount();
+            logger.info("save() length=" + length);
+
+            //Delete old version if needed
+            KeyModel oldVersion = keyRepository.findOne(key);
+            logger.info("save() oldVersion=" + oldVersion);
+            if (oldVersion != null) {
+                DeleteModel deleteOldVersion = new DeleteModel();
+                deleteOldVersion.setName(oldVersion.getName());
+                deleteOldVersion.setVersion(oldVersion.getVersion());
+                deleteOldVersion.setDeleted(System.currentTimeMillis());
+                deleteRepository.save(deleteOldVersion);
+                logger.info("save() deleteOldVersion=" + deleteOldVersion);
+            }
+
+            //save new version
+            KeyModel newVersion = new KeyModel();
+            newVersion.setName(key);
+            newVersion.setSize(length);
+            newVersion.setVersion(version);
+            newVersion.setBlockCount(blockCount);
+            keyRepository.save(newVersion);
+            logger.info("save() newVersion=" + newVersion);
+            return length;
+        } finally {
+            deleteTempFileQuietly(tempFile);
         }
 
-        long length = inputCount.getCount();
-        logger.info("save() length=" + length);
+    }
 
-        KeyModel keyModel = new KeyModel();
-        keyModel.setName(key);
-        keyModel.setSize(length);
-        keyModel.setVersion(version);
-        keyModel.setBlockCount(blockCount);
-        keyRepository.save(keyModel);
-        logger.info("save() keyModel=" + keyModel);
-        return length;
-
+    private void deleteTempFileQuietly(Path tempFile) {
+        logger.info("deleteTempFileQuietly() tempFile=" + tempFile);
+        if (tempFile != null) {
+            try {
+                Files.delete(tempFile);
+            } catch (IOException deleteTempFileError) {
+                logger.info("deleteTempFileQuietly() deleteTempFileError=" + deleteTempFileError);
+            }
+        }
     }
 
     private boolean saveToStore(String key, String version, String storeName, Path tempFile) {
@@ -144,7 +179,8 @@ public class BlockSaver {
     @Scheduled(cron = "0 */" + updateIntervalMinutes + " * * * *")
     @SchedulerLock(name = "AvailabilityUpdater", lockAtMostFor = (updateIntervalMinutes + 1) * 60 * 1000)
     public void updateBlockCount() {
-        long updated = keyRepository.findAllByBlockCountLessThan(targetCount).stream()
+        long updated = keyRepository.findAllByBlockCountLessThan(targetCount, new PageRequest(0, maxBlockUpdatePerIteration))
+                .getContent().stream()
                 .filter((k) -> targetCount - k.getBlockCount() > 0)
                 .peek(k -> updateBlockCount(k.getName(), k.getVersion(), targetCount - k.getBlockCount()))
                 .count();
@@ -161,39 +197,44 @@ public class BlockSaver {
         String internalKey = key + "-" + version;
         logger.info("updateBlockCount() internalKey=" + internalKey);
 
-        List<String> currentStores = blockRepository.findByKeyNameAndKeyVersion(key, version).stream()
-                .map(BlockModel::getStoreName)
-                .collect(Collectors.toList());
+        List<InformationModel> saveCandidates = candidateCaches.getUnchecked(CANDIDATE);
+
+        List<String> currentStores = blockRepository
+                .findByKeyNameAndKeyVersion(key, version, new PageRequest(0, saveCandidates.size() * 2))
+                .getContent().stream().map(BlockModel::getStoreName).collect(Collectors.toList());
         logger.info("updateBlockCount() currentStores=" + currentStores);
         if (currentStores.size() == 0) {
             logger.warn("updateBlockCount() cannot find any current block.");
             return;
         }
 
-        Path tempFile;
-        try (InputStream is = storeCache.getStore(currentStores.get(0)).load(internalKey)) {
-            tempFile = saveToTemp(is);
-        } catch (IOException saveToTempException) {
-            logger.warn("updateBlockCount() saveToTempException=" + saveToTempException);
-            return;
-        }
+        Path tempFile = null;
+        try {
+            try (InputStream is = storeCache.getStore(currentStores.get(0)).load(internalKey)) {
+                tempFile = saveToTemp(is);
+            } catch (IOException saveToTempException) {
+                logger.warn("updateBlockCount() saveToTempException=" + saveToTempException);
+                return;
+            }
 
-        long saved = candidateCaches.getUnchecked(CANDIDATE).stream().map(InformationModel::getName)
-                .filter(o -> !currentStores.contains(o))
-                .filter((storeName) -> this.saveToStore(key, version, storeName, tempFile))
-                .limit(more + 1).count();
-        logger.info("updateBlockCount() saved=" + saved);
-        if (saved == 0) {
-            return;
+            Path finalTempFile = tempFile;
+            long saved = saveCandidates.stream().map(InformationModel::getName)
+                    .filter(o -> !currentStores.contains(o))
+                    .filter((storeName) -> this.saveToStore(key, version, storeName, finalTempFile))
+                    .limit(more + 1).count();
+            logger.info("updateBlockCount() saved=" + saved);
+            if (saved == 0) return;
+            KeyModel model = keyRepository.findOne(key);
+            if (!equalsIgnoreCase(model.getVersion(), version)) {
+                logger.info("updateBlockCount() version=" + version);
+                logger.info("updateBlockCount() modelVersion=" + model.getVersion());
+                return;
+            }
+            model.setBlockCount(model.getBlockCount() + saved);
+            logger.info("updateBlockCount() model=" + model);
+            keyRepository.save(model);
+        } finally {
+            deleteTempFileQuietly(tempFile);
         }
-        KeyModel model = keyRepository.findOne(key);
-        if (!equalsIgnoreCase(model.getVersion(), version)) {
-            logger.info("updateBlockCount() version=" + version);
-            logger.info("updateBlockCount() modelVersion=" + model.getVersion());
-            return;
-        }
-        model.setBlockCount(model.getBlockCount() + saved);
-        logger.info("updateBlockCount() model=" + model);
-        keyRepository.save(model);
     }
 }

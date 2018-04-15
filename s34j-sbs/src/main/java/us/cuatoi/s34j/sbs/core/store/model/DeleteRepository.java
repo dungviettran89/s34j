@@ -4,6 +4,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
-public interface KeyRepository extends CrudRepository<KeyModel, String> {
-    Page<KeyModel> findAllByBlockCountLessThan(long targetCount, Pageable pageable);
+public interface DeleteRepository extends CrudRepository<DeleteModel, String> {
+    Page<DeleteModel> findByDeletedLessThan(long deleted, Pageable pageable);
 }

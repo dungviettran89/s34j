@@ -3,6 +3,7 @@ package us.cuatoi.s34j.sbs.core.operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.sbs.core.StoreHelper;
 import us.cuatoi.s34j.sbs.core.store.StoreCache;
@@ -38,8 +39,9 @@ public class BlockLoader {
             throw new FileNotFoundException();
         }
 
-        List<String> availableStores = blockRepository.findByKeyNameAndKeyVersion(keyModel.getName(), keyModel.getVersion())
-                .stream().map(BlockModel::getStoreName).collect(Collectors.toList());
+        List<String> availableStores = blockRepository
+                .findByKeyNameAndKeyVersion(keyModel.getName(), keyModel.getVersion(), new PageRequest(0, 32))
+                .getContent().stream().map(BlockModel::getStoreName).collect(Collectors.toList());
         logger.info("load() availableStores=" + availableStores);
         if (availableStores == null || availableStores.size() == 0) {
             keyRepository.delete(keyModel);

@@ -1,5 +1,6 @@
 package us.cuatoi.s34j.sbs.server;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +29,37 @@ public class BlockSaverTest {
     private UsedBytesUpdater usedBytesUpdater;
 
     @Test
-    public void testSaveOneMb() throws Exception {
+    public void testSaveOneMb() {
         if (informationRepository.count() == 0) {
             availabilityUpdater.updateAll();
         }
         byte[] testBytes = new byte[1024 * 1024];
-        long saveCount = blockSaver.save(UUID.randomUUID().toString(), new ByteArrayInputStream(testBytes));
+        String testKey = UUID.randomUUID().toString();
+        long saveCount = blockSaver.save(testKey, new ByteArrayInputStream(testBytes));
         assertEquals(testBytes.length, saveCount);
         blockSaver.updateBlockCount();
-        usedBytesUpdater.update();
+        //Try to overwrites
+        testBytes = new byte[2 * 1024 * 1024];
+        saveCount = blockSaver.save(testKey, new ByteArrayInputStream(testBytes));
+        assertEquals(testBytes.length, saveCount);
+
+        newBlock(RandomUtils.nextInt(1, 4) * 1024 * 1024);
+        newBlock(RandomUtils.nextInt(1, 4) * 1024 * 1024);
+        newBlock(RandomUtils.nextInt(1, 4) * 1024);
+        newBlock(RandomUtils.nextInt(1, 4) * 1024);
+        newBlock(RandomUtils.nextInt(1, 4) * 1024);
+        blockSaver.updateBlockCount();
+
+        informationRepository.findAll().forEach((i) -> {
+            usedBytesUpdater.updateOne(i.getName(), 3);
+        });
+    }
+
+    private void newBlock(int size) {
+        byte[] testBytes;
+        long saveCount;
+        testBytes = new byte[size];
+        saveCount = blockSaver.save(UUID.randomUUID().toString(), new ByteArrayInputStream(testBytes));
+        assertEquals(testBytes.length, saveCount);
     }
 }
