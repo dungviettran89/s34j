@@ -9,7 +9,7 @@ apply plugin: 'war'
 apply from: 'https://raw.github.com/akhikhl/gretty/master/pluginScripts/gretty.plugin'
 
 group = 'us.cuatoi.s34j'
-version = '0.2.0'
+version = '0.3.0-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
