@@ -81,25 +81,26 @@ class TestConfigurator {
             }
             createStore("sardine", "sardine", url,
                     new SardineConfiguration().setUser(webDavUser).setPassword(webDavPassword));
-        }
 
-        //Test minio s3 store
-        String minioKey = "Q3AM3UQ867SPQQA43P2F";
-        String minioSecret = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
-        String minioHost = "play.minio.io:9000";
-        String minioBucket = "sbs-test";
-        MinioClient client = new MinioClient("https://" + minioHost, minioKey, minioSecret);
-        if (!client.bucketExists(minioBucket)) {
-            logger.info("start() Created bucket " + minioBucket);
-            client.makeBucket(minioBucket);
+
+            //Test minio s3 store
+            String minioKey = "Q3AM3UQ867SPQQA43P2F";
+            String minioSecret = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+            String minioHost = "play.minio.io:9000";
+            String minioBucket = "sbs-test";
+            MinioClient client = new MinioClient("https://" + minioHost, minioKey, minioSecret);
+            if (!client.bucketExists(minioBucket)) {
+                logger.info("start() Created bucket " + minioBucket);
+                client.makeBucket(minioBucket);
+            }
+            NioConfiguration config = new NioConfiguration();
+            config.put(ACCESS_KEY, minioKey);
+            config.put(SECRET_KEY, minioSecret);
+            config.put(SIGNER_OVERRIDE, "AWSS3V4SignerType");
+            config.put(PATH_STYLE_ACCESS, "true");
+            config.put("totalBytes", String.valueOf(1024L * 1024 * 1024));
+            createStore("nio-s3-1", "nio", "s3://" + minioHost + "/" + minioBucket + "/test/", config);
         }
-        NioConfiguration config = new NioConfiguration();
-        config.put(ACCESS_KEY, minioKey);
-        config.put(SECRET_KEY, minioSecret);
-        config.put(SIGNER_OVERRIDE, "AWSS3V4SignerType");
-        config.put(PATH_STYLE_ACCESS, "true");
-        config.put("totalBytes", String.valueOf(1024L * 1024 * 1024));
-        createStore("nio-s3-1", "nio", "s3://" + minioHost + "/" + minioBucket + "/test/", config);
     }
 
 

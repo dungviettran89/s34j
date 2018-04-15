@@ -29,7 +29,7 @@ public class SimpleBlockStorageImpl implements SimpleBlockStorage {
     }
 
     @Override
-    public void delete(String key) {
+    public void delete(String key) throws FileNotFoundException {
         blockDeleter.delete(key);
     }
 }

@@ -73,19 +73,20 @@ public class AvailabilityUpdater {
     private void updateOne(ConfigurationModel config) {
         logger.info("updateAvailability() config=" + config);
         Preconditions.checkNotNull(config);
-        Preconditions.checkArgument(isNotBlank(config.getName()));
+        String name = config.getName();
+        Preconditions.checkArgument(isNotBlank(name));
 
-        long usedBytes = getUsedBytes(config.getName());
-        logger.info("updateAvailability() usedBytes=" + usedBytes);
+        long usedBytes = getUsedBytes(name);
+        logger.info("updateAvailability(" + name + ") usedBytes=" + usedBytes);
         //check availability by test write
         //we may need to evaluate to use 2 flag instead: canRead and canWrite
         boolean active = false;
         long availableBytes = 0;
         Stopwatch watch = Stopwatch.createStarted();
         try {
-            Store store = storeCache.getStore(config.getName());
+            Store store = storeCache.getStore(name);
             Preconditions.checkNotNull(store);
-            logger.info("updateAvailability() storeToTest=" + store);
+            logger.info("updateAvailability(" + name + ") storeToTest=" + store);
             byte[] testBytes = new byte[1024 * 1024];
             String testKey = UUID.randomUUID().toString();
             logger.info("updateAvailability() testKey=" + testKey);
@@ -100,16 +101,16 @@ public class AvailabilityUpdater {
         } catch (Exception writeException) {
             logger.warn("updateAvailability() writeException=" + writeException, writeException);
         }
-        logger.info("updateAvailability() active=" + active);
-        logger.info("updateAvailability() latency=" + watch.elapsed(TimeUnit.MILLISECONDS));
+        logger.info("updateAvailability(" + name + ") active=" + active);
+        logger.info("updateAvailability(" + name + ") latency=" + watch.elapsed(TimeUnit.MILLISECONDS));
 
         //save information
-        InformationModel info = getInformation(config.getName());
+        InformationModel info = getInformation(name);
         info.setAvailableBytes(availableBytes);
         info.setActive(active);
         info.setLatency(watch.elapsed(TimeUnit.MILLISECONDS));
         informationRepository.save(info);
-        logger.info("updateAvailability() info=" + info);
+        logger.info("updateAvailability(" + name + ") info=" + info);
     }
 
     private long getUsedBytes(String name) {

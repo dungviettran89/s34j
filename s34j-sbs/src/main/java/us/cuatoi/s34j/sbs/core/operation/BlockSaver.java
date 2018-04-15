@@ -36,7 +36,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public class BlockSaver {
     private static final Logger logger = LoggerFactory.getLogger(BlockSaver.class);
     public static final String CANDIDATE = "candidate";
-    private static final int updateIntervalMinutes = 10;
+    private static final int backUpIntervalMinutes = 10;
 
     @Autowired
     private BlockRepository blockRepository;
@@ -52,8 +52,8 @@ public class BlockSaver {
     private int initialCount;
     @Value("${s34j.sbs.targetCount:4}")
     private int targetCount;
-    @Value("${s34j.sbs.maxBlockUpdatePerIteration:128}")
-    private int maxBlockUpdatePerIteration;
+    @Value("${s34j.sbs.maxKeyToUpdatePerIteration:128}")
+    private int maxKeyToUpdatePerIteration;
 
     private LoadingCache<String, List<InformationModel>> candidateCaches = CacheBuilder.newBuilder()
             .build(new CacheLoader<String, List<InformationModel>>() {
@@ -176,10 +176,10 @@ public class BlockSaver {
         }
     }
 
-    @Scheduled(cron = "0 */" + updateIntervalMinutes + " * * * *")
-    @SchedulerLock(name = "AvailabilityUpdater", lockAtMostFor = (updateIntervalMinutes + 1) * 60 * 1000)
+    @Scheduled(cron = "0 */" + backUpIntervalMinutes + " * * * *")
+    @SchedulerLock(name = "BlockSaver.updateBlockCount", lockAtMostFor = (backUpIntervalMinutes + 1) * 60 * 1000)
     public void updateBlockCount() {
-        long updated = keyRepository.findAllByBlockCountLessThan(targetCount, new PageRequest(0, maxBlockUpdatePerIteration))
+        long updated = keyRepository.findAllByBlockCountLessThan(targetCount, new PageRequest(0, maxKeyToUpdatePerIteration))
                 .getContent().stream()
                 .filter((k) -> targetCount - k.getBlockCount() > 0)
                 .peek(k -> updateBlockCount(k.getName(), k.getVersion(), targetCount - k.getBlockCount()))
