@@ -157,11 +157,11 @@ class ContentInputStream extends InputStream {
         this.available = size;
     }
 
-    public int available() throws IOException {
+    public int available() {
         return (int) available;
     }
 
-    public void close() throws IOException {
+    public void close() {
         isClosed = true;
     }
 

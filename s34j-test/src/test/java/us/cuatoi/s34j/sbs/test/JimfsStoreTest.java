@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.sbs.server;
+package us.cuatoi.s34j.sbs.test;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;

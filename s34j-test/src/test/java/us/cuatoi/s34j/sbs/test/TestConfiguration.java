@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.sbs.server;
+package us.cuatoi.s34j.sbs.test;
 
 import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;

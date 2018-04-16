@@ -29,6 +29,7 @@ repositories {
 
 dependencies {
     compile project(':s34j-sbs')
+    compile project(':s34j-core')
 
     compile('org.springframework.boot:spring-boot-starter-web')
     //test stores

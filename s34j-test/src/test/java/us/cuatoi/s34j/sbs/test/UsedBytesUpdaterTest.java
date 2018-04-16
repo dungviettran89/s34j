@@ -1,5 +1,6 @@
-package us.cuatoi.s34j.sbs.server;
+package us.cuatoi.s34j.sbs.test;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -16,8 +17,6 @@ import us.cuatoi.s34j.sbs.core.store.model.InformationRepository;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import static org.junit.Assert.assertTrue;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class UsedBytesUpdaterTest {
@@ -31,7 +30,7 @@ public class UsedBytesUpdaterTest {
     private UsedBytesUpdater usedBytesUpdater;
 
     @Test
-    public void testUpdateBytes() throws Exception {
+    public void testUpdateBytes() {
         InformationModel im = new InformationModel();
         im.setName(getClass().getSimpleName() + "-1");
         informationRepository.save(im);
@@ -46,7 +45,7 @@ public class UsedBytesUpdaterTest {
         im = informationRepository.findOne(im.getName());
         long usedBytes = im.getUsedBytes();
         logger.info("testUpdateBytes() usedBytes=" + usedBytes);
-        assertTrue(usedBytes >= testSize * bms.size());
+        Assert.assertTrue(usedBytes >= testSize * bms.size());
 
         blockRepository.delete(bms);
 
@@ -54,7 +53,7 @@ public class UsedBytesUpdaterTest {
         im = informationRepository.findOne(im.getName());
         usedBytes = im.getUsedBytes();
         logger.info("testUpdateBytes() usedBytes=" + usedBytes);
-        assertTrue(usedBytes == 0);
+        Assert.assertTrue(usedBytes == 0);
 
         usedBytesUpdater.update();
 

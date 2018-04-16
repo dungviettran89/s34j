@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.sbs.server;
+package us.cuatoi.s34j.sbs.test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;

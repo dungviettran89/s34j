@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.sbs.server;
+package us.cuatoi.s34j.sbs.test;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;

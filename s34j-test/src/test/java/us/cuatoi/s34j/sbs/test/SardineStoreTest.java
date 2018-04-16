@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.sbs.server;
+package us.cuatoi.s34j.sbs.test;
 
 import org.apache.commons.vfs2.FileSystemException;
 import org.junit.runner.RunWith;
@@ -12,7 +12,7 @@ import us.cuatoi.s34j.sbs.core.store.sardine.SardineStoreProvider;
 import us.cuatoi.s34j.sbs.core.store.vfs.VfsStoreProvider;
 
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
-import static us.cuatoi.s34j.sbs.server.VfsTmpStoreTest.createVfsTestDir;
+import static us.cuatoi.s34j.sbs.test.VfsTmpStoreTest.createVfsTestDir;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

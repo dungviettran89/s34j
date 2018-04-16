@@ -1,24 +1,30 @@
-package us.cuatoi.s34j.sbs.server;
+package us.cuatoi.s34j.sbs.test;
 
 import org.apache.commons.lang3.RandomUtils;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import us.cuatoi.s34j.sbs.core.operation.AvailabilityUpdater;
+import us.cuatoi.s34j.sbs.core.operation.BlockDeleter;
 import us.cuatoi.s34j.sbs.core.operation.BlockSaver;
 import us.cuatoi.s34j.sbs.core.operation.UsedBytesUpdater;
 import us.cuatoi.s34j.sbs.core.store.model.InformationRepository;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class BlockSaverTest {
+public class BlockDeleterTest {
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
     @Autowired
     private AvailabilityUpdater availabilityUpdater;
     @Autowired
@@ -27,39 +33,43 @@ public class BlockSaverTest {
     private BlockSaver blockSaver;
     @Autowired
     private UsedBytesUpdater usedBytesUpdater;
+    @Autowired
+    private BlockDeleter blockDeleter;
 
     @Test
-    public void testSaveOneMb() {
+    public void testOperations() throws FileNotFoundException, InterruptedException {
         if (informationRepository.count() == 0) {
             availabilityUpdater.updateAll();
         }
-        byte[] testBytes = new byte[1024 * 1024];
         String testKey = UUID.randomUUID().toString();
-        long saveCount = blockSaver.save(testKey, new ByteArrayInputStream(testBytes));
-        assertEquals(testBytes.length, saveCount);
+        newBlock(testKey, RandomUtils.nextInt(1, 4) * 1024 * 1024);
+        newBlock(testKey, RandomUtils.nextInt(1, 4) * 1024 * 1024);
+        newBlock(testKey, RandomUtils.nextInt(1, 4) * 1024);
+        newBlock(testKey, RandomUtils.nextInt(1, 4) * 1024);
+        newBlock(testKey, RandomUtils.nextInt(1, 4) * 1024);
+        Thread.sleep(100);
+        blockDeleter.cleanUpBlocks(System.currentTimeMillis());
         blockSaver.updateBlockCount();
-        //Try to overwrites
-        testBytes = new byte[2 * 1024 * 1024];
-        saveCount = blockSaver.save(testKey, new ByteArrayInputStream(testBytes));
-        assertEquals(testBytes.length, saveCount);
+        updateInformation();
+        blockDeleter.delete(testKey);
+        Thread.sleep(100);
+        blockDeleter.cleanUpBlocks(System.currentTimeMillis());
+        updateInformation();
+        thrown.expect(FileNotFoundException.class);
+        blockDeleter.delete(testKey);
+    }
 
-        newBlock(RandomUtils.nextInt(1, 4) * 1024 * 1024);
-        newBlock(RandomUtils.nextInt(1, 4) * 1024 * 1024);
-        newBlock(RandomUtils.nextInt(1, 4) * 1024);
-        newBlock(RandomUtils.nextInt(1, 4) * 1024);
-        newBlock(RandomUtils.nextInt(1, 4) * 1024);
-        blockSaver.updateBlockCount();
-
+    private void updateInformation() {
         informationRepository.findAll().forEach((i) -> {
             usedBytesUpdater.updateOne(i.getName(), 3);
         });
     }
 
-    private void newBlock(int size) {
+    private void newBlock(String name, int size) {
         byte[] testBytes;
         long saveCount;
         testBytes = new byte[size];
-        saveCount = blockSaver.save(UUID.randomUUID().toString(), new ByteArrayInputStream(testBytes));
+        saveCount = blockSaver.save(name, new ByteArrayInputStream(testBytes));
         assertEquals(testBytes.length, saveCount);
     }
 }

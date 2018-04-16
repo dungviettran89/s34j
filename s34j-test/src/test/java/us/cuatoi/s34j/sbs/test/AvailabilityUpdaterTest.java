@@ -1,5 +1,6 @@
-package us.cuatoi.s34j.sbs.server;
+package us.cuatoi.s34j.sbs.test;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -15,9 +16,6 @@ import us.cuatoi.s34j.sbs.core.store.model.InformationModel;
 import us.cuatoi.s34j.sbs.core.store.model.InformationRepository;
 
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -42,14 +40,14 @@ public class AvailabilityUpdaterTest {
         for (ConfigurationModel config : configurationRepository.findAll()) {
             InformationModel info = informationRepository.findOne(config.getName());
             logger.info("testCheckAvailability() info=" + info);
-            assertNotNull(info);
-            assertEquals(info.getName(), config.getName());
+            Assert.assertNotNull(info);
+            Assert.assertEquals(info.getName(), config.getName());
         }
 
         List<InformationModel> sortedInformation = informationRepository.findByActiveOrderByAvailableBytesDesc(true, new PageRequest(0, 2));
         for (InformationModel sorted : sortedInformation) {
             logger.info("testCheckAvailability() sorted=" + sorted);
-            assertNotNull(sorted);
+            Assert.assertNotNull(sorted);
 
         }
     }
