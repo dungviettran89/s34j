@@ -1,0 +1,127 @@
+buildscript {
+    ext {
+        springBootVersion = '1.5.9.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+
+group = 'us.cuatoi.s34j'
+version = '0.3.0-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile('com.google.code.gson:gson:2.8.2')
+    compile('com.google.guava:guava:23.3-jre')
+    compile('org.apache.commons:commons-lang3:3.6')
+    compile('org.springframework.boot:spring-boot-starter')
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compileOnly('org.springframework.boot:spring-boot-starter-data-jpa')
+    compileOnly('org.springframework.boot:spring-boot-starter-data-mongodb')
+
+    //storage
+    compileOnly('org.apache.commons:commons-vfs2:2.2')
+    compileOnly('com.github.lookfirst:sardine:5.0.3')
+
+    //schedule locker
+    compile('net.javacrumbs.shedlock:shedlock-spring:0.18.2')
+    compileOnly('net.javacrumbs.shedlock:shedlock-provider-mongo:0.18.2')
+    compileOnly('net.javacrumbs.shedlock:shedlock-provider-jdbc-template:0.18.2')
+
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+bootRepackage {
+    enabled = false
+}
+
+/**
+ * Find bugs plugins
+ */
+
+apply plugin: 'findbugs'
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled false
+        html.enabled true
+    }
+}
+
+/**
+ * Maven deployment configuration
+ */
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'S34J Spring'
+                packaging 'jar'
+                description 'S3 for Java, another faster implementation of S3 API using Spring framework.'
+                url 'https://s34j.cuatoi.us'
+
+                scm {
+                    url 'https://github.com/dungviettran89/s34j/'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'dungviettran89'
+                        name 'Tran Viet Dung'
+                        email 'dungviettran89@gmail.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
