@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.sbs.core.operation.BlockDeleter;
 import us.cuatoi.s34j.sbs.core.operation.BlockLoader;
 import us.cuatoi.s34j.sbs.core.operation.BlockSaver;
+import us.cuatoi.s34j.sbs.core.operation.StoreStatusProvider;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -17,6 +18,8 @@ public class SimpleBlockStorageImpl implements SimpleBlockStorage {
     private BlockLoader blockLoader;
     @Autowired
     private BlockDeleter blockDeleter;
+    @Autowired
+    private StoreStatusProvider storeStatusProvider;
 
     @Override
     public long save(String key, InputStream input) {
@@ -31,5 +34,10 @@ public class SimpleBlockStorageImpl implements SimpleBlockStorage {
     @Override
     public void delete(String key) throws FileNotFoundException {
         blockDeleter.delete(key);
+    }
+
+    @Override
+    public StoreStatus status(boolean refresh) {
+        return storeStatusProvider.loadStatusCached(refresh);
     }
 }

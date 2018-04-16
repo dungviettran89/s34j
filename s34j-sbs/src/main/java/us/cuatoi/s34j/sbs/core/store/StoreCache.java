@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -24,7 +25,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public class StoreCache {
 
     private static final Logger logger = LoggerFactory.getLogger(StoreCache.class);
-    private final Cache<String, Store> storeCache = CacheBuilder.newBuilder().build();
+    private final Cache<String, Store> storeCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES).build();
     @Autowired
     private ConfigurationRepository configurationRepository;
     @Autowired

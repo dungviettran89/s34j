@@ -52,7 +52,7 @@ public class BlockSaver {
     private int initialCount;
     @Value("${s34j.sbs.targetCount:4}")
     private int targetCount;
-    @Value("${s34j.sbs.maxKeyToUpdatePerIteration:128}")
+    @Value("${s34j.sbs.BlockSaver.maxKeyToUpdatePerIteration:128}")
     private int maxKeyToUpdatePerIteration;
 
     private LoadingCache<String, List<InformationModel>> candidateCaches = CacheBuilder.newBuilder()

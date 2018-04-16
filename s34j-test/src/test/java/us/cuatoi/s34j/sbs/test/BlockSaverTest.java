@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import us.cuatoi.s34j.sbs.core.operation.AvailabilityUpdater;
 import us.cuatoi.s34j.sbs.core.operation.BlockSaver;
+import us.cuatoi.s34j.sbs.core.operation.StoreStatusProvider;
 import us.cuatoi.s34j.sbs.core.operation.UsedBytesUpdater;
 import us.cuatoi.s34j.sbs.core.store.model.InformationRepository;
 
@@ -27,7 +28,8 @@ public class BlockSaverTest {
     private BlockSaver blockSaver;
     @Autowired
     private UsedBytesUpdater usedBytesUpdater;
-
+    @Autowired
+    private StoreStatusProvider storeStatusProvider;
     @Test
     public void testSaveOneMb() {
         if (informationRepository.count() == 0) {
@@ -53,6 +55,8 @@ public class BlockSaverTest {
         informationRepository.findAll().forEach((i) -> {
             usedBytesUpdater.updateOne(i.getName(), 3);
         });
+
+        storeStatusProvider.loadStatus();
     }
 
     private void newBlock(int size) {

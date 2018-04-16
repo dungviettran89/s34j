@@ -36,7 +36,7 @@ public class BlockDeleter {
     private BlockRepository blockRepository;
     @Value("${s34j.sbs.BlockDeleter.deleteAfterSeconds:3600}") //default to 1 hour.
     private long deleteAfterSeconds;
-    @Value("${s34j.sbs.maxKeyToDeletePerIteration:128}")
+    @Value("${s34j.sbs.BlockDeleter.maxKeyToDeletePerIteration:128}")
     private int maxKeyToDeletePerIteration;
     @Value("${s34j.sbs.initialCount:2}")
     private int initialCount;

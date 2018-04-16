@@ -11,4 +11,6 @@ public interface SimpleBlockStorage {
     InputStream load(String key) throws FileNotFoundException;
 
     void delete(String key) throws FileNotFoundException;
+
+    StoreStatus status(boolean refresh);
 }

@@ -7,11 +7,11 @@ import us.cuatoi.s34j.sbs.core.EnableSimpleBlockStorage;
 
 @SpringBootApplication
 @EnableSimpleBlockStorage
-public class ServerApplication {
+public class SimpleBlockStorageTestApplication {
     @Autowired
     private TestConfigurator testConfigurator;
 
     public static void main(String[] args) {
-        SpringApplication.run(ServerApplication.class, args);
+        SpringApplication.run(SimpleBlockStorageTestApplication.class, args);
     }
 }
