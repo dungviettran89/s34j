@@ -2,4 +2,5 @@ rootProject.name = 's34j'
 include 's34j-core'
 include 's34j-sbs'
 include 's34j-test'
+include 's34j-spring'
 

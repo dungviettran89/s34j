@@ -29,14 +29,12 @@ dependencies {
     compile('com.google.code.gson:gson:2.8.2')
     compile('com.google.guava:guava:23.3-jre')
     compile('org.apache.commons:commons-lang3:3.6')
+    compile('org.easyrules:easyrules-core:2.5.0')
+
     compile('org.springframework.boot:spring-boot-starter')
     compile('org.springframework.boot:spring-boot-starter-web')
     compileOnly('org.springframework.boot:spring-boot-starter-data-jpa')
     compileOnly('org.springframework.boot:spring-boot-starter-data-mongodb')
-
-    //storage
-    compileOnly('org.apache.commons:commons-vfs2:2.2')
-    compileOnly('com.github.lookfirst:sardine:5.0.3')
 
     //schedule locker
     compile('net.javacrumbs.shedlock:shedlock-spring:0.18.2')
