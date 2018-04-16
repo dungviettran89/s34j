@@ -60,7 +60,11 @@ dependencies {
 }
 
 springBoot {
-    executable = true
+    executable = false
+}
+
+bootRepackage {
+    enabled = false
 }
 
 apply plugin: 'findbugs'
