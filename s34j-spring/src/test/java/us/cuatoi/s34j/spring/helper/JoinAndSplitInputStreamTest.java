@@ -2,7 +2,6 @@ package us.cuatoi.s34j.spring.helper;
 
 import com.google.common.io.CharStreams;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +21,6 @@ import static org.junit.Assert.assertNotNull;
 public class JoinAndSplitInputStreamTest {
 
     public static final Logger logger = LoggerFactory.getLogger(JoinAndSplitInputStreamTest.class);
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testJoinAndSplit() throws IOException {
@@ -42,7 +40,7 @@ public class JoinAndSplitInputStreamTest {
                 .map((is) -> (Callable<InputStream>) () -> is)
                 .collect(Collectors.toList());
         try (JoinInputStream is = new JoinInputStream(callables)) {
-            String readPhrase = CharStreams.toString(new InputStreamReader(is));
+            String readPhrase = CharStreams.toString(new InputStreamReader(is, StandardCharsets.UTF_8));
             assertEquals(testPhrase, readPhrase);
         }
     }
