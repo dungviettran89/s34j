@@ -10,10 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.xmlpull.v1.XmlPullParserException;
+import us.cuatoi.s34j.sbs.core.operation.AvailabilityUpdater;
 import us.cuatoi.s34j.sbs.core.store.model.ConfigurationModel;
 import us.cuatoi.s34j.sbs.core.store.model.ConfigurationRepository;
 import us.cuatoi.s34j.sbs.core.store.nio.NioConfiguration;
@@ -32,18 +32,12 @@ import static com.upplication.s3fs.AmazonS3Factory.*;
 import static java.nio.file.Files.createTempDirectory;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-@Configuration
-class TestConfiguration {
-
-    @Bean
-    public TestConfigurator testConfigurator() {
-        return new TestConfigurator();
-    }
-}
-
-class TestConfigurator {
+@Service
+public class TestConfigurator {
     private static final Logger logger = LoggerFactory.getLogger(TestConfigurator.class);
 
+    @Autowired
+    private AvailabilityUpdater availabilityUpdater;
     @Autowired
     private ConfigurationRepository configurationRepository;
     @Value("${test.sardine.url:}")
@@ -71,7 +65,6 @@ class TestConfigurator {
         VFS.getManager().resolveFile(URI.create("tmp://vfs-2/")).createFolder();
         createStore("vfs-3", "vfs", "ram://vfs-3/");
         VFS.getManager().resolveFile(URI.create("ram://vfs-3/")).createFolder();
-
 
         if (isNotBlank(webDavUrl)) {
             String url = webDavUrl + "/sardine-1/";
@@ -101,6 +94,8 @@ class TestConfigurator {
             config.put("totalBytes", String.valueOf(1024L * 1024 * 1024));
             createStore("nio-s3-1", "nio", "s3://" + minioHost + "/" + minioBucket + "/test/", config);
         }
+
+        availabilityUpdater.updateAll();
     }
 
 
