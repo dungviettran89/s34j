@@ -38,8 +38,8 @@ public class BlockDeleter {
     private long deleteAfterSeconds;
     @Value("${s34j.sbs.BlockDeleter.maxKeyToDeletePerIteration:128}")
     private int maxKeyToDeletePerIteration;
-    @Value("${s34j.sbs.initialCount:2}")
-    private int initialCount;
+    @Value("${s34j.sbs.initialBlockCount:1}")
+    private int initialBlockCount;
 
     public void delete(String key) throws FileNotFoundException {
         logger.info("delete() key=" + key);
@@ -52,7 +52,7 @@ public class BlockDeleter {
         }
 
         Page<BlockModel> blocksToDelete = blockRepository.findByKeyNameAndKeyVersion(currentVersion.getName(),
-                currentVersion.getVersion(), new PageRequest(0, initialCount));
+                currentVersion.getVersion(), new PageRequest(0, initialBlockCount));
         logger.info("delete() blocksToDelete=" + blocksToDelete);
         long deleted = blocksToDelete.getContent().parallelStream()
                 .filter(this::deleteBlock)

@@ -48,10 +48,10 @@ public class BlockSaver {
     private StoreCache storeCache;
     @Autowired
     private DeleteRepository deleteRepository;
-    @Value("${s34j.sbs.initialCount:2}")
-    private int initialCount;
-    @Value("${s34j.sbs.targetCount:4}")
-    private int targetCount;
+    @Value("${s34j.sbs.initialBlockCount:1}")
+    private int initialBlockCount;
+    @Value("${s34j.sbs.targetBlockCount:2}")
+    private int targetBlockCount;
     @Value("${s34j.sbs.BlockSaver.maxKeyToUpdatePerIteration:128}")
     private int maxKeyToUpdatePerIteration;
 
@@ -59,7 +59,7 @@ public class BlockSaver {
             .build(new CacheLoader<String, List<InformationModel>>() {
                 @Override
                 public List<InformationModel> load(String key) {
-                    PageRequest page = new PageRequest(0, targetCount + 1);
+                    PageRequest page = new PageRequest(0, targetBlockCount + 1);
                     List<InformationModel> candidates = informationRepository.findByActiveOrderByAvailableBytesDesc(true, page)
                             .stream().sorted(Comparator.comparingLong(InformationModel::getLatency)).collect(Collectors.toList());
                     logger.info("getCandidateStores() candidates=" + candidates);
@@ -70,7 +70,7 @@ public class BlockSaver {
     private List<String> getSaveCandidates() {
         List<InformationModel> candidates = candidateCaches.getUnchecked("candidate");
         logger.info("getCandidateStores() candidates=" + candidates);
-        List<String> shortlistedStores = candidates.stream().limit(initialCount + 1).map(InformationModel::getName)
+        List<String> shortlistedStores = candidates.stream().limit(initialBlockCount + 1).map(InformationModel::getName)
                 .collect(Collectors.toList());
         logger.info("getCandidateStores() shortlistedStores=" + shortlistedStores);
         return shortlistedStores;
@@ -179,10 +179,10 @@ public class BlockSaver {
     @Scheduled(cron = "0 */" + backUpIntervalMinutes + " * * * *")
     @SchedulerLock(name = "BlockSaver.updateBlockCount", lockAtMostFor = (backUpIntervalMinutes + 1) * 60 * 1000)
     public void updateBlockCount() {
-        long updated = keyRepository.findAllByBlockCountLessThan(targetCount, new PageRequest(0, maxKeyToUpdatePerIteration))
+        long updated = keyRepository.findAllByBlockCountLessThan(targetBlockCount, new PageRequest(0, maxKeyToUpdatePerIteration))
                 .getContent().stream()
-                .filter((k) -> targetCount - k.getBlockCount() > 0)
-                .peek(k -> updateBlockCount(k.getName(), k.getVersion(), targetCount - k.getBlockCount()))
+                .filter((k) -> targetBlockCount - k.getBlockCount() > 0)
+                .peek(k -> updateBlockCount(k.getName(), k.getVersion(), targetBlockCount - k.getBlockCount()))
                 .count();
         logger.info("updateBlockCount() updated=" + updated);
     }
