@@ -45,6 +45,7 @@ public class SplitOutputStream extends OutputStream {
         OutputStream currentOutput = null;
         if (parts.size() == 0 || currentBytes >= splitSize) {
             currentOutput = newPart();
+            currentBytes = 0;
         } else {
             currentOutput = outputStreams.get(outputStreams.size() - 1);
         }
@@ -65,6 +66,8 @@ public class SplitOutputStream extends OutputStream {
     @Override
     public void close() throws IOException {
         super.close();
+        logger.info("close() totalBytes=" + totalBytes);
+        logger.info("close() currentBytes=" + currentBytes);
         int closedCount = 0;
         for (OutputStream outputStream : outputStreams) {
             closedCount++;

@@ -2,6 +2,7 @@ package us.cuatoi.s34j.spring.helper;
 
 import com.google.common.io.CharStreams;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,19 +22,22 @@ import static org.junit.Assert.assertNotNull;
 public class JoinAndSplitInputStreamTest {
 
     public static final Logger logger = LoggerFactory.getLogger(JoinAndSplitInputStreamTest.class);
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testJoinAndSplit() throws IOException {
-        String testPhrase = "This is a test phrase";
+        String testPhrase = "This is a test phrase. 123456789";
+        logger.info("testJoinAndSplit() testPhrase.length=" + testPhrase.length());
         SplitOutputStream split = new SplitOutputStream(8);
         try (OutputStream os = split) {
-            os.write(testPhrase.getBytes(StandardCharsets.UTF_8));
+            byte[] bytes = testPhrase.getBytes(StandardCharsets.UTF_8);
+            logger.info("testJoinAndSplit() bytes.length=" + bytes.length);
+            os.write(bytes);
         }
         List<InputStream> streams = split.getInputStreams();
         assertNotNull(streams);
         logger.info("testJoinAndSplit() streams.size()=" + streams.size());
         assertTrue(streams.size() > 0);
-
         List<Callable<InputStream>> callables = streams.stream()
                 .map((is) -> (Callable<InputStream>) () -> is)
                 .collect(Collectors.toList());
@@ -42,4 +46,5 @@ public class JoinAndSplitInputStreamTest {
             assertEquals(testPhrase, readPhrase);
         }
     }
+
 }
