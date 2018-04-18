@@ -36,6 +36,6 @@ public class SpringFunctionalTestMain {
     private static void simpleFunctionalTest() throws Exception {
         MinioClient client = new MinioClient("http://localhost:19000",
                 TestHelper.DEFAULT_KEY, TestHelper.DEFAULT_SECRET);
-        client.makeBucket("test" + UUID.randomUUID().toString());
+        client.makeBucket("test-" + UUID.randomUUID().toString());
     }
 }

@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import us.cuatoi.s34j.spring.SpringStorageException;
 import us.cuatoi.s34j.spring.auth.AuthenticationRule;
 import us.cuatoi.s34j.spring.dto.ErrorCode;
 import us.cuatoi.s34j.spring.dto.ErrorResponseXml;
@@ -45,7 +46,7 @@ public class SpringStorageService {
         String serverId = "springStorageService";
         //1: gather information
         Facts facts = new Facts();
-        facts.put("request", request);
+        facts.put("inputStream", request.getInputStream());
         facts.put("response", response);
         facts.put("requestId", requestId);
         facts.put("serverId", serverId);
@@ -71,39 +72,44 @@ public class SpringStorageService {
                     logger.debug("Form: " + p + "=" + request.getParameter(p));
                     facts.put("form:" + p, request.getParameter(p));
                 });
-        URLEncodedUtils.parse(new URI(request.getRequestURL().toString()), UTF_8)
+        String url = request.getRequestURL().toString();
+        facts.put("url", url);
+        URLEncodedUtils.parse(new URI(url), UTF_8)
                 .forEach((pair) -> {
                     logger.debug("Query: " + pair.getName() + "=" + pair.getValue());
                     facts.remove("form" + pair.getName());
                     facts.put("query:" + pair.getName(), pair.getValue());
                 });
 
-
-        //2: perform authentication
-        Rules authentication = new Rules();
-        authenticationRules.forEach(authentication::register);
-        RulesEngine authenticationEngine = new DefaultRulesEngine();
-        authenticationEngine.fire(authentication, facts);
-        if (!TRUE.equals(facts.get("authenticated"))) {
-            ErrorCode errorCode = facts.get("errorCode");
-            if (errorCode == null) {
-                errorCode = ErrorCode.ACCESS_DENIED;
+        try {
+            //2: perform authentication
+            Rules authentication = new Rules();
+            authenticationRules.forEach(authentication::register);
+            RulesEngine authenticationEngine = new DefaultRulesEngine();
+            authenticationEngine.fire(authentication, facts);
+            if (!TRUE.equals(facts.get("authenticated"))) {
+                ErrorCode errorCode = facts.get("errorCode");
+                if (errorCode == null) {
+                    errorCode = ErrorCode.ACCESS_DENIED;
+                }
+                writeError(response, facts, errorCode);
+                return;
             }
-            writeError(response, facts, errorCode);
-            return;
+
+            //3: perform execution
+            Rules execution = new Rules();
+            executionRules.forEach(execution::register);
+            RulesEngine executionEngine = new DefaultRulesEngine();
+            executionEngine.getParameters().setSkipOnFirstAppliedRule(true);
+            executionEngine.fire(execution, facts);
+
+            //4: response
+            if (TRUE.equals(facts.get("responded"))) return;
+
+            writeError(response, facts, ErrorCode.NOT_IMPLEMENTED);
+        } catch (SpringStorageException storageException) {
+            writeError(response, facts, storageException.getErrorCode());
         }
-
-        //3: perform execution
-        Rules execution = new Rules();
-        executionRules.forEach(execution::register);
-        RulesEngine executionEngine = new DefaultRulesEngine();
-        executionEngine.getParameters().setSkipOnFirstAppliedRule(true);
-        executionEngine.fire(execution, facts);
-
-        //4: response
-        if (TRUE.equals(facts.get("responded"))) return;
-
-        writeError(response, facts, ErrorCode.NOT_IMPLEMENTED);
     }
 
     private void writeError(HttpServletResponse response, Facts facts, ErrorCode errorCode) throws IOException {
