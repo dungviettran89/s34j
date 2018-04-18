@@ -9,5 +9,5 @@ import java.lang.annotation.*;
 @Documented
 @Inherited
 @Import({JpaConfig.class, MongoConfig.class, StorageConfig.class})
-public @interface EnableSimpleSpringStorage {
+public @interface EnableSpringStorageService {
 }

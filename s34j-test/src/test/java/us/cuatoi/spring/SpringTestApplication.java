@@ -5,19 +5,19 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import us.cuatoi.s34j.sbs.core.EnableSimpleBlockStorage;
 import us.cuatoi.s34j.sbs.test.TestConfigurator;
-import us.cuatoi.s34j.spring.EnableSimpleSpringStorage;
+import us.cuatoi.s34j.spring.EnableSpringStorageService;
 
 @SpringBootApplication
 @EnableSimpleBlockStorage
-@EnableSimpleSpringStorage
+@EnableSpringStorageService
 public class SpringTestApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(SpringTestApplication.class, args);
-    }
-
     @Bean
     public TestConfigurator testConfigurator() {
         return new TestConfigurator();
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(SpringTestApplication.class, args);
     }
 
 }

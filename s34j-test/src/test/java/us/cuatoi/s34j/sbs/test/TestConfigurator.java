@@ -18,6 +18,7 @@ import us.cuatoi.s34j.sbs.core.store.model.ConfigurationModel;
 import us.cuatoi.s34j.sbs.core.store.model.ConfigurationRepository;
 import us.cuatoi.s34j.sbs.core.store.nio.NioConfiguration;
 import us.cuatoi.s34j.sbs.core.store.sardine.SardineConfiguration;
+import us.cuatoi.s34j.test.TestHelper;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -77,8 +78,8 @@ public class TestConfigurator {
 
 
             //Test minio s3 store
-            String minioKey = "Q3AM3UQ867SPQQA43P2F";
-            String minioSecret = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+            String minioKey = TestHelper.DEFAULT_KEY;
+            String minioSecret = TestHelper.DEFAULT_SECRET;
             String minioHost = "play.minio.io:9000";
             String minioBucket = "sbs-test";
             MinioClient client = new MinioClient("https://" + minioHost, minioKey, minioSecret);
