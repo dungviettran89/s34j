@@ -13,9 +13,10 @@ import java.net.URISyntaxException;
 
 public class SpringStorageServlet extends HttpServlet {
 
-    public static final Logger logger = LoggerFactory.getLogger(SpringStorageServlet.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpringStorageServlet.class);
+    private static final long serialVersionUID = -1725671736988241369L;
     @Autowired
-    private SpringStorageService springStorageService;
+    private transient SpringStorageService springStorageService;
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
