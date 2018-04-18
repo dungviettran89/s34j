@@ -8,6 +8,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-@Import({JpaConfig.class, MongoConfig.class,StorageConfig.class})
+@Import({BlockStorageJpaConfig.class, BlockStorageMongoConfig.class, StorageConfig.class})
 public @interface EnableSimpleBlockStorage {
 }

@@ -14,7 +14,7 @@ import java.net.URI;
 @Configuration
 @ConditionalOnClass(EnableMongoRepositories.class)
 @EnableMongoRepositories
-class MongoConfig {
+class BlockStorageMongoConfig {
 
     @Value("${spring.data.mongodb.uri:mongodb://localhost/test}")
     private String mongoUri;
