@@ -4,13 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.google.common.net.UrlEscapers;
 import org.apache.commons.lang3.StringUtils;
-import org.jeasy.rules.annotation.Action;
-import org.jeasy.rules.annotation.Condition;
-import org.jeasy.rules.annotation.Fact;
-import org.jeasy.rules.annotation.Rule;
+import org.jeasy.rules.annotation.*;
 import org.jeasy.rules.api.Facts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.SpringStorageConstants;
 import us.cuatoi.s34j.spring.SpringStorageException;
@@ -37,6 +36,16 @@ public class AuthorizationHeaderVerifier implements AuthenticationRule {
     public static final Pattern PATTERN = Pattern
             .compile(SCHEME + "-" + ALGORITHM + " Credential=(\\w*)/(\\w*)/([\\w\\-]*)/(\\w*)/aws4_request, SignedHeaders=([\\w;\\-]*), Signature=(\\w*)");
     public static final Logger logger = LoggerFactory.getLogger(AuthorizationHeaderVerifier.class);
+    @Value("${s34j.spring.maxRequestTimeDifferentInSeconds:3600}")
+    private int maxRequestTimeDifferentInSeconds;
+
+    @Autowired
+    private AuthenticationProvider authenticationProvider;
+
+    @Priority
+    public int priority() {
+        return 10;
+    }
 
     @Condition
     public boolean verifyHeader(Facts facts,
@@ -90,12 +99,17 @@ public class AuthorizationHeaderVerifier implements AuthenticationRule {
         stringToSign += canonicalRequestHash;
         logger.debug("verifyHeader() stringToSign=\n" + stringToSign);
 
-        String secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+        String secretKey = authenticationProvider.getSecretKey(awsAccessKey);
+        if (isBlank(secretKey)) {
+            facts.put("errorCode", ErrorCode.INVALID_ACCESS_KEY_ID);
+            return false;
+        }
+
         byte[] secret = ("AWS4" + secretKey).getBytes(UTF_8);
         byte[] dateKey = hmacSha256(secret).hashString(dateInScope, UTF_8).asBytes();
         byte[] dateRegionKey = hmacSha256(dateKey).hashString(region, UTF_8).asBytes();
-        byte[] dateRegionServiceKey = hmacSha256(dateRegionKey).hashString("s3", UTF_8).asBytes();
-        byte[] signingKey = hmacSha256(dateRegionServiceKey).hashString("aws4_request", UTF_8).asBytes();
+        byte[] dateRegionServiceKey = hmacSha256(dateRegionKey).hashString(SpringStorageConstants.SERVICE, UTF_8).asBytes();
+        byte[] signingKey = hmacSha256(dateRegionServiceKey).hashString(SpringStorageConstants.TERMINATOR, UTF_8).asBytes();
         String calculatedSignature = hmacSha256(signingKey).hashString(stringToSign, UTF_8).toString();
         logger.debug("verifyHeader() calculatedSignature=" + calculatedSignature);
 
@@ -105,8 +119,8 @@ public class AuthorizationHeaderVerifier implements AuthenticationRule {
         }
 
         try {
-            Date date = SpringStorageConstants.EXPIRATION_DATE_FORMAT.parse(xAmzDate);
-            if (System.currentTimeMillis() - date.getTime() > TimeUnit.HOURS.toMillis(2)) {
+            Date date = SpringStorageConstants.X_AMZ_DATE_FORMAT.parse(xAmzDate);
+            if (System.currentTimeMillis() - date.getTime() > TimeUnit.SECONDS.toMillis(maxRequestTimeDifferentInSeconds)) {
                 facts.put("errorCode", ErrorCode.REQUEST_TIME_TOO_SKEWED);
                 return false;
             }
