@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class SpringStorageConstant {
+public class SpringStorageConstants {
     public static final String EMPTY_BODY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
     public static final String UNSIGNED_PAYLOAD = "UNSIGNED-PAYLOAD";
     public static final String SCHEME = "AWS4";
