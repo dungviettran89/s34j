@@ -43,6 +43,7 @@ dependencies {
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.awaitility:awaitility:3.1.0')
+    testCompile('com.sun.mail:javax.mail:1.6.1')
 
     if (isMongo) {
         println 'MongoDB enabled'

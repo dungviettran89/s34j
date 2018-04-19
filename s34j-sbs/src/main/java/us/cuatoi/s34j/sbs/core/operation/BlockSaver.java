@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Lists;
 import com.google.common.io.CountingInputStream;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -24,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -218,7 +220,9 @@ public class BlockSaver {
             }
 
             Path finalTempFile = tempFile;
-            long saved = saveCandidates.stream().map(InformationModel::getName)
+            List<InformationModel> candidates = Lists.newArrayList(saveCandidates);
+            Collections.reverse(candidates);
+            long saved = candidates.stream().map(InformationModel::getName)
                     .filter(o -> !currentStores.contains(o))
                     .filter((storeName) -> this.saveToStore(key, version, storeName, finalTempFile))
                     .limit(more + 1).count();
