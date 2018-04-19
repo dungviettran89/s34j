@@ -62,7 +62,8 @@ public class SpringStorageService {
         facts.put("response", response);
         facts.put("requestId", requestId);
         facts.put("serverId", serverId);
-        facts.put("method", request.getMethod().toLowerCase());
+        facts.put("method", request.getMethod());
+        facts.put(request.getMethod(), true);
         String path = StringUtils.trimToEmpty(request.getPathInfo());
         facts.put("path", path);
         String bucketName = path.substring(1);
@@ -85,6 +86,9 @@ public class SpringStorageService {
                     facts.put("form:" + p, request.getParameter(p));
                 });
         String url = request.getRequestURL().toString();
+        if (isNotBlank(request.getQueryString())) {
+            url += "?" + request.getQueryString();
+        }
         facts.put("url", url);
         URLEncodedUtils.parse(new URI(url), UTF_8)
                 .forEach((pair) -> {
@@ -110,45 +114,18 @@ public class SpringStorageService {
             }
             //3: parse payload
             InputStream sourceStream = request.getInputStream();
-            //3.1: parse streaming payload
-            //3.2: verify sha256
-            String sha256 = facts.get("header:x-amz-content-sha256");
-            boolean sha256Enabled = isNotBlank(sha256) && !equalsAny(sha256, STREAMING_PAYLOAD, UNSIGNED_PAYLOAD);
-            if (sha256Enabled) {
-                logger.info("handle() sha256Enabled=" + sha256Enabled);
-                HashingInputStream sha256Stream = new HashingInputStream(Hashing.sha256(), sourceStream);
-                sourceStream = new InputStreamWrapper(sha256Stream) {
-                    @Override
-                    public void close() throws IOException {
-                        super.close();
-                        String calculatedSha256 = sha256Stream.hash().toString();
-                        logger.info("handle() sha256=" + sha256);
-                        logger.info("handle() calculatedSha256=" + calculatedSha256);
-                        if (!equalsIgnoreCase(sha256, calculatedSha256)) {
-                            throw new SpringStorageException(ErrorCode.X_AMZ_CONTENT_SHA256_MISMATCH);
-                        }
-                    }
-                };
-            }
-            //3.3 verify md5
+            //verify md5
             final String md5 = facts.get("header:content-md5");
             boolean md5Enabled = isNotBlank(md5);
-            logger.info("handle() md5Enabled=" + md5Enabled);
-            if (md5Enabled) {
-                @SuppressWarnings("deprecation") HashingInputStream md5Stream = new HashingInputStream(Hashing.md5(), sourceStream);
-                sourceStream = new InputStreamWrapper(md5Stream) {
-                    @Override
-                    public void close() throws IOException {
-                        super.close();
-                        String calculatedMd5 = md5Stream.hash().toString();
-                        logger.info("handle() md5=" + md5);
-                        logger.info("handle() calculatedMd5=" + calculatedMd5);
-                        if (!equalsIgnoreCase(md5, calculatedMd5)) {
-                            throw new SpringStorageException(ErrorCode.BAD_DIGEST);
-                        }
-                    }
-                };
-            }
+            if (md5Enabled) sourceStream = verifyContentMd5(sourceStream, md5);
+            //parse streaming payload
+
+            //verify sha256
+            String sha256 = facts.get("header:x-amz-content-sha256");
+            boolean sha256Enabled = isNotBlank(sha256) && !equalsAny(sha256, STREAMING_PAYLOAD, UNSIGNED_PAYLOAD);
+            if (sha256Enabled) sourceStream = verifyContentSha256(sourceStream, sha256, sha256Enabled);
+
+
             //3.5 parse stream
             try (InputStream is = sourceStream) {
                 SplitOutputStream splitOutputStream = new SplitOutputStream(blockSizeBytes);
@@ -166,7 +143,11 @@ public class SpringStorageService {
             executionEngine.fire(execution, facts);
 
             //4: response
-            if (TRUE.equals(facts.get("responded"))) return;
+            Integer statusCode = facts.get("statusCode");
+            if (statusCode != null) {
+                writeResponse(response, facts, statusCode);
+                return;
+            }
 
             writeError(response, facts, ErrorCode.NOT_IMPLEMENTED);
         } catch (SpringStorageException storageException) {
@@ -181,11 +162,53 @@ public class SpringStorageService {
         }
     }
 
+    private void writeResponse(HttpServletResponse response, Facts facts, Integer statusCode) {
+        response.setStatus(statusCode);
+        response.setContentType("application/xml; charset=utf-8");
+        response.setHeader("x-amz-request-id", facts.get("requestId"));
+        response.setHeader("x-amz-version-id", "1.0");
+    }
+
+    private InputStream verifyContentMd5(InputStream sourceStream, String md5) {
+        @SuppressWarnings("deprecation") HashingInputStream md5Stream = new HashingInputStream(Hashing.md5(), sourceStream);
+        sourceStream = new InputStreamWrapper(md5Stream) {
+            @Override
+            public void close() throws IOException {
+                super.close();
+                String calculatedMd5 = md5Stream.hash().toString();
+                logger.info("verifyContentMd5() md5=" + md5);
+                logger.info("verifyContentMd5() calculatedMd5=" + calculatedMd5);
+                if (!equalsIgnoreCase(md5, calculatedMd5)) {
+                    throw new SpringStorageException(ErrorCode.BAD_DIGEST);
+                }
+            }
+        };
+        return sourceStream;
+    }
+
+    private InputStream verifyContentSha256(InputStream sourceStream, String sha256, boolean sha256Enabled) {
+        logger.info("handle() sha256Enabled=" + sha256Enabled);
+        HashingInputStream sha256Stream = new HashingInputStream(Hashing.sha256(), sourceStream);
+        sourceStream = new InputStreamWrapper(sha256Stream) {
+            @Override
+            public void close() throws IOException {
+                super.close();
+                String calculatedSha256 = sha256Stream.hash().toString();
+                logger.info("verifyContentSha256() sha256=" + sha256);
+                logger.info("verifyContentSha256() calculatedSha256=" + calculatedSha256);
+                if (!equalsIgnoreCase(sha256, calculatedSha256)) {
+                    throw new SpringStorageException(ErrorCode.X_AMZ_CONTENT_SHA256_MISMATCH);
+                }
+            }
+        };
+        return sourceStream;
+    }
+
     private void writeError(HttpServletResponse response, Facts facts, ErrorCode errorCode) throws IOException {
         response.setContentType("application/xml; charset=utf-8");
         response.setHeader("x-amz-request-id", facts.get("requestId"));
         response.setHeader("x-amz-version-id", "1.0");
-        response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        response.setStatus(errorCode.getStatusCode());
         ErrorResponseXml error = new ErrorResponseXml();
         error.setRequestId(facts.get("requestId"));
         error.setHostId(facts.get("serverId"));
