@@ -12,6 +12,7 @@ import us.cuatoi.s34j.sbs.core.store.StoreProvider;
 
 import javax.annotation.PreDestroy;
 import javax.mail.Folder;
+import javax.mail.MessagingException;
 import javax.mail.Session;
 import java.net.URI;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class ImapStoreProvider implements StoreProvider<ImapConfiguration> {
 
     public static final Logger logger = LoggerFactory.getLogger(ImapStoreProvider.class);
     private final List<Folder> folders = new ArrayList<>();
-    private final List<Session> sessions = new ArrayList<>();
+    private final List<javax.mail.Store> stores = new ArrayList<>();
 
     @Override
     public String getType() {
@@ -52,8 +53,13 @@ public class ImapStoreProvider implements StoreProvider<ImapConfiguration> {
             javax.mail.Store store = session.getStore(uri.getScheme());
             store.connect(uri.getHost(), config.getUser(), config.getPassword());
             Folder folder = store.getFolder(config.getFolder());
+            if (!folder.exists()) {
+                boolean createResult = folder.create(Folder.HOLDS_MESSAGES);
+                logger.info("createStore() createResult=" + createResult);
+            }
+            folder.open(Folder.READ_WRITE);
             folders.add(folder);
-            sessions.add(session);
+            stores.add(store);
             return new ImapStore(folder, session, config.getEmail(), config.getTotalBytes());
         } catch (Exception createStoreError) {
             logger.error("createStore() createStoreError=" + createStoreError, createStoreError);
@@ -64,7 +70,22 @@ public class ImapStoreProvider implements StoreProvider<ImapConfiguration> {
     @PreDestroy
     public void stop() {
         logger.info("stop() folders.size=" + folders.size());
-        logger.info("stop() sessions.size=" + sessions.size());
+        folders.forEach((f) -> {
+            try {
+                f.close(true);
+            } catch (MessagingException closeFolderError) {
+                logger.warn("stop() closeFolderError=" + closeFolderError);
+            }
+        });
+
+        logger.info("stop() stores.size=" + stores.size());
+        stores.forEach((s) -> {
+            try {
+                s.close();
+            } catch (MessagingException closeStoreError) {
+                logger.warn("stop() closeStoreError=" + closeStoreError);
+            }
+        });
 
     }
 }
