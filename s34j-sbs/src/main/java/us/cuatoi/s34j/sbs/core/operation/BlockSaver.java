@@ -144,20 +144,20 @@ public class BlockSaver {
 
     private boolean saveToStore(String key, String version, String storeName, Path tempFile) {
         try (InputStream is = Files.newInputStream(tempFile)) {
-            logger.info("save() storeName=" + storeName);
+            logger.info("saveToStore() storeName=" + storeName);
             String internalKey = key + "-" + version;
             long size = storeCache.getStore(storeName).save(internalKey, is);
-            logger.info("save() size=" + size);
+            logger.info("saveToStore() size=" + size);
             BlockModel block = new BlockModel();
             block.setKeyName(key);
             block.setKeyVersion(version);
             block.setStoreName(storeName);
             block.setSize(size);
             blockRepository.save(block);
-            logger.info("save() block=" + block);
+            logger.info("saveToStore() block=" + block);
             return true;
         } catch (Exception storeSaveError) {
-            logger.info("save() storeSaveError=" + storeSaveError);
+            logger.info("saveToStore() storeSaveError=" + storeSaveError);
             return false;
         }
     }
