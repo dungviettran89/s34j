@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.xmlpull.v1.XmlPullParserException;
 import us.cuatoi.s34j.sbs.core.operation.AvailabilityUpdater;
+import us.cuatoi.s34j.sbs.core.store.imap.ImapConfiguration;
 import us.cuatoi.s34j.sbs.core.store.model.ConfigurationModel;
 import us.cuatoi.s34j.sbs.core.store.model.ConfigurationRepository;
 import us.cuatoi.s34j.sbs.core.store.nio.NioConfiguration;
@@ -47,6 +48,14 @@ public class TestConfigurator {
     private String webDavUser;
     @Value("${test.sardine.password:}")
     private String webDavPassword;
+    @Value("${test.imap.url:}")
+    private String imapUrl;
+    @Value("${test.imap.user:}")
+    private String imapUser;
+    @Value("${test.imap.email:}")
+    private String imapEmail;
+    @Value("${test.imap.password:}")
+    private String imapPassword;
     private Path tempDirectory;
 
     @PostConstruct
@@ -94,6 +103,15 @@ public class TestConfigurator {
             config.put(PATH_STYLE_ACCESS, "true");
             config.put("totalBytes", String.valueOf(1024L * 1024 * 1024));
             createStore("nio-s3-1", "nio", "s3://" + minioHost + "/" + minioBucket + "/test/", config);
+        }
+        if (isNotBlank(imapUrl)) {
+            ImapConfiguration imapConfiguration = new ImapConfiguration();
+            imapConfiguration.setEmail(imapEmail);
+            imapConfiguration.setFolder("test");
+            imapConfiguration.setUser(imapUser);
+            imapConfiguration.setPassword(imapPassword);
+            imapConfiguration.setTotalBytes(10L * 1024 * 1024);
+            createStore("imap-1", "imap", imapUrl, imapConfiguration);
         }
 
         availabilityUpdater.updateAll();

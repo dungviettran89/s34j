@@ -14,15 +14,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractStoreTest {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     private Store store;
 
     @Before
@@ -46,13 +47,14 @@ public abstract class AbstractStoreTest {
 
     @Test
     public void testSimpleOperation() throws IOException {
-        String testKey = "test.txt";
+        String testKey = UUID.randomUUID().toString() + "test.txt";
         byte[] testBytes = testKey.getBytes(StandardCharsets.UTF_8);
         store.save(testKey, new ByteArrayInputStream(testBytes));
         try (InputStream is = store.load(testKey)) {
             String read = CharStreams.toString(new InputStreamReader(is, StandardCharsets.UTF_8));
             assertEquals(testKey, read);
         }
+        store.save(testKey, new ByteArrayInputStream(testBytes));
         logger.info("testSimpleOperation() store.availableBytes=" + store.getAvailableBytes(0));
         assertTrue(store.delete(testKey));
     }

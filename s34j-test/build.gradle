@@ -1,6 +1,4 @@
-import org.apache.tools.ant.taskdefs.condition.Os
-
-def isMongo = Os.isFamily(Os.FAMILY_UNIX)
+def isMongo = false
 
 buildscript {
     ext {

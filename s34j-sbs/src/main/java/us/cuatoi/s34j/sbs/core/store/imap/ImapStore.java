@@ -1,10 +1,10 @@
 package us.cuatoi.s34j.sbs.core.store.imap;
 
 import com.google.common.base.Preconditions;
+import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.CharStreams;
 import com.sun.mail.imap.IMAPMessage;
-import com.sun.mail.util.BASE64DecoderStream;
-import com.sun.mail.util.BASE64EncoderStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.cuatoi.s34j.sbs.core.StoreHelper;
@@ -19,8 +19,10 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.search.SubjectTerm;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -32,6 +34,7 @@ public class ImapStore implements Store {
     private final Session session;
     private final String email;
     private final long totalBytes;
+    private final BaseEncoding encoding = BaseEncoding.base64();
 
 
     public ImapStore(Folder baseFolder, Session session, String email, long totalBytes) {
@@ -53,7 +56,8 @@ public class ImapStore implements Store {
             IMAPMessage found = (IMAPMessage) baseFolder.search(new SubjectTerm(key))[0];
             MimeMultipart foundMultipart = (MimeMultipart) found.getContent();
             MimeBodyPart foundPart = (MimeBodyPart) foundMultipart.getBodyPart(0);
-            return new BASE64DecoderStream(foundPart.getInputStream());
+            String base64 = CharStreams.toString(new InputStreamReader(foundPart.getInputStream(), UTF_8));
+            return new ByteArrayInputStream(encoding.decode(base64));
         } catch (Exception exception) {
             logger.error("load(): exception=" + exception, exception);
             throw new StoreException(exception);
@@ -65,10 +69,20 @@ public class ImapStore implements Store {
         logger.info("save(): key=" + key);
         StoreHelper.validateKey(key);
         try {
+            Message[] exists = baseFolder.search(new SubjectTerm(key));
+            if (exists.length > 0) {
+                for (Message message : exists) {
+                    message.setFlag(Flags.Flag.DELETED, true);
+                }
+                baseFolder.expunge();
+                logger.info("save(): existingDeletedCount=" + exists.length);
+            }
+
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            long length = ByteStreams.copy(is, new BASE64EncoderStream(outputStream));
+            long length = ByteStreams.copy(is, outputStream);
+            String base64 = encoding.encode(outputStream.toByteArray());
             MimeBodyPart bodyPart = new MimeBodyPart();
-            bodyPart.setText(new String(outputStream.toByteArray(), UTF_8), "utf-8");
+            bodyPart.setText(base64, "utf-8");
             MimeMultipart mimeMultipart = new MimeMultipart(bodyPart);
             MimeMessage mimeMessage = new MimeMessage(session);
             mimeMessage.setSubject(key, "utf-8");
@@ -90,9 +104,6 @@ public class ImapStore implements Store {
         StoreHelper.validateKey(key);
         try {
             IMAPMessage found = (IMAPMessage) baseFolder.search(new SubjectTerm(key))[0];
-            MimeMultipart foundMultipart = (MimeMultipart) found.getContent();
-            MimeBodyPart foundPart = (MimeBodyPart) foundMultipart.getBodyPart(0);
-            ByteStreams.copy(foundPart.getInputStream(), System.out);
             found.setFlag(Flags.Flag.DELETED, true);
             baseFolder.expunge();
             return true;
