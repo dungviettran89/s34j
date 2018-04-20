@@ -37,6 +37,7 @@ dependencies {
     //storage
     compileOnly('org.apache.commons:commons-vfs2:2.2')
     compileOnly('com.github.lookfirst:sardine:5.0.3')
+    compileOnly('com.sun.mail:javax.mail:1.6.1')
 
     //schedule locker
     compile('net.javacrumbs.shedlock:shedlock-spring:0.18.2')

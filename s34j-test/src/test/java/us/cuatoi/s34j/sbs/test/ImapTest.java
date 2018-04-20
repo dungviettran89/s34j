@@ -54,6 +54,7 @@ public class ImapTest {
         MimeBodyPart foundPart = (MimeBodyPart) foundMultipart.getBodyPart(0);
         ByteStreams.copy(foundPart.getInputStream(), System.out);
         found.setFlag(Flags.Flag.DELETED, true);
+        blocks.expunge();
         blocks.close();
         store.close();
     }

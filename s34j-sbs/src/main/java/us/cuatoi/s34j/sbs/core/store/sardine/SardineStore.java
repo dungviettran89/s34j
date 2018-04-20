@@ -75,7 +75,7 @@ public class SardineStore implements Store {
             SardineFactory.begin(user, password).delete(url + key);
             return true;
         } catch (IOException exception) {
-            logger.error("delete(): getAvailableBytes=" + exception, exception);
+            logger.error("delete(): delete=" + exception, exception);
             throw new StoreException(exception);
         }
     }
