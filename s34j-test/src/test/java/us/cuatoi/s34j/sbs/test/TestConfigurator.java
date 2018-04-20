@@ -110,7 +110,7 @@ public class TestConfigurator {
             imapConfiguration.setFolder("test");
             imapConfiguration.setUser(imapUser);
             imapConfiguration.setPassword(imapPassword);
-            imapConfiguration.setTotalBytes(10L * 1024 * 1024);
+            imapConfiguration.setTotalBytes(512L * 1024 * 1024 * 1024);
             createStore("imap-1", "imap", imapUrl, imapConfiguration);
         }
 
