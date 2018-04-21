@@ -30,7 +30,7 @@ public class BucketVerifier {
         return true;
     }
 
-    private boolean verifyBucketName(String name) {
+    public boolean verifyBucketName(String name) {
         if (name == null) {
             throw new SpringStorageException(ErrorCode.INVALID_BUCKET_NAME);
         }
