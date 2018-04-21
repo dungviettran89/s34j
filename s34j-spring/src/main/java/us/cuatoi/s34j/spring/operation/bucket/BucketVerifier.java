@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.SpringStorageException;
 import us.cuatoi.s34j.spring.dto.ErrorCode;
 import us.cuatoi.s34j.spring.model.BucketRepository;
+import us.cuatoi.s34j.spring.model.DeletedBucketRepository;
 
 @Service
 public class BucketVerifier {
@@ -15,6 +16,8 @@ public class BucketVerifier {
     public static final Logger logger = LoggerFactory.getLogger(BucketVerifier.class);
     @Autowired
     private BucketRepository bucketRepository;
+    @Autowired
+    private DeletedBucketRepository deletedBucketRepository;
 
     public boolean verifyBucketExists(@Fact("bucketName") String bucketName) {
         if (bucketRepository.findOne(bucketName) == null) {
@@ -25,6 +28,9 @@ public class BucketVerifier {
 
     public boolean verifyBucketNotExist(String name) {
         if (bucketRepository.findOne(name) != null) {
+            throw new SpringStorageException(ErrorCode.BUCKET_ALREADY_EXISTS);
+        }
+        if (deletedBucketRepository.findOne(name) != null) {
             throw new SpringStorageException(ErrorCode.BUCKET_ALREADY_EXISTS);
         }
         return true;

@@ -12,6 +12,7 @@ import us.cuatoi.s34j.spring.model.BucketRepository;
 import us.cuatoi.s34j.spring.operation.ExecutionRule;
 
 import static org.apache.http.HttpStatus.SC_OK;
+import static us.cuatoi.s34j.spring.SpringStorageConstants.CONTENT_TYPE;
 
 @Service
 @Rule(name = "GetBucketLocation")
@@ -44,7 +45,7 @@ public class GetBucketLocation implements ExecutionRule {
         location.setRegion(model.getLocation());
 
         facts.put("statusCode", SC_OK);
-        facts.put("contentType", "application/xml; charset=utf-8");
+        facts.put("contentType", CONTENT_TYPE);
         facts.put("response", location);
     }
 

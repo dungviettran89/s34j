@@ -4,6 +4,7 @@ import org.jeasy.rules.annotation.Action;
 import org.jeasy.rules.annotation.Condition;
 import org.jeasy.rules.annotation.Fact;
 import org.jeasy.rules.annotation.Rule;
+import org.jeasy.rules.api.Facts;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ public class DeleteBucket implements ExecutionRule {
     }
 
     @Action
-    public void doDelete(@Fact("bucketName") String bucketName) {
+    public void doDelete(Facts facts, @Fact("bucketName") String bucketName) {
         BucketModel bucketToDelete = bucketRepository.findOne(bucketName);
         logger.info("doDelete() bucketToDelete=" + bucketToDelete);
         ModelMapper mapper = new ModelMapper();
@@ -43,7 +44,7 @@ public class DeleteBucket implements ExecutionRule {
         deletedBucketRepository.save(deletedBucket);
         bucketRepository.delete(bucketToDelete);
         logger.info("doDelete() deletedBucket=" + deletedBucket);
-
+        facts.put("statusCode", 200);
     }
 }
 

@@ -57,7 +57,6 @@ public class SpringStorageService {
         String serverId = "springStorageService";
         //1: gather information
         Facts facts = new Facts();
-        facts.put("response", response);
         facts.put("requestId", requestId);
         facts.put("serverId", serverId);
         facts.put("method", request.getMethod());

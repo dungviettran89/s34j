@@ -10,7 +10,8 @@ public class SpringStorageConstants {
 
     public static final String EXPIRATION_DATE_FORMAT = "yyyy-MM-dd'T'HH':'mm':'ss'.'SSS'Z'";
     public static final String X_AMZ_DATE_FORMAT = "yyyyMMdd'T'HHmmss'Z'";
-    public static final String EEE_DD_MMM_YYYY_HH_MM_SS_GMT = "EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'";
+    public static final String HTTP_HEADER_DATE_FORMAT = "EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'";
     public static final String SCOPE_DATE_FORMAT = "yyyyMMdd";
 
+    public static final String CONTENT_TYPE = "application/xml; charset=utf-8";
 }
