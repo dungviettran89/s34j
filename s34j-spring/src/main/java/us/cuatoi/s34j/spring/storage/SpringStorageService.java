@@ -30,9 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static java.lang.Boolean.TRUE;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -80,11 +78,8 @@ public class SpringStorageService {
                     logger.debug("Header: " + h + "=" + request.getHeader(h));
                     facts.put("header:" + h, request.getHeader(h));
                 });
-        Collections.list(request.getParameterNames())
-                .forEach((p) -> {
-                    logger.debug("Form: " + p + "=" + request.getParameter(p));
-                    facts.put("form:" + p, request.getParameter(p));
-                });
+
+        Map<String, String> queryParameters = new HashMap<>();
         String url = request.getRequestURL().toString();
         if (isNotBlank(request.getQueryString())) {
             url += "?" + request.getQueryString();
@@ -93,9 +88,16 @@ public class SpringStorageService {
         URLEncodedUtils.parse(new URI(url), UTF_8)
                 .forEach((pair) -> {
                     logger.debug("Query: " + pair.getName() + "=" + pair.getValue());
-                    facts.remove("form" + pair.getName());
+                    queryParameters.put(pair.getName(), pair.getValue());
                     facts.put("query:" + pair.getName(), pair.getValue());
                 });
+        Collections.list(request.getParameterNames()).stream()
+                .filter(key -> !queryParameters.containsKey(key))
+                .forEach((p) -> {
+                    logger.debug("Form: " + p + "=" + request.getParameter(p));
+                    facts.put("form:" + p, request.getParameter(p));
+                });
+
 
         try {
             //2: perform authentication
@@ -117,14 +119,19 @@ public class SpringStorageService {
             //verify md5
             final String md5 = facts.get("header:content-md5");
             boolean md5Enabled = isNotBlank(md5);
-            if (md5Enabled) sourceStream = verifyContentMd5(sourceStream, md5);
+            if (md5Enabled) {
+                logger.info("handle() md5Enabled=" + md5Enabled);
+                sourceStream = verifyContentMd5(sourceStream, md5);
+            }
             //parse streaming payload
 
             //verify sha256
             String sha256 = facts.get("header:x-amz-content-sha256");
             boolean sha256Enabled = isNotBlank(sha256) && !equalsAny(sha256, STREAMING_PAYLOAD, UNSIGNED_PAYLOAD);
-            if (sha256Enabled) sourceStream = verifyContentSha256(sourceStream, sha256, sha256Enabled);
-
+            if (sha256Enabled) {
+                logger.info("handle() sha256Enabled=" + sha256Enabled);
+                sourceStream = verifyContentSha256(sourceStream, sha256);
+            }
 
             //3.5 parse stream
             try (InputStream is = sourceStream) {
@@ -162,11 +169,25 @@ public class SpringStorageService {
         }
     }
 
-    private void writeResponse(HttpServletResponse response, Facts facts, Integer statusCode) {
-        response.setStatus(statusCode);
-        response.setContentType("application/xml; charset=utf-8");
-        response.setHeader("x-amz-request-id", facts.get("requestId"));
-        response.setHeader("x-amz-version-id", "1.0");
+    private void writeResponse(HttpServletResponse servletResponse, Facts facts, Integer statusCode) throws IOException {
+        logger.info("writeResponse() statusCode=" + statusCode);
+        logger.info("writeResponse() contentType=" + facts.get("contentType"));
+        logger.info("writeResponse() requestId=" + facts.get("requestId"));
+        logger.info("writeResponse() response=" + facts.get("response"));
+        servletResponse.setStatus(statusCode);
+        servletResponse.setContentType(facts.get("contentType"));
+        servletResponse.setHeader("x-amz-request-id", facts.get("requestId"));
+        servletResponse.setHeader("x-amz-version-id", "1.0");
+        Object response = facts.get("response");
+        if (response == null) {
+            return;
+        }
+        if (response instanceof InputStream) {
+            try (InputStream is = (InputStream) response) {
+                ByteStreams.copy(is, servletResponse.getOutputStream());
+            }
+        }
+        servletResponse.getWriter().write(response.toString());
     }
 
     private InputStream verifyContentMd5(InputStream sourceStream, String md5) {
@@ -186,8 +207,7 @@ public class SpringStorageService {
         return sourceStream;
     }
 
-    private InputStream verifyContentSha256(InputStream sourceStream, String sha256, boolean sha256Enabled) {
-        logger.info("handle() sha256Enabled=" + sha256Enabled);
+    private InputStream verifyContentSha256(InputStream sourceStream, String sha256) {
         HashingInputStream sha256Stream = new HashingInputStream(Hashing.sha256(), sourceStream);
         sourceStream = new InputStreamWrapper(sha256Stream) {
             @Override

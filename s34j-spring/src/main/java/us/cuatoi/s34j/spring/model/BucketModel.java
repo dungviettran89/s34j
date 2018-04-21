@@ -11,6 +11,7 @@ public class BucketModel {
     private String name;
     private long createdDate = System.currentTimeMillis();
     private String owner;
+    private String location;
 
     public String getName() {
         return name;
@@ -34,6 +35,14 @@ public class BucketModel {
 
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     @Override

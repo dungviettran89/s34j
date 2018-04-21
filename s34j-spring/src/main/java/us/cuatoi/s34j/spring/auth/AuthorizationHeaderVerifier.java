@@ -129,6 +129,7 @@ public class AuthorizationHeaderVerifier implements AuthenticationRule {
             return false;
         }
 
+        facts.put("region", region);
         facts.put("awsAccessKey", awsAccessKey);
         return true;
     }

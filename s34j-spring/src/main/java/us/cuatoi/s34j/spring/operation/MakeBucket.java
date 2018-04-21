@@ -33,11 +33,13 @@ public class MakeBucket implements ExecutionRule {
     @Action
     public void makeBucket(Facts facts,
                            @Fact("awsAccessKey") String awsAccessKey,
-                           @Fact("bucketName") String bucketName) {
+                           @Fact("bucketName") String bucketName,
+                           @Fact("region") String region) {
         BucketModel bucket = new BucketModel();
         bucket.setName(bucketName);
         bucket.setOwner(awsAccessKey);
         bucket.setCreatedDate(System.currentTimeMillis());
+        bucket.setLocation(region);
         bucketRepository.save(bucket);
         facts.put("statusCode", SC_OK);
     }
