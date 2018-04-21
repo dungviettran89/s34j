@@ -52,7 +52,7 @@ public class BlockSaver {
     private DeleteRepository deleteRepository;
     @Value("${s34j.sbs.initialBlockCount:1}")
     private int initialBlockCount;
-    @Value("${s34j.sbs.targetBlockCount:2}")
+    @Value("${s34j.sbs.targetBlockCount:3}")
     private int targetBlockCount;
     @Value("${s34j.sbs.BlockSaver.maxKeyToUpdatePerIteration:128}")
     private int maxKeyToUpdatePerIteration;
