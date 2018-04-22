@@ -18,9 +18,9 @@ import us.cuatoi.s34j.sbs.core.store.model.ConfigurationRepository;
 import us.cuatoi.s34j.sbs.core.store.model.InformationModel;
 import us.cuatoi.s34j.sbs.core.store.model.InformationRepository;
 
-import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -45,15 +45,14 @@ public class AvailabilityUpdater {
      */
     @Scheduled(cron = "0 */" + updateIntervalMinutes + " * * * *")
     @SchedulerLock(name = "AvailabilityUpdater", lockAtMostFor = (updateIntervalMinutes + 1) * 60 * 1000)
-    @PostConstruct
     @VisibleForTesting
     public void updateAll() {
         Iterable<ConfigurationModel> allStores = configurationRepository.findAll();
-        Set<String> checkedStores = Lists
-                .newArrayList(allStores)
-                .parallelStream()
-                .peek(this::updateOne)
-                .map(ConfigurationModel::getName)
+        List<InformationModel> updatedStores = Lists.newArrayList(allStores).parallelStream()
+                .map(this::updateOne).collect(Collectors.toList());
+        informationRepository.save(updatedStores);
+        Set<String> checkedStores = updatedStores.stream()
+                .map(InformationModel::getName)
                 .collect(Collectors.toSet());
         logger.info("updateAvailability() updatedCount=" + checkedStores.size());
 
@@ -70,7 +69,7 @@ public class AvailabilityUpdater {
 
     }
 
-    private void updateOne(ConfigurationModel config) {
+    private InformationModel updateOne(ConfigurationModel config) {
         logger.info("updateAvailability() config=" + config);
         Preconditions.checkNotNull(config);
         String name = config.getName();
@@ -109,8 +108,8 @@ public class AvailabilityUpdater {
         info.setAvailableBytes(availableBytes);
         info.setActive(active);
         info.setLatency(watch.elapsed(TimeUnit.MILLISECONDS));
-        informationRepository.save(info);
         logger.info("updateAvailability(" + name + ") info=" + info);
+        return info;
     }
 
     private long getUsedBytes(String name) {
