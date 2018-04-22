@@ -12,6 +12,8 @@ import us.cuatoi.s34j.spring.model.BucketRepository;
 import us.cuatoi.s34j.spring.operation.ExecutionRule;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
 @Rule(name = "MakeBucket")
@@ -23,11 +25,14 @@ public class MakeBucket implements ExecutionRule {
     private BucketVerifier bucketVerifier;
 
     @Condition
-    public boolean shouldApply(
-            @Fact("PUT") boolean isPut,
-            @Fact("awsAccessKey") String awsAccessKey,
-            @Fact("bucketName") String bucketName) {
-        return bucketVerifier.verifyBucketName(bucketName) &&
+    public boolean shouldApply(Facts facts,
+                               @Fact("PUT") boolean isPut,
+                               @Fact("awsAccessKey") String awsAccessKey,
+                               @Fact("bucketName") String bucketName) {
+        return isPut &&
+                isBlank(facts.get("objectName")) &&
+                isNotBlank(awsAccessKey) &&
+                bucketVerifier.verifyBucketName(bucketName) &&
                 bucketVerifier.verifyBucketNotExist(bucketName);
     }
 

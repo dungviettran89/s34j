@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.spring.operation.bucket;
+package us.cuatoi.s34j.spring.operation;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +15,6 @@ import us.cuatoi.s34j.spring.dto.ListAllMyBucketsResultXml;
 import us.cuatoi.s34j.spring.dto.OwnerXml;
 import us.cuatoi.s34j.spring.helper.DateHelper;
 import us.cuatoi.s34j.spring.model.BucketRepository;
-import us.cuatoi.s34j.spring.operation.ExecutionRule;
 
 import java.util.Date;
 import java.util.List;
@@ -32,7 +31,7 @@ public class ListAllBuckets implements ExecutionRule {
 
     @Condition
     public boolean shouldRun(@Fact("GET") boolean isGet, @Fact("path") String path) {
-        return StringUtils.equalsIgnoreCase(path, "/");
+        return isGet && StringUtils.equalsIgnoreCase(path, "/");
     }
 
     @Action

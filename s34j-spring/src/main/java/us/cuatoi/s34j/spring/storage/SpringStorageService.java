@@ -62,13 +62,18 @@ public class SpringStorageService {
         facts.put("method", request.getMethod());
         facts.put(request.getMethod(), true);
         String path = StringUtils.trimToEmpty(request.getPathInfo());
+        logger.info("handle(): path=" + path);
         facts.put("path", path);
         String bucketName = path.substring(1);
+        logger.info("handle(): bucketName=" + bucketName);
         if (bucketName.length() > 0) {
             int firstSlashIndex = bucketName.indexOf('/');
             if (firstSlashIndex > 0) {
                 bucketName = bucketName.substring(0, firstSlashIndex);
-                facts.put("objectName", bucketName.substring(firstSlashIndex + 1));
+                String objectName = path.substring(firstSlashIndex + 1);
+                facts.put("objectName", objectName);
+                logger.info("handle(): objectName=" + objectName);
+
             }
             facts.put("bucketName", bucketName);
         }

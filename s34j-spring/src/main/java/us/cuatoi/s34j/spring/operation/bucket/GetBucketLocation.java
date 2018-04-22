@@ -9,14 +9,15 @@ import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.dto.LocationConstraintXml;
 import us.cuatoi.s34j.spring.model.BucketModel;
 import us.cuatoi.s34j.spring.model.BucketRepository;
-import us.cuatoi.s34j.spring.operation.ExecutionRule;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.http.HttpStatus.SC_OK;
 import static us.cuatoi.s34j.spring.SpringStorageConstants.CONTENT_TYPE;
 
 @Service
 @Rule(name = "GetBucketLocation")
-public class GetBucketLocation implements ExecutionRule {
+public class GetBucketLocation extends AbstractBucketRule {
     public static final Logger logger = LoggerFactory.getLogger(GetBucketLocation.class);
     @Autowired
     private BucketRepository bucketRepository;
@@ -25,7 +26,7 @@ public class GetBucketLocation implements ExecutionRule {
 
     @Priority
     public int priority() {
-        return 10;
+        return 100;
     }
 
     @Condition
@@ -33,7 +34,7 @@ public class GetBucketLocation implements ExecutionRule {
             @Fact("GET") boolean isGet,
             @Fact("query:location") String location,
             @Fact("bucketName") String bucketName) {
-        return bucketVerifier.verifyBucketExists(bucketName);
+        return isGet && isNotBlank(bucketName) && isBlank(location);
     }
 
 

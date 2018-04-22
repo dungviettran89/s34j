@@ -14,11 +14,12 @@ import us.cuatoi.s34j.spring.model.BucketModel;
 import us.cuatoi.s34j.spring.model.BucketRepository;
 import us.cuatoi.s34j.spring.model.DeletedBucketModel;
 import us.cuatoi.s34j.spring.model.DeletedBucketRepository;
-import us.cuatoi.s34j.spring.operation.ExecutionRule;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
 @Rule(name = "DeleteBucket")
-public class DeleteBucket implements ExecutionRule {
+public class DeleteBucket extends AbstractBucketRule {
 
     public static final Logger logger = LoggerFactory.getLogger(DeleteBucket.class);
     @Autowired
@@ -29,9 +30,10 @@ public class DeleteBucket implements ExecutionRule {
     private BucketVerifier bucketVerifier;
 
     @Condition
-    public boolean isDeleting(@Fact("DELETE") boolean isDeleting,
+    public boolean isDeleting(@Fact("DELETE") boolean isDelete,
                               @Fact("bucketName") String bucketName) {
-        return bucketVerifier.verifyBucketExists(bucketName);
+        return isDelete && isNotBlank(bucketName);
+
     }
 
     @Action
