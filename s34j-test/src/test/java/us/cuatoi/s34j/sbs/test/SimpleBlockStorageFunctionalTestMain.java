@@ -20,6 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
@@ -43,49 +44,46 @@ public class SimpleBlockStorageFunctionalTestMain {
         }).start();
     }
 
-    private static void functionalTest(String[] args) throws IOException {
-        testOne();
-        IntStream.range(0, 5).parallel().forEach((i) -> {
-            try {
-                testOne();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+    private static void functionalTest(String[] args) {
+        IntStream.range(0, 8).parallel().forEach((i) -> testOne());
     }
 
-    private static void testOne() throws IOException {
-        String baseUrl = "http://localhost:19000/blocks/";
-        String testKey = UUID.randomUUID().toString();
-        HttpURLConnection save = (HttpURLConnection) new URL(baseUrl + testKey).openConnection();
-        save.setRequestMethod("PUT");
-        save.setDoInput(true);
-        save.setDoOutput(true);
-        save.connect();
-        HashFunction hashFunction = Hashing.goodFastHash(32);
-        HashingOutputStream saveHash = new HashingOutputStream(hashFunction, save.getOutputStream());
-        try (OutputStreamWriter writer = new OutputStreamWriter(saveHash)) {
-            for (int i = 0; i < 1000; i++) {
-                writer.write(System.currentTimeMillis() + "-" + UUID.randomUUID().toString() + "\n");
+    private static void testOne() {
+        try {
+            String baseUrl = "http://localhost:19000/blocks/";
+            String testKey = UUID.randomUUID().toString();
+            HttpURLConnection save = (HttpURLConnection) new URL(baseUrl + testKey).openConnection();
+            save.setRequestMethod("PUT");
+            save.setDoInput(true);
+            save.setDoOutput(true);
+            save.connect();
+            HashFunction hashFunction = Hashing.goodFastHash(32);
+            HashingOutputStream saveHash = new HashingOutputStream(hashFunction, save.getOutputStream());
+            try (OutputStreamWriter writer = new OutputStreamWriter(saveHash, UTF_8)) {
+                for (int i = 0; i < 1000; i++) {
+                    writer.write(System.currentTimeMillis() + "-" + UUID.randomUUID().toString() + "\n");
+                }
             }
-        }
-        try (InputStream is = save.getInputStream()) {
-            ByteStreams.copy(is, ByteStreams.nullOutputStream());
-        }
-        save.disconnect();
+            try (InputStream is = save.getInputStream()) {
+                ByteStreams.copy(is, ByteStreams.nullOutputStream());
+            }
+            save.disconnect();
 
-        HttpURLConnection load = (HttpURLConnection) new URL(baseUrl + testKey).openConnection();
-        load.setRequestMethod("GET");
-        load.setDoInput(true);
-        load.setDoOutput(true);
-        load.connect();
-        try (HashingInputStream loadHash = new HashingInputStream(hashFunction, load.getInputStream())) {
-            ByteStreams.copy(loadHash, ByteStreams.nullOutputStream());
-            assertEquals(loadHash.hash().toString(), saveHash.hash().toString());
-        }
+            HttpURLConnection load = (HttpURLConnection) new URL(baseUrl + testKey).openConnection();
+            load.setRequestMethod("GET");
+            load.setDoInput(true);
+            load.setDoOutput(true);
+            load.connect();
+            try (HashingInputStream loadHash = new HashingInputStream(hashFunction, load.getInputStream())) {
+                ByteStreams.copy(loadHash, ByteStreams.nullOutputStream());
+                assertEquals(loadHash.hash().toString(), saveHash.hash().toString());
+            }
 
-        execute("DELETE", baseUrl + testKey);
-        execute("GET", baseUrl + "_status");
+            execute("DELETE", baseUrl + testKey);
+            execute("GET", baseUrl + "_status");
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private static void execute(String method, String url) throws IOException {
