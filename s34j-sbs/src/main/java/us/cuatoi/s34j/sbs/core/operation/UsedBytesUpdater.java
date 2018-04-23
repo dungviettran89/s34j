@@ -16,7 +16,6 @@ import us.cuatoi.s34j.sbs.core.store.model.BlockRepository;
 import us.cuatoi.s34j.sbs.core.store.model.InformationModel;
 import us.cuatoi.s34j.sbs.core.store.model.InformationRepository;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 
 @Service
@@ -35,7 +34,6 @@ public class UsedBytesUpdater {
 
     @Scheduled(cron = "0 */" + updateIntervalMinutes + " * * * *")
     @SchedulerLock(name = "UsedBytesUpdater", lockAtMostFor = (updateIntervalMinutes + 1) * 60 * 1000)
-    @PostConstruct
     public void update() {
         ArrayList<InformationModel> allInfo = Lists.newArrayList(informationRepository.findAll());
         logger.info("update() allInfo=" + allInfo);
