@@ -9,8 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import us.cuatoi.s34j.spring.storage.block.BlockStorageServerImpl;
 import us.cuatoi.s34j.test.TestHelper;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -46,6 +48,21 @@ public class SimpleBlockStorageFunctionalTestMain {
 
     private static void functionalTest(String[] args) {
         IntStream.range(0, 8).parallel().forEach((i) -> testOne());
+        IntStream.range(0, 8).parallel().forEach((i) -> testImpl());
+    }
+
+    private static void testImpl() {
+        try {
+            BlockStorageServerImpl server = new BlockStorageServerImpl("http://localhost:19000/blocks/");
+            byte[] testBytes = new byte[1024 * 1024];
+            String testKey = UUID.randomUUID().toString();
+            server.save(testKey, new ByteArrayInputStream(testBytes));
+            long length = ByteStreams.copy(server.load(testKey), ByteStreams.nullOutputStream());
+            assertEquals(testBytes.length, length);
+            server.delete(testKey);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private static void testOne() {
