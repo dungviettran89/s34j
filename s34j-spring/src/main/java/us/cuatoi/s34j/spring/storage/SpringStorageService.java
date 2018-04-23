@@ -23,13 +23,13 @@ import us.cuatoi.s34j.spring.dto.ErrorResponseXml;
 import us.cuatoi.s34j.spring.helper.InputStreamWrapper;
 import us.cuatoi.s34j.spring.helper.SplitOutputStream;
 import us.cuatoi.s34j.spring.operation.ExecutionRule;
+import us.cuatoi.s34j.spring.operation.bucket.BucketVerifier;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 
 import static java.lang.Boolean.TRUE;
@@ -49,61 +49,60 @@ public class SpringStorageService {
     private List<ExecutionRule> executionRules;
 
 
-    public void handle(HttpServletRequest request, HttpServletResponse response) throws URISyntaxException, IOException {
+    public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Preconditions.checkNotNull(request);
         Preconditions.checkNotNull(response);
 
         String requestId = UUID.randomUUID().toString();
         String serverId = "springStorageService";
-        //1: gather information
         Facts facts = new Facts();
-        facts.put("requestId", requestId);
-        facts.put("serverId", serverId);
-        facts.put("method", request.getMethod());
-        facts.put(request.getMethod(), true);
-        String path = StringUtils.trimToEmpty(request.getPathInfo());
-        logger.info("handle(): path=" + path);
-        facts.put("path", path);
-        String bucketName = path.substring(1);
-        logger.info("handle(): bucketName=" + bucketName);
-        if (bucketName.length() > 0) {
-            int firstSlashIndex = bucketName.indexOf('/');
-            if (firstSlashIndex > 0) {
-                bucketName = bucketName.substring(0, firstSlashIndex);
-                String objectName = path.substring(firstSlashIndex + 1);
-                facts.put("objectName", objectName);
-                logger.info("handle(): objectName=" + objectName);
-
-            }
-            facts.put("bucketName", bucketName);
-        }
-        Collections.list(request.getHeaderNames())
-                .forEach((h) -> {
-                    logger.debug("Header: " + h + "=" + request.getHeader(h));
-                    facts.put("header:" + h, request.getHeader(h));
-                });
-
-        Map<String, String> queryParameters = new HashMap<>();
-        String url = request.getRequestURL().toString();
-        if (isNotBlank(request.getQueryString())) {
-            url += "?" + request.getQueryString();
-        }
-        facts.put("url", url);
-        URLEncodedUtils.parse(new URI(url), UTF_8)
-                .forEach((pair) -> {
-                    logger.debug("Query: " + pair.getName() + "=" + pair.getValue());
-                    queryParameters.put(pair.getName(), pair.getValue());
-                    facts.put("query:" + pair.getName(), pair.getValue());
-                });
-        Collections.list(request.getParameterNames()).stream()
-                .filter(key -> !queryParameters.containsKey(key))
-                .forEach((p) -> {
-                    logger.debug("Form: " + p + "=" + request.getParameter(p));
-                    facts.put("form:" + p, request.getParameter(p));
-                });
-
-
         try {
+            //1: gather information
+            facts.put("requestId", requestId);
+            facts.put("serverId", serverId);
+            facts.put("method", request.getMethod());
+            facts.put(request.getMethod(), true);
+            String path = StringUtils.trimToEmpty(request.getPathInfo());
+            logger.info("handle(): path=" + path);
+            facts.put("path", path);
+            String bucketName = path.substring(1);
+            logger.info("handle(): bucketName=" + bucketName);
+            if (bucketName.length() > 0) {
+                int firstSlashIndex = bucketName.indexOf('/');
+                if (firstSlashIndex > 0) {
+                    bucketName = bucketName.substring(0, firstSlashIndex);
+                    String objectName = path.substring(firstSlashIndex + 1);
+                    facts.put("objectName", objectName);
+                    logger.info("handle(): objectName=" + objectName);
+                }
+                facts.put("bucketName", bucketName);
+                BucketVerifier.verifyBucketName(bucketName);
+            }
+            Collections.list(request.getHeaderNames())
+                    .forEach((h) -> {
+                        logger.debug("Header: " + h + "=" + request.getHeader(h));
+                        facts.put("header:" + h, request.getHeader(h));
+                    });
+
+            Map<String, String> queryParameters = new HashMap<>();
+            String url = request.getRequestURL().toString();
+            if (isNotBlank(request.getQueryString())) {
+                url += "?" + request.getQueryString();
+            }
+            facts.put("url", url);
+            URLEncodedUtils.parse(new URI(url), UTF_8)
+                    .forEach((pair) -> {
+                        logger.debug("Query: " + pair.getName() + "=" + pair.getValue());
+                        queryParameters.put(pair.getName(), pair.getValue());
+                        facts.put("query:" + pair.getName(), pair.getValue());
+                    });
+            Collections.list(request.getParameterNames()).stream()
+                    .filter(key -> !queryParameters.containsKey(key))
+                    .forEach((p) -> {
+                        logger.debug("Form: " + p + "=" + request.getParameter(p));
+                        facts.put("form:" + p, request.getParameter(p));
+                    });
+
             //2: perform authentication
             Rules authentication = new Rules();
             authenticationRules.forEach(authentication::register);
@@ -154,6 +153,12 @@ public class SpringStorageService {
             executionEngine.fire(execution, facts);
 
             //4: response
+            ErrorCode errorCode = facts.get("errorCode");
+            if (errorCode != null) {
+                writeError(response, facts, errorCode);
+                return;
+            }
+
             Integer statusCode = facts.get("statusCode");
             if (statusCode != null) {
                 writeResponse(response, facts, statusCode);
@@ -165,7 +170,11 @@ public class SpringStorageService {
             writeError(response, facts, storageException.getErrorCode());
         } catch (Exception unexpectedException) {
             logger.error("handle() unexpectedException" + unexpectedException, unexpectedException);
-            writeError(response, facts, ErrorCode.INTERNAL_ERROR);
+            ErrorCode error = ErrorCode.INTERNAL_ERROR;
+            if (unexpectedException.getCause() instanceof SpringStorageException) {
+                error = ((SpringStorageException) unexpectedException.getCause()).getErrorCode();
+            }
+            writeError(response, facts, error);
         } finally {
             //clean up
             List<InputStream> partsToCleanUp = facts.get("parts");

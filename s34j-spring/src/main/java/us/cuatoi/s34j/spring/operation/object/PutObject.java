@@ -41,7 +41,7 @@ public class PutObject extends AbstractBucketRule {
     @Autowired
     private BlockStorage blockStorage;
     @Autowired
-    private DeletedObjectRepository deletedObjectRepository;
+    private ObjectManager objectManager;
 
     @Condition
     public boolean shouldApply(
@@ -51,23 +51,12 @@ public class PutObject extends AbstractBucketRule {
         return isPut && isNotBlank(objectName) && isNotBlank(bucketName);
     }
 
-    @Action
+    @Action(order = 10)
     public void perform(Facts facts,
                         @Fact("parts") List<InputStream> parts,
                         @Fact("objectName") String objectName,
                         @Fact("bucketName") String bucketName) {
-        ObjectModel oldKey = objectRepository.findOneByObjectNameAndBucketName(objectName, bucketName);
-        if (oldKey != null) {
-            DeletedObjectModel oldVersionToDelete = new DeletedObjectModel();
-            oldVersionToDelete.setId(UUID.randomUUID().toString());
-            oldVersionToDelete.setObjectName(oldKey.getObjectName());
-            oldVersionToDelete.setBucketName(oldKey.getBucketName());
-            oldVersionToDelete.setVersionName(oldKey.getObjectVersion());
-            oldVersionToDelete.setDeleteDate(System.currentTimeMillis());
-            deletedObjectRepository.save(oldVersionToDelete);
-            objectRepository.delete(oldKey);
-        }
-
+        ObjectModel oldKey = objectManager.deleteCurrentVersion(objectName, bucketName);
         List<PartModel> partModels = parts.parallelStream()
                 .map(this::saveToBlock)
                 .collect(Collectors.toList());

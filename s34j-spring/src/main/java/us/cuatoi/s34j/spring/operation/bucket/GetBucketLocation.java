@@ -21,8 +21,6 @@ public class GetBucketLocation extends AbstractBucketRule {
     public static final Logger logger = LoggerFactory.getLogger(GetBucketLocation.class);
     @Autowired
     private BucketRepository bucketRepository;
-    @Autowired
-    private BucketVerifier bucketVerifier;
 
     @Priority
     public int priority() {

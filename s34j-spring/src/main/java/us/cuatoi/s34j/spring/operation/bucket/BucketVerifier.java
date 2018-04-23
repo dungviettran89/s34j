@@ -1,42 +1,15 @@
 package us.cuatoi.s34j.spring.operation.bucket;
 
-import org.jeasy.rules.annotation.Fact;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.SpringStorageException;
 import us.cuatoi.s34j.spring.dto.ErrorCode;
-import us.cuatoi.s34j.spring.model.BucketRepository;
-import us.cuatoi.s34j.spring.model.DeletedObjectRepository;
 
-@Service
 public class BucketVerifier {
 
     public static final Logger logger = LoggerFactory.getLogger(BucketVerifier.class);
-    @Autowired
-    private BucketRepository bucketRepository;
-    @Autowired
-    private DeletedObjectRepository deletedObjectRepository;
 
-    public boolean verifyBucketExists(@Fact("bucketName") String bucketName) {
-        if (bucketRepository.findOne(bucketName) == null) {
-            throw new SpringStorageException(ErrorCode.NO_SUCH_BUCKET);
-        }
-        return true;
-    }
-
-    public boolean verifyBucketNotExist(String name) {
-        if (bucketRepository.findOne(name) != null) {
-            throw new SpringStorageException(ErrorCode.BUCKET_ALREADY_EXISTS);
-        }
-        if (deletedObjectRepository.findByTypeAndBucketName("bucket", name) != null) {
-            throw new SpringStorageException(ErrorCode.BUCKET_ALREADY_EXISTS);
-        }
-        return true;
-    }
-
-    public boolean verifyBucketName(String name) {
+    public static boolean verifyBucketName(String name) {
         if (name == null) {
             throw new SpringStorageException(ErrorCode.INVALID_BUCKET_NAME);
         }

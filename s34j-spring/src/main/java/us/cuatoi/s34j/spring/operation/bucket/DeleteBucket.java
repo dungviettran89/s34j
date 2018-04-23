@@ -28,8 +28,6 @@ public class DeleteBucket extends AbstractBucketRule {
     private BucketRepository bucketRepository;
     @Autowired
     private DeletedObjectRepository deletedObjectRepository;
-    @Autowired
-    private BucketVerifier bucketVerifier;
 
     @Condition
     public boolean isDeleting(Facts facts,

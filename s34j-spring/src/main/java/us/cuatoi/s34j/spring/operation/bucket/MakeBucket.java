@@ -7,8 +7,11 @@ import org.jeasy.rules.annotation.Rule;
 import org.jeasy.rules.api.Facts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import us.cuatoi.s34j.spring.SpringStorageException;
+import us.cuatoi.s34j.spring.dto.ErrorCode;
 import us.cuatoi.s34j.spring.model.BucketModel;
 import us.cuatoi.s34j.spring.model.BucketRepository;
+import us.cuatoi.s34j.spring.model.DeletedObjectRepository;
 import us.cuatoi.s34j.spring.operation.ExecutionRule;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
@@ -22,18 +25,14 @@ public class MakeBucket implements ExecutionRule {
     @Autowired
     private BucketRepository bucketRepository;
     @Autowired
-    private BucketVerifier bucketVerifier;
+    private DeletedObjectRepository deletedObjectRepository;
 
     @Condition
     public boolean shouldApply(Facts facts,
                                @Fact("PUT") boolean isPut,
                                @Fact("awsAccessKey") String awsAccessKey,
                                @Fact("bucketName") String bucketName) {
-        return isPut &&
-                isBlank(facts.get("objectName")) &&
-                isNotBlank(awsAccessKey) &&
-                bucketVerifier.verifyBucketName(bucketName) &&
-                bucketVerifier.verifyBucketNotExist(bucketName);
+        return isPut && isBlank(facts.get("objectName")) && isNotBlank(awsAccessKey);
     }
 
     @Action
@@ -41,6 +40,16 @@ public class MakeBucket implements ExecutionRule {
                            @Fact("awsAccessKey") String awsAccessKey,
                            @Fact("bucketName") String bucketName,
                            @Fact("region") String region) {
+
+        if (bucketRepository.findOne(bucketName) != null) {
+            facts.put("errorCode", ErrorCode.BUCKET_ALREADY_EXISTS);
+            throw new SpringStorageException(ErrorCode.BUCKET_ALREADY_EXISTS);
+        }
+        if (deletedObjectRepository.findByTypeAndBucketName("bucket", bucketName) != null) {
+            facts.put("errorCode", ErrorCode.BUCKET_ALREADY_EXISTS);
+            throw new SpringStorageException(ErrorCode.BUCKET_ALREADY_EXISTS);
+        }
+
         BucketModel bucket = new BucketModel();
         bucket.setBucketName(bucketName);
         bucket.setOwner(awsAccessKey);
