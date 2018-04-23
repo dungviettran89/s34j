@@ -42,7 +42,7 @@ public class MakeBucket implements ExecutionRule {
                            @Fact("bucketName") String bucketName,
                            @Fact("region") String region) {
         BucketModel bucket = new BucketModel();
-        bucket.setName(bucketName);
+        bucket.setBucketName(bucketName);
         bucket.setOwner(awsAccessKey);
         bucket.setCreatedDate(System.currentTimeMillis());
         bucket.setLocation(region);

@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public class SplitOutputStream extends OutputStream {
     @SuppressWarnings("WeakerAccess")
-    public static final int DEFAULT_SPLIT_SIZE = 5 * 1024 * 1024;
+    public static final int DEFAULT_SPLIT_SIZE = 6 * 1024 * 1024;
     private static final Logger logger = LoggerFactory.getLogger(SplitOutputStream.class);
     private final long splitSize;
     private final String tempFileName;

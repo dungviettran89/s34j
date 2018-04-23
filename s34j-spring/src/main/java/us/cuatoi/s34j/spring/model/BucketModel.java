@@ -8,17 +8,17 @@ import javax.persistence.Entity;
 public class BucketModel {
     @org.springframework.data.annotation.Id
     @javax.persistence.Id
-    private String name;
+    private String bucketName;
     private long createdDate = System.currentTimeMillis();
     private String owner;
     private String location;
 
-    public String getName() {
-        return name;
+    public String getBucketName() {
+        return bucketName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
     }
 
     public long getCreatedDate() {

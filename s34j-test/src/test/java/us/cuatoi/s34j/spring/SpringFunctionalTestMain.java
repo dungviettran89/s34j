@@ -1,4 +1,4 @@
-package us.cuatoi.spring;
+package us.cuatoi.s34j.spring;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

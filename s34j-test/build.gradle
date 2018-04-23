@@ -1,4 +1,4 @@
-def isMongo = true
+def isMongo = false
 
 buildscript {
     ext {

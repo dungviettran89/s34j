@@ -41,7 +41,7 @@ import static us.cuatoi.s34j.spring.SpringStorageConstants.UNSIGNED_PAYLOAD;
 @Service
 public class SpringStorageService {
     private static final Logger logger = LoggerFactory.getLogger(SpringStorageService.class);
-    @Value("${s34j.spring.blockSizeBytes:10485760}")//10MB
+    @Value("${s34j.spring.blockSizeBytes:6291456}")//6MB
     private int blockSizeBytes;
     @Autowired
     private List<AuthenticationRule> authenticationRules;
@@ -163,6 +163,9 @@ public class SpringStorageService {
             writeError(response, facts, ErrorCode.NOT_IMPLEMENTED);
         } catch (SpringStorageException storageException) {
             writeError(response, facts, storageException.getErrorCode());
+        } catch (Exception unexpectedException) {
+            logger.error("handle() unexpectedException" + unexpectedException, unexpectedException);
+            writeError(response, facts, ErrorCode.INTERNAL_ERROR);
         } finally {
             //clean up
             List<InputStream> partsToCleanUp = facts.get("parts");
@@ -178,9 +181,11 @@ public class SpringStorageService {
         logger.info("writeResponse() contentType=" + facts.get("contentType"));
         logger.info("writeResponse() requestId=" + facts.get("requestId"));
         logger.info("writeResponse() response=" + facts.get("response"));
+        logger.info("writeResponse() objectVersion=" + facts.get("objectVersion"));
         servletResponse.setStatus(statusCode);
         servletResponse.setContentType(facts.get("contentType"));
         servletResponse.setHeader("x-amz-request-id", facts.get("requestId"));
+        servletResponse.setHeader("x-amz-version-id", facts.get("objectVersion"));
         servletResponse.setHeader("x-amz-version-id", "1.0");
         Object response = facts.get("response");
         if (response == null) {

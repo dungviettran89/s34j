@@ -5,16 +5,18 @@ import org.jeasy.rules.annotation.Condition;
 import org.jeasy.rules.annotation.Fact;
 import org.jeasy.rules.annotation.Rule;
 import org.jeasy.rules.api.Facts;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.model.BucketModel;
 import us.cuatoi.s34j.spring.model.BucketRepository;
-import us.cuatoi.s34j.spring.model.DeletedBucketModel;
-import us.cuatoi.s34j.spring.model.DeletedBucketRepository;
+import us.cuatoi.s34j.spring.model.DeletedObjectModel;
+import us.cuatoi.s34j.spring.model.DeletedObjectRepository;
 
+import java.util.UUID;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
@@ -25,26 +27,31 @@ public class DeleteBucket extends AbstractBucketRule {
     @Autowired
     private BucketRepository bucketRepository;
     @Autowired
-    private DeletedBucketRepository deletedBucketRepository;
+    private DeletedObjectRepository deletedObjectRepository;
     @Autowired
     private BucketVerifier bucketVerifier;
 
     @Condition
-    public boolean isDeleting(@Fact("DELETE") boolean isDelete,
+    public boolean isDeleting(Facts facts,
+                              @Fact("DELETE") boolean isDelete,
                               @Fact("bucketName") String bucketName) {
-        return isDelete && isNotBlank(bucketName);
+        return isDelete && isNotBlank(bucketName) && isBlank(facts.get("objectName"));
 
     }
 
-    @Action
+    @Action(order = 10)
     public void doDelete(Facts facts, @Fact("bucketName") String bucketName) {
         BucketModel bucketToDelete = bucketRepository.findOne(bucketName);
         logger.info("doDelete() bucketToDelete=" + bucketToDelete);
-        ModelMapper mapper = new ModelMapper();
-        DeletedBucketModel deletedBucket = mapper.map(bucketToDelete, DeletedBucketModel.class);
+
+        DeletedObjectModel deletedBucket = new DeletedObjectModel();
+        deletedBucket.setId(UUID.randomUUID().toString());
+        deletedBucket.setType("bucket");
+        deletedBucket.setBucketName(bucketToDelete.getBucketName());
         deletedBucket.setDeleteDate(System.currentTimeMillis());
-        deletedBucketRepository.save(deletedBucket);
         bucketRepository.delete(bucketToDelete);
+
+        deletedObjectRepository.save(deletedBucket);
         logger.info("doDelete() deletedBucket=" + deletedBucket);
         facts.put("statusCode", 200);
     }

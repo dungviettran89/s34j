@@ -1,11 +1,10 @@
-package us.cuatoi.spring;
+package us.cuatoi.s34j.spring;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import us.cuatoi.s34j.sbs.core.EnableSimpleBlockStorage;
 import us.cuatoi.s34j.sbs.test.TestConfigurator;
-import us.cuatoi.s34j.spring.EnableSpringStorageService;
 import us.cuatoi.s34j.spring.auth.AuthenticationProvider;
 import us.cuatoi.s34j.test.TestHelper;
 

@@ -40,7 +40,7 @@ public class ListAllBuckets implements ExecutionRule {
                 .map((b) -> {
                     Date createdDate = new Date(b.getCreatedDate());
                     BucketXml xml = new BucketXml();
-                    xml.setName(b.getName());
+                    xml.setName(b.getBucketName());
                     xml.setCreationDate(DateHelper.format(EXPIRATION_DATE_FORMAT, createdDate));
                     return xml;
                 })
