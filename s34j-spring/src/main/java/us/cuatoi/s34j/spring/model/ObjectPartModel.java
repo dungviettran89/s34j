@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import javax.persistence.Entity;
 
 @Entity
-public class PartModel {
+public class ObjectPartModel {
     @org.springframework.data.annotation.Id
     @javax.persistence.Id
     private String partName;

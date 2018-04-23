@@ -73,7 +73,7 @@ public class AuthorizationHeaderVerifier implements AuthenticationRule {
                 .filter((f) -> startsWith(f, "query:"))
                 .map((f) -> f + "=" + UrlEscapers.urlFormParameterEscaper().escape(facts.get(f)))
                 .map((f) -> replaceFirst(f, "query:", ""))
-                .sorted().collect(Collectors.joining(","));
+                .sorted().collect(Collectors.joining("&"));
         String canonicalHeader = facts.asMap().keySet().stream()
                 .filter((f) -> startsWith(f, "header:"))
                 .filter((f) -> signedHeaders.contains(replaceFirst(f, "header:", "")))

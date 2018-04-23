@@ -35,7 +35,7 @@ public class PutObject extends AbstractBucketRule {
     @Autowired
     private ObjectRepository objectRepository;
     @Autowired
-    private PartRepository partRepository;
+    private ObjectPartRepository objectPartRepository;
     @Autowired
     private PartMappingRepository partMappingRepository;
     @Autowired
@@ -57,10 +57,10 @@ public class PutObject extends AbstractBucketRule {
                         @Fact("objectName") String objectName,
                         @Fact("bucketName") String bucketName) {
         ObjectModel oldKey = objectManager.deleteCurrentVersion(objectName, bucketName);
-        List<PartModel> partModels = parts.parallelStream()
+        List<ObjectPartModel> objectPartModels = parts.parallelStream()
                 .map(this::saveToBlock)
                 .collect(Collectors.toList());
-        partRepository.save(partModels);
+        objectPartRepository.save(objectPartModels);
 
         String version = DateHelper.format(SpringStorageConstants.X_AMZ_DATE_FORMAT, new Date()) +
                 "-" + UUID.randomUUID().toString();
@@ -74,7 +74,7 @@ public class PutObject extends AbstractBucketRule {
 
         List<PartMappingModel> mappings = new ArrayList<>();
         int i = 0;
-        for (PartModel pm : partModels) {
+        for (ObjectPartModel pm : objectPartModels) {
             PartMappingModel pmm = new PartMappingModel();
             pmm.setMappingId(UUID.randomUUID().toString());
             pmm.setCreatedDate(System.currentTimeMillis());
@@ -96,10 +96,10 @@ public class PutObject extends AbstractBucketRule {
         logger.info("perform(): key=" + key);
     }
 
-    private PartModel saveToBlock(InputStream is) {
+    private ObjectPartModel saveToBlock(InputStream is) {
         String name = UUID.randomUUID().toString();
         try (InputStream i = is) {
-            PartModel model = new PartModel();
+            ObjectPartModel model = new ObjectPartModel();
             model.setPartName(name);
             model.setCreatedDate(System.currentTimeMillis());
             blockStorage.save(model.getPartName(), i);

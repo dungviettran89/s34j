@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 public class SpringStorageServlet extends HttpServlet {
 
@@ -22,7 +21,7 @@ public class SpringStorageServlet extends HttpServlet {
     protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             springStorageService.handle(request, response);
-        } catch (URISyntaxException unexpectedError) {
+        } catch (Exception unexpectedError) {
             logger.error("service() unexpectedError=" + unexpectedError, unexpectedError);
             throw new IOException(unexpectedError);
         }
