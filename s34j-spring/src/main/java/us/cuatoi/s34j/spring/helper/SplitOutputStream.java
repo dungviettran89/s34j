@@ -4,6 +4,7 @@ package us.cuatoi.s34j.spring.helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,7 +24,7 @@ public class SplitOutputStream extends OutputStream {
     private long totalBytes = 0;
     private long currentBytes = 0;
     private List<Path> parts = new ArrayList<Path>();
-    private List<OutputStream> outputStreams = new ArrayList<>();
+    private List<BufferedOutputStream> outputStreams = new ArrayList<>();
     private boolean closed = false;
 
 
@@ -44,6 +45,9 @@ public class SplitOutputStream extends OutputStream {
     public void write(int b) throws IOException {
         OutputStream currentOutput = null;
         if (parts.size() == 0 || currentBytes >= splitSize) {
+            if (parts.size() > 0) {
+                outputStreams.get(outputStreams.size() - 1).flush();
+            }
             currentOutput = newPart();
             currentBytes = 0;
         } else {
@@ -58,7 +62,7 @@ public class SplitOutputStream extends OutputStream {
         Path part = Files.createTempFile(tempFileName + "-" + parts.size() + "-", ".tmp");
         logger.info("newPart() part=" + part);
         parts.add(part);
-        OutputStream outputStream = Files.newOutputStream(part);
+        BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(part));
         outputStreams.add(outputStream);
         return outputStream;
     }

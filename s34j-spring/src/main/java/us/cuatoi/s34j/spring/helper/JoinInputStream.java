@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -60,7 +61,7 @@ public class JoinInputStream extends InputStream {
         int read = currentStream.read();
         if (read < 0 && nextStream != null) {
             try {
-                currentStream = nextStream.get();
+                currentStream = new BufferedInputStream(nextStream.get());
             } catch (Exception nextStreamError) {
                 handleError(nextStreamError);
             }
