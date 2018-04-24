@@ -10,7 +10,6 @@ import us.cuatoi.s34j.spring.dto.LocationConstraintXml;
 import us.cuatoi.s34j.spring.model.BucketModel;
 import us.cuatoi.s34j.spring.model.BucketRepository;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.http.HttpStatus.SC_OK;
 import static us.cuatoi.s34j.spring.SpringStorageConstants.CONTENT_TYPE;
@@ -32,7 +31,7 @@ public class GetBucketLocation extends AbstractBucketRule {
             @Fact("GET") boolean isGet,
             @Fact("query:location") String location,
             @Fact("bucketName") String bucketName) {
-        return isGet && isNotBlank(bucketName) && isBlank(location);
+        return isGet && isNotBlank(bucketName) && location != null;
     }
 
 

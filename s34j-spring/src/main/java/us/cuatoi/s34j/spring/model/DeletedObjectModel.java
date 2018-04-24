@@ -9,19 +9,19 @@ import java.util.UUID;
 public class DeletedObjectModel {
     @org.springframework.data.annotation.Id
     @javax.persistence.Id
-    private String id = UUID.randomUUID().toString();
+    private String deleteId = UUID.randomUUID().toString();
     private long deleteDate = System.currentTimeMillis();
     private String type;
     private String bucketName;
     private String objectName;
     private String versionName;
 
-    public String getId() {
-        return id;
+    public String getDeleteId() {
+        return deleteId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setDeleteId(String deleteId) {
+        this.deleteId = deleteId;
     }
 
     public long getDeleteDate() {

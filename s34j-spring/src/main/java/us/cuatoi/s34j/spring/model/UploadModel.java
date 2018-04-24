@@ -1,17 +1,19 @@
 package us.cuatoi.s34j.spring.model;
 
 import com.google.gson.Gson;
+import org.springframework.data.annotation.Id;
 
 import javax.persistence.Entity;
 
 @Entity
 public class UploadModel {
-    @org.springframework.data.annotation.Id
+    @Id
     @javax.persistence.Id
     private String uploadId;
     private long createdDate = System.currentTimeMillis();
     private String bucketName;
     private String objectName;
+    private String owner;
 
     public String getUploadId() {
         return uploadId;
@@ -43,6 +45,14 @@ public class UploadModel {
 
     public void setObjectName(String objectName) {
         this.objectName = objectName;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     @Override

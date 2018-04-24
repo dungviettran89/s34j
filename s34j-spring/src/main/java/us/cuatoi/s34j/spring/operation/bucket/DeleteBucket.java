@@ -43,7 +43,7 @@ public class DeleteBucket extends AbstractBucketRule {
         logger.info("doDelete() bucketToDelete=" + bucketToDelete);
 
         DeletedObjectModel deletedBucket = new DeletedObjectModel();
-        deletedBucket.setId(UUID.randomUUID().toString());
+        deletedBucket.setDeleteId(UUID.randomUUID().toString());
         deletedBucket.setType("bucket");
         deletedBucket.setBucketName(bucketToDelete.getBucketName());
         deletedBucket.setDeleteDate(System.currentTimeMillis());

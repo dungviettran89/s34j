@@ -65,11 +65,10 @@ public class PutObject extends AbstractBucketRule {
         String version = DateHelper.format(SpringStorageConstants.X_AMZ_DATE_FORMAT, new Date()) +
                 "-" + UUID.randomUUID().toString();
         final ObjectModel key = new ObjectModel();
-        key.setObjectId(UUID.randomUUID().toString());
+        key.setObjectId(version);
         key.setObjectName(objectName);
         key.setCreatedDate(System.currentTimeMillis());
         key.setBucketName(bucketName);
-        key.setObjectVersion(version);
         objectRepository.save(key);
 
         List<PartMappingModel> mappings = new ArrayList<>();
@@ -87,11 +86,11 @@ public class PutObject extends AbstractBucketRule {
         }
         partMappingRepository.save(mappings);
         facts.put("statusCode", 200);
-        facts.put("objectVersion", key.getObjectVersion());
+        facts.put("objectVersion", key.getObjectId());
         logger.info("perform(): parts.size=" + parts.size());
         logger.info("perform(): objectName=" + objectName);
         logger.info("perform(): bucketName=" + bucketName);
-        logger.info("perform(): version=" + key.getObjectVersion());
+        logger.info("perform(): version=" + key.getObjectId());
         logger.info("perform(): oldKey=" + oldKey);
         logger.info("perform(): key=" + key);
     }

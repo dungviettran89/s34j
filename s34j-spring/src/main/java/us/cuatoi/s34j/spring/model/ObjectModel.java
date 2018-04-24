@@ -12,15 +12,6 @@ public class ObjectModel {
     private long createdDate = System.currentTimeMillis();
     private String bucketName;
     private String objectName;
-    private String objectVersion;
-
-    public String getObjectId() {
-        return objectId;
-    }
-
-    public void setObjectId(String objectId) {
-        this.objectId = objectId;
-    }
 
     public long getCreatedDate() {
         return createdDate;
@@ -46,12 +37,12 @@ public class ObjectModel {
         this.objectName = objectName;
     }
 
-    public String getObjectVersion() {
-        return objectVersion;
+    public String getObjectId() {
+        return objectId;
     }
 
-    public void setObjectVersion(String objectVersion) {
-        this.objectVersion = objectVersion;
+    public void setObjectId(String objectId) {
+        this.objectId = objectId;
     }
 
     @Override

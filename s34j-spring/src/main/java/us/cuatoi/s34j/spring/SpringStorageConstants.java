@@ -14,4 +14,5 @@ public class SpringStorageConstants {
     public static final String SCOPE_DATE_FORMAT = "yyyyMMdd";
 
     public static final String CONTENT_TYPE = "application/xml; charset=utf-8";
+    public static final String STORAGE_CLASS = "STANDARD";
 }

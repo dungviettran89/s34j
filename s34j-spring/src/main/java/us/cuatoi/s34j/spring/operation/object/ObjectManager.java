@@ -23,10 +23,10 @@ public class ObjectManager {
         ObjectModel keyToDelete = objectRepository.findOneByObjectNameAndBucketName(objectName, bucketName);
         if (keyToDelete != null) {
             DeletedObjectModel oldVersionToDelete = new DeletedObjectModel();
-            oldVersionToDelete.setId(UUID.randomUUID().toString());
+            oldVersionToDelete.setDeleteId(UUID.randomUUID().toString());
             oldVersionToDelete.setObjectName(keyToDelete.getObjectName());
             oldVersionToDelete.setBucketName(keyToDelete.getBucketName());
-            oldVersionToDelete.setVersionName(keyToDelete.getObjectVersion());
+            oldVersionToDelete.setVersionName(keyToDelete.getObjectId());
             oldVersionToDelete.setDeleteDate(System.currentTimeMillis());
             deletedObjectRepository.save(oldVersionToDelete);
             objectRepository.delete(keyToDelete);

@@ -17,12 +17,13 @@ public abstract class AbstractBucketRule implements ExecutionRule {
     @Autowired
     private BucketRepository bucketRepository;
 
-    @Action
+    @Action(order = -1)
     public void verifyBucketExists(Facts facts, @Fact("bucketName") String bucketName) {
         if (bucketRepository.findOne(bucketName) == null) {
+            logger.warn("verifyBucketExists() bucketName=" + bucketName);
+            logger.warn("verifyBucketExists() errorCode=" + NO_SUCH_BUCKET);
             facts.put("errorCode", NO_SUCH_BUCKET);
             throw new SpringStorageException(NO_SUCH_BUCKET);
         }
-        logger.info("verifyBucketExists() bucketNotExists=" + bucketName);
     }
 }
