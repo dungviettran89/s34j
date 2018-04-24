@@ -9,16 +9,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import us.cuatoi.s34j.spring.dto.ErrorCode;
-import us.cuatoi.s34j.spring.model.ObjectRepository;
-import us.cuatoi.s34j.spring.operation.ObjectManager;
+import us.cuatoi.s34j.spring.model.*;
 import us.cuatoi.s34j.spring.operation.bucket.AbstractBucketRule;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static us.cuatoi.s34j.spring.VersionHelper.newVersion;
 
 @Service
 @Rule(name = "PutObject")
@@ -29,24 +29,53 @@ public class PutObject extends AbstractBucketRule {
     private ObjectRepository objectRepository;
     @Autowired
     private ObjectManager objectManager;
+    @Autowired
+    private PartManager partManager;
+    @Autowired
+    private PartRepository partRepository;
+
     @Condition
     public boolean shouldApply(Facts facts,
                                @Fact("PUT") boolean isPut,
+                               @Fact("parts") List<InputStream> parts,
                                @Fact("objectName") String objectName,
                                @Fact("bucketName") String bucketName) {
         return isPut &&
                 isNotBlank(objectName) &&
                 isNotBlank(bucketName) &&
+                parts.size() > 0 &&
                 isBlank(facts.get("query:uploadId"));
     }
 
     @Action(order = 10)
-    public void perform(Facts facts,
-                        @Fact("parts") List<InputStream> parts,
-                        @Fact("objectName") String objectName,
-                        @Fact("bucketName") String bucketName) {
+    public void putObject(Facts facts,
+                          @Fact("parts") List<InputStream> parts,
+                          @Fact("objectName") String objectName,
+                          @Fact("bucketName") String bucketName) {
         objectManager.deleteCurrentVersionIfExists(objectName, bucketName);
-        facts.put("errorCode", ErrorCode.NOT_IMPLEMENTED);
+        String newVersion = newVersion();
+        int partOrder = 1;
+        ArrayList<PartModel> partModels = new ArrayList<>();
+        for (String name : partManager.savePart(parts)) {
+            PartModel model = new PartModel();
+            model.setPartName(name);
+            model.setObjectVersion(newVersion);
+            model.setObjectName(objectName);
+            model.setBucketName(bucketName);
+            model.setPartOrder(partOrder++);
+            model.setPartId(newVersion());
+            partModels.add(model);
+        }
+        partRepository.save(partModels);
+        ObjectModel objectModel = new ObjectModel();
+        objectModel.setBucketName(bucketName);
+        objectModel.setObjectName(objectName);
+        objectModel.setObjectVersion(newVersion);
+        objectModel.setCreatedDate(System.currentTimeMillis());
+        objectRepository.save(objectModel);
+        facts.put("statusCode", 200);
+        logger.info("putObject() objectModel=" + objectModel);
+        logger.info("putObject() partModels=" + partModels);
     }
 
 

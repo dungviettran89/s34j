@@ -71,7 +71,7 @@ public class SpringStorageService {
                 int firstSlashIndex = bucketName.indexOf('/');
                 if (firstSlashIndex > 0) {
                     bucketName = bucketName.substring(0, firstSlashIndex);
-                    String objectName = path.substring(firstSlashIndex + 1);
+                    String objectName = path.substring(firstSlashIndex + 2);
                     facts.put("objectName", objectName);
                     logger.info("handle(): objectName=" + objectName);
                 }

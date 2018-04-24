@@ -12,6 +12,24 @@ public class UploadPartModel {
     private long createdDate = System.currentTimeMillis();
     private String uploadId;
     private int uploadPartOrder;
+    private String objectName;
+    private String bucketName;
+
+    public String getObjectName() {
+        return objectName;
+    }
+
+    public void setObjectName(String objectName) {
+        this.objectName = objectName;
+    }
+
+    public String getBucketName() {
+        return bucketName;
+    }
+
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
+    }
 
     public String getUploadPartId() {
         return uploadPartId;

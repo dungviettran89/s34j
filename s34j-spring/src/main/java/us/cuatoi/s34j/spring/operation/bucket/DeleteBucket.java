@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.model.*;
-import us.cuatoi.s34j.spring.operation.PartManager;
 
 import java.util.List;
 
@@ -54,7 +53,7 @@ public class DeleteBucket extends AbstractBucketRule {
         uploadRepository.deleteByBucketName(bucketName);
         uploadPartRepository.deleteByBucketName(bucketName);
         List<PartModel> parts = partRepository.findAllByBucketName(bucketName);
-        partManager.delete(parts);
+        partManager.deletePart(parts);
         facts.put("statusCode", 200);
     }
 }

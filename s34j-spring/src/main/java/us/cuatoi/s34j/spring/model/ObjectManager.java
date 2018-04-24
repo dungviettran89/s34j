@@ -1,13 +1,9 @@
-package us.cuatoi.s34j.spring.operation;
+package us.cuatoi.s34j.spring.model;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import us.cuatoi.s34j.spring.model.ObjectModel;
-import us.cuatoi.s34j.spring.model.ObjectRepository;
-import us.cuatoi.s34j.spring.model.PartModel;
-import us.cuatoi.s34j.spring.model.PartRepository;
 
 import java.util.List;
 
@@ -25,7 +21,7 @@ public class ObjectManager {
         ObjectModel deletedVersion = objectRepository.findOneByObjectNameAndBucketName(objectName, bucketName);
         if (deletedVersion != null) {
             List<PartModel> deletedParts = partRepository.findAllByObjectVersion(deletedVersion.getObjectVersion());
-            partManager.delete(deletedParts);
+            partManager.deletePart(deletedParts);
             objectRepository.delete(deletedVersion);
             logger.info("deleteCurrentVersionIfExists() deletedVersion=" + deletedVersion);
             logger.info("deleteCurrentVersionIfExists() deletedParts=" + deletedParts);

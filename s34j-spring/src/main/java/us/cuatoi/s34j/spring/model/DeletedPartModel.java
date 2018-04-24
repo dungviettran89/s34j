@@ -1,5 +1,7 @@
 package us.cuatoi.s34j.spring.model;
 
+import com.google.gson.Gson;
+
 import javax.persistence.Entity;
 
 @Entity
@@ -32,5 +34,10 @@ public class DeletedPartModel {
 
     public void setDeletedDate(long deletedDate) {
         this.deletedDate = deletedDate;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + new Gson().toJson(this);
     }
 }

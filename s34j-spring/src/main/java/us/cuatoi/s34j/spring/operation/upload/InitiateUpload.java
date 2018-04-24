@@ -39,8 +39,8 @@ public class InitiateUpload extends AbstractBucketRule {
     }
 
     @Action
-    public void apply(Facts facts, @Fact("bucketName") String bucketName,
-                      @Fact("objectName") String objectName, @Fact("awsAccessKey") String awsAccessKey) {
+    public void initiateUpload(Facts facts, @Fact("bucketName") String bucketName,
+                               @Fact("objectName") String objectName, @Fact("awsAccessKey") String awsAccessKey) {
         String uploadId = DateHelper.format(SpringStorageConstants.X_AMZ_DATE_FORMAT, new Date()) +
                 "-" + UUID.randomUUID().toString();
         BucketModel bucket = bucketRepository.findOne(bucketName);
@@ -60,11 +60,8 @@ public class InitiateUpload extends AbstractBucketRule {
         response.setUploadId(uploadId);
         facts.put("statusCode", 200);
         facts.put("response", response);
-        logger.info("apply() bucketName=" + bucketName);
-        logger.info("apply() objectName=" + objectName);
-        logger.info("apply() uploadId=" + uploadId);
-        logger.info("apply() model=" + model);
-        logger.info("apply() response=" + response);
+        logger.info("initiateUpload() model=" + model);
+        logger.info("initiateUpload() response=" + response);
     }
 
 }
