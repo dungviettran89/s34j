@@ -13,7 +13,7 @@ import us.cuatoi.s34j.spring.dto.BucketXml;
 import us.cuatoi.s34j.spring.dto.BucketsXml;
 import us.cuatoi.s34j.spring.dto.ListAllMyBucketsResultXml;
 import us.cuatoi.s34j.spring.dto.OwnerXml;
-import us.cuatoi.s34j.spring.helper.DateHelper;
+import us.cuatoi.s34j.spring.helper.StorageHelper;
 import us.cuatoi.s34j.spring.model.BucketRepository;
 
 import java.util.Date;
@@ -41,7 +41,7 @@ public class ListAllBuckets implements ExecutionRule {
                     Date createdDate = new Date(b.getCreatedDate());
                     BucketXml xml = new BucketXml();
                     xml.setName(b.getBucketName());
-                    xml.setCreationDate(DateHelper.format(EXPIRATION_DATE_FORMAT, createdDate));
+                    xml.setCreationDate(StorageHelper.format(EXPIRATION_DATE_FORMAT, createdDate));
                     return xml;
                 })
                 .collect(Collectors.toList());

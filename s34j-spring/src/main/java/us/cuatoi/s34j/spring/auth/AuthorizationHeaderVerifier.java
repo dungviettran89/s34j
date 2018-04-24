@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.SpringStorageConstants;
 import us.cuatoi.s34j.spring.SpringStorageException;
 import us.cuatoi.s34j.spring.dto.ErrorCode;
-import us.cuatoi.s34j.spring.helper.DateHelper;
+import us.cuatoi.s34j.spring.helper.StorageHelper;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -119,7 +119,7 @@ public class AuthorizationHeaderVerifier implements AuthenticationRule {
         }
 
         try {
-            Date date = DateHelper.parse(X_AMZ_DATE_FORMAT, xAmzDate);
+            Date date = StorageHelper.parse(X_AMZ_DATE_FORMAT, xAmzDate);
             if (System.currentTimeMillis() - date.getTime() > TimeUnit.SECONDS.toMillis(maxRequestTimeDifferentInSeconds)) {
                 facts.put("errorCode", ErrorCode.REQUEST_TIME_TOO_SKEWED);
                 return false;

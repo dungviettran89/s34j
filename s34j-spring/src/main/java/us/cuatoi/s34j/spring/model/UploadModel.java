@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.springframework.data.annotation.Id;
 
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 
 @Entity
 public class UploadModel {
@@ -16,6 +17,10 @@ public class UploadModel {
     private String objectNamePrefix;
     private String owner;
     private String initiator;
+    @Lob
+    private String headerJson;
+    @Lob
+    private String aclJson;
 
     public String getUploadId() {
         return uploadId;
@@ -63,6 +68,22 @@ public class UploadModel {
 
     public void setInitiator(String initiator) {
         this.initiator = initiator;
+    }
+
+    public String getHeaderJson() {
+        return headerJson;
+    }
+
+    public void setHeaderJson(String headerJson) {
+        this.headerJson = headerJson;
+    }
+
+    public String getAclJson() {
+        return aclJson;
+    }
+
+    public void setAclJson(String aclJson) {
+        this.aclJson = aclJson;
     }
 
     @Override

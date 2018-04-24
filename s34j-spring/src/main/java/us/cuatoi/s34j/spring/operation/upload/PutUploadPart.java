@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static us.cuatoi.s34j.spring.StorageHelper.newVersion;
+import static us.cuatoi.s34j.spring.helper.StorageHelper.newVersion;
 
 @Service
 @Rule(name = "PutUploadPart")

@@ -8,7 +8,7 @@ import org.jeasy.rules.api.Facts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.SpringStorageConstants;
-import us.cuatoi.s34j.spring.helper.DateHelper;
+import us.cuatoi.s34j.spring.helper.StorageHelper;
 import us.cuatoi.s34j.spring.model.ObjectModel;
 import us.cuatoi.s34j.spring.model.ObjectRepository;
 
@@ -39,6 +39,6 @@ public class HeadObject extends AbstractObjectRule {
         facts.put("statusCode", 200);
         facts.put("responseHeader:contentLength", objectModel.getLength());
         facts.put("responseHeader:Last-Modified",
-                DateHelper.format(SpringStorageConstants.HTTP_HEADER_DATE_FORMAT, new Date(objectModel.getCreatedDate())));
+                StorageHelper.format(SpringStorageConstants.HTTP_HEADER_DATE_FORMAT, new Date(objectModel.getCreatedDate())));
     }
 }

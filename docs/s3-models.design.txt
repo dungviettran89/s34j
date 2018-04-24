@@ -11,8 +11,9 @@ Object : objectVersion = PK
 Object : bucketName = String
 Object : objectName = String
 Object : createdDate = long
-Object : contentType = String
 Object : length = long
+Object : headersJson = jsonMap
+Object : aclJson = jsonMap
 
 Object --o Part
 
@@ -34,7 +35,8 @@ DeletedPart : deletedDate = long
 Upload : uploadId = PK
 Upload : bucketName = String
 Upload : objectName = String
-Upload : contentType = String
+Upload : headersJson = jsonMap
+Upload : aclJson = jsonMap
 
 Upload -> Object
 Upload --o UploadPart

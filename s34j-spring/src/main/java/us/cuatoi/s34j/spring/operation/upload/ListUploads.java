@@ -14,7 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.SpringStorageConstants;
 import us.cuatoi.s34j.spring.dto.*;
-import us.cuatoi.s34j.spring.helper.DateHelper;
+import us.cuatoi.s34j.spring.helper.StorageHelper;
 import us.cuatoi.s34j.spring.model.UploadModel;
 import us.cuatoi.s34j.spring.model.UploadRepository;
 import us.cuatoi.s34j.spring.operation.bucket.AbstractBucketRule;
@@ -79,7 +79,7 @@ public class ListUploads extends AbstractBucketRule {
                 UploadXml xml = new UploadXml();
                 xml.setObjectName(m.getObjectName());
                 xml.setStorageClass(SpringStorageConstants.STORAGE_CLASS);
-                xml.setInitiated(DateHelper.format(EXPIRATION_DATE_FORMAT, new Date(m.getCreatedDate())));
+                xml.setInitiated(StorageHelper.format(EXPIRATION_DATE_FORMAT, new Date(m.getCreatedDate())));
                 xml.setUploadId(m.getUploadId());
                 xml.setOwner(owner);
                 xml.setInitiator(initiator);

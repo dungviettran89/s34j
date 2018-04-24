@@ -11,11 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.SpringStorageException;
-import us.cuatoi.s34j.spring.StorageHelper;
 import us.cuatoi.s34j.spring.dto.CompleteMultipartUploadResultXml;
 import us.cuatoi.s34j.spring.dto.CompleteMultipartUploadXml;
 import us.cuatoi.s34j.spring.dto.ErrorCode;
 import us.cuatoi.s34j.spring.dto.PartXml;
+import us.cuatoi.s34j.spring.helper.StorageHelper;
 import us.cuatoi.s34j.spring.model.*;
 
 import java.io.InputStream;

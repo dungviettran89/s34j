@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-import static us.cuatoi.s34j.spring.StorageHelper.newVersion;
+import static us.cuatoi.s34j.spring.helper.StorageHelper.newVersion;
 
 @Service
 public class PartManager {

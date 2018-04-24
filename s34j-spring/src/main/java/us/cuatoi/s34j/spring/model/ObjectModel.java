@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.springframework.data.annotation.Id;
 
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 
 @Entity
 public class ObjectModel {
@@ -14,6 +15,10 @@ public class ObjectModel {
     private String bucketName;
     private String objectName;
     private long length;
+    @Lob
+    private String headerJson;
+    @Lob
+    private String aclJson;
 
     public long getCreatedDate() {
         return createdDate;
@@ -53,6 +58,22 @@ public class ObjectModel {
 
     public void setLength(long length) {
         this.length = length;
+    }
+
+    public String getHeaderJson() {
+        return headerJson;
+    }
+
+    public void setHeaderJson(String headerJson) {
+        this.headerJson = headerJson;
+    }
+
+    public String getAclJson() {
+        return aclJson;
+    }
+
+    public void setAclJson(String aclJson) {
+        this.aclJson = aclJson;
     }
 
     @Override
