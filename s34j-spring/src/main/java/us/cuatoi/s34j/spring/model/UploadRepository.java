@@ -9,4 +9,5 @@ public interface UploadRepository extends CrudRepository<UploadModel, String> {
     Page<UploadModel> findByBucketNameAndObjectNameStartsWithAndObjectNameGreaterThanAndUploadIdGreaterThanOrderByObjectName(
             String bucketName, String prefix, String keyMarker, String uploadIdMarker, Pageable pageable);
 
+    void deleteByBucketName(String bucketName);
 }

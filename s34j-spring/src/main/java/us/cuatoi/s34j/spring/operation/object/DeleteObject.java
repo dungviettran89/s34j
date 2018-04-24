@@ -30,7 +30,7 @@ public class DeleteObject extends AbstractObjectRule {
     public void perform(Facts facts,
                         @Fact("objectName") String objectName,
                         @Fact("bucketName") String bucketName) {
-        objectManager.deleteCurrentVersion(objectName, bucketName);
+        objectManager.deleteCurrentVersionIfExists(objectName, bucketName);
         facts.put("statusCode", 200);
     }
 }

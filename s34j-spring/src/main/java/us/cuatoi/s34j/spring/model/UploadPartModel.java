@@ -1,5 +1,7 @@
 package us.cuatoi.s34j.spring.model;
 
+import com.google.gson.Gson;
+
 import javax.persistence.Entity;
 
 @Entity
@@ -9,7 +11,7 @@ public class UploadPartModel {
     private String uploadPartId;
     private long createdDate = System.currentTimeMillis();
     private String uploadId;
-    private int partOrder;
+    private int uploadPartOrder;
 
     public String getUploadPartId() {
         return uploadPartId;
@@ -35,11 +37,16 @@ public class UploadPartModel {
         this.uploadId = uploadId;
     }
 
-    public int getPartOrder() {
-        return partOrder;
+    public int getUploadPartOrder() {
+        return uploadPartOrder;
     }
 
-    public void setPartOrder(int partOrder) {
-        this.partOrder = partOrder;
+    public void setUploadPartOrder(int uploadPartOrder) {
+        this.uploadPartOrder = uploadPartOrder;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + new Gson().toJson(this);
     }
 }

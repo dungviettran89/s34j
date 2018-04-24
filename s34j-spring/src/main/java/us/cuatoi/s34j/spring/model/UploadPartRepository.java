@@ -4,5 +4,5 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface UploadPartRepository extends CrudRepository<UploadPartModel, String> {
 
-
+    void deleteByBucketName(String bucketName);
 }

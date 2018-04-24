@@ -9,12 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import us.cuatoi.s34j.spring.model.BucketModel;
-import us.cuatoi.s34j.spring.model.BucketRepository;
-import us.cuatoi.s34j.spring.model.DeletedObjectModel;
-import us.cuatoi.s34j.spring.model.DeletedObjectRepository;
+import us.cuatoi.s34j.spring.model.*;
+import us.cuatoi.s34j.spring.operation.PartManager;
 
-import java.util.UUID;
+import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -27,7 +25,17 @@ public class DeleteBucket extends AbstractBucketRule {
     @Autowired
     private BucketRepository bucketRepository;
     @Autowired
-    private DeletedObjectRepository deletedObjectRepository;
+    private ObjectRepository objectRepository;
+    @Autowired
+    private DeletedPartRepository deletedPartRepository;
+    @Autowired
+    private PartRepository partRepository;
+    @Autowired
+    private UploadRepository uploadRepository;
+    @Autowired
+    private UploadPartRepository uploadPartRepository;
+    @Autowired
+    private PartManager partManager;
 
     @Condition
     public boolean isDeleting(Facts facts,
@@ -37,20 +45,16 @@ public class DeleteBucket extends AbstractBucketRule {
 
     }
 
-    @Action(order = 10)
+    @Action
     public void doDelete(Facts facts, @Fact("bucketName") String bucketName) {
         BucketModel bucketToDelete = bucketRepository.findOne(bucketName);
-        logger.info("doDelete() bucketToDelete=" + bucketToDelete);
-
-        DeletedObjectModel deletedBucket = new DeletedObjectModel();
-        deletedBucket.setDeleteId(UUID.randomUUID().toString());
-        deletedBucket.setType("bucket");
-        deletedBucket.setBucketName(bucketToDelete.getBucketName());
-        deletedBucket.setDeleteDate(System.currentTimeMillis());
         bucketRepository.delete(bucketToDelete);
 
-        deletedObjectRepository.save(deletedBucket);
-        logger.info("doDelete() deletedBucket=" + deletedBucket);
+        objectRepository.deleteByBucketName(bucketName);
+        uploadRepository.deleteByBucketName(bucketName);
+        uploadPartRepository.deleteByBucketName(bucketName);
+        List<PartModel> parts = partRepository.findAllByBucketName(bucketName);
+        partManager.delete(parts);
         facts.put("statusCode", 200);
     }
 }

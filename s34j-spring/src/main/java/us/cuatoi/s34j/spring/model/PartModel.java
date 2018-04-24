@@ -5,20 +5,41 @@ import com.google.gson.Gson;
 import javax.persistence.Entity;
 
 @Entity
-public class ObjectModel {
+public class PartModel {
     @org.springframework.data.annotation.Id
     @javax.persistence.Id
-    private String objectVersion;
-    private long createdDate = System.currentTimeMillis();
+    private String partId;
+    private String partName;
+    private int partOrder;
+
     private String bucketName;
     private String objectName;
+    private String objectVersion;
 
-    public long getCreatedDate() {
-        return createdDate;
+    private String uploadId;
+
+    public int getPartOrder() {
+        return partOrder;
     }
 
-    public void setCreatedDate(long createdDate) {
-        this.createdDate = createdDate;
+    public void setPartOrder(int partOrder) {
+        this.partOrder = partOrder;
+    }
+
+    public String getPartId() {
+        return partId;
+    }
+
+    public void setPartId(String partId) {
+        this.partId = partId;
+    }
+
+    public String getPartName() {
+        return partName;
+    }
+
+    public void setPartName(String partName) {
+        this.partName = partName;
     }
 
     public String getBucketName() {
@@ -43,6 +64,14 @@ public class ObjectModel {
 
     public void setObjectVersion(String objectVersion) {
         this.objectVersion = objectVersion;
+    }
+
+    public String getUploadId() {
+        return uploadId;
+    }
+
+    public void setUploadId(String uploadId) {
+        this.uploadId = uploadId;
     }
 
     @Override

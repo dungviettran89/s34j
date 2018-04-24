@@ -10,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.dto.ErrorCode;
-import us.cuatoi.s34j.spring.model.DeletedObjectRepository;
 import us.cuatoi.s34j.spring.model.UploadPartRepository;
-import us.cuatoi.s34j.spring.operation.ObjectPartManager;
 
 import java.io.InputStream;
 import java.util.List;
@@ -25,12 +23,7 @@ public class PutUploadPart extends AbstractUploadRule {
     public static final Logger logger = LoggerFactory.getLogger(PutUploadPart.class);
 
     @Autowired
-    private ObjectPartManager objectPartManager;
-
-    @Autowired
     private UploadPartRepository uploadPartRepository;
-    @Autowired
-    private DeletedObjectRepository deletedObjectRepository;
 
     @Condition
     public boolean shouldApply(Facts facts, @Fact("PUT") boolean isPut,
@@ -53,6 +46,5 @@ public class PutUploadPart extends AbstractUploadRule {
                               @Fact("query:uploadId") String uploadId,
                               @Fact("parts") List<InputStream> parts) {
         facts.put("errorCode", ErrorCode.NOT_IMPLEMENTED);
-
     }
 }

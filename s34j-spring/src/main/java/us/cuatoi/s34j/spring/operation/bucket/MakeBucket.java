@@ -11,7 +11,6 @@ import us.cuatoi.s34j.spring.SpringStorageException;
 import us.cuatoi.s34j.spring.dto.ErrorCode;
 import us.cuatoi.s34j.spring.model.BucketModel;
 import us.cuatoi.s34j.spring.model.BucketRepository;
-import us.cuatoi.s34j.spring.model.DeletedObjectRepository;
 import us.cuatoi.s34j.spring.operation.ExecutionRule;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
@@ -24,8 +23,6 @@ public class MakeBucket implements ExecutionRule {
 
     @Autowired
     private BucketRepository bucketRepository;
-    @Autowired
-    private DeletedObjectRepository deletedObjectRepository;
 
     @Condition
     public boolean shouldApply(Facts facts,
@@ -42,10 +39,6 @@ public class MakeBucket implements ExecutionRule {
                            @Fact("region") String region) {
 
         if (bucketRepository.findOne(bucketName) != null) {
-            facts.put("errorCode", ErrorCode.BUCKET_ALREADY_EXISTS);
-            throw new SpringStorageException(ErrorCode.BUCKET_ALREADY_EXISTS);
-        }
-        if (deletedObjectRepository.findByTypeAndBucketName("bucket", bucketName) != null) {
             facts.put("errorCode", ErrorCode.BUCKET_ALREADY_EXISTS);
             throw new SpringStorageException(ErrorCode.BUCKET_ALREADY_EXISTS);
         }

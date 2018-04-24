@@ -4,12 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import us.cuatoi.s34j.spring.model.DeletedObjectModel;
-import us.cuatoi.s34j.spring.model.DeletedObjectRepository;
 import us.cuatoi.s34j.spring.model.ObjectModel;
 import us.cuatoi.s34j.spring.model.ObjectRepository;
+import us.cuatoi.s34j.spring.model.PartModel;
+import us.cuatoi.s34j.spring.model.PartRepository;
 
-import java.util.UUID;
+import java.util.List;
 
 @Service
 public class ObjectManager {
@@ -17,24 +17,18 @@ public class ObjectManager {
     @Autowired
     private ObjectRepository objectRepository;
     @Autowired
-    private DeletedObjectRepository deletedObjectRepository;
+    private PartRepository partRepository;
+    @Autowired
+    private PartManager partManager;
 
-    public ObjectModel deleteCurrentVersion(String objectName, String bucketName) {
-        ObjectModel keyToDelete = objectRepository.findOneByObjectNameAndBucketName(objectName, bucketName);
-        if (keyToDelete != null) {
-            DeletedObjectModel oldVersionToDelete = new DeletedObjectModel();
-            oldVersionToDelete.setType("object");
-            oldVersionToDelete.setDeleteId(UUID.randomUUID().toString());
-            oldVersionToDelete.setObjectName(keyToDelete.getObjectName());
-            oldVersionToDelete.setBucketName(keyToDelete.getBucketName());
-            oldVersionToDelete.setObjectId(keyToDelete.getObjectId());
-            oldVersionToDelete.setDeleteDate(System.currentTimeMillis());
-            deletedObjectRepository.save(oldVersionToDelete);
-            objectRepository.delete(keyToDelete);
-            logger.info("deleteCurrentVersion() objectName=" + objectName);
-            logger.info("deleteCurrentVersion() bucketName=" + bucketName);
-            logger.info("deleteCurrentVersion() keyToDelete=" + keyToDelete);
+    public void deleteCurrentVersionIfExists(String objectName, String bucketName) {
+        ObjectModel deletedVersion = objectRepository.findOneByObjectNameAndBucketName(objectName, bucketName);
+        if (deletedVersion != null) {
+            List<PartModel> deletedParts = partRepository.findAllByObjectVersion(deletedVersion.getObjectVersion());
+            partManager.delete(deletedParts);
+            objectRepository.delete(deletedVersion);
+            logger.info("deleteCurrentVersionIfExists() deletedVersion=" + deletedVersion);
+            logger.info("deleteCurrentVersionIfExists() deletedParts=" + deletedParts);
         }
-        return keyToDelete;
     }
 }

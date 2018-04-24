@@ -56,16 +56,16 @@ public class UploadModel {
         this.owner = owner;
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + new Gson().toJson(this);
-    }
-
     public String getInitiator() {
         return initiator;
     }
 
     public void setInitiator(String initiator) {
         this.initiator = initiator;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + new Gson().toJson(this);
     }
 }
