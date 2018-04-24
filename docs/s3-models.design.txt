@@ -10,26 +10,31 @@ Bucket --o Upload
 Object : objectVersion = PK
 Object : bucketName = String
 Object : objectName = String
+Object : createdDate = long
+Object : contentType = String
+Object : length = long
 
 Object --o Part
 
 Part : partId = PK
 Part : partName = String
-Part : partOrder = String
-Part : objectVersion = String
+Part : partOrder = int
+Part : length = long
+Part : objectVersion = FK
 Part : objectName = String
 Part : bucketName = String
-Part : uploadPartId = String
+Part : uploadPartId = FK
 
 Part -> DeletedPart
 
-DeletedPart : partId = PK
+DeletedPart : deleteId = PK
 DeletedPart : partName = PK
-DeletedPart : deletedDate = Date
+DeletedPart : deletedDate = long
 
 Upload : uploadId = PK
 Upload : bucketName = String
 Upload : objectName = String
+Upload : contentType = String
 
 Upload -> Object
 Upload --o UploadPart
@@ -37,10 +42,12 @@ UploadPart --o Part
 
 UploadPart : partId = PK
 UploadPart : partOrder = String
-UploadPart : objectVersion = String
+UploadPart : objectVersion = FK
 UploadPart : objectName = String
 UploadPart : bucketName = String
 UploadPart : uploadId = FK
 
 @enduml
+
+
 
