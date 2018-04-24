@@ -14,7 +14,7 @@ public class DeletedObjectModel {
     private String type;
     private String bucketName;
     private String objectName;
-    private String versionName;
+    private String objectId;
 
     public String getDeleteId() {
         return deleteId;
@@ -56,12 +56,12 @@ public class DeletedObjectModel {
         this.objectName = objectName;
     }
 
-    public String getVersionName() {
-        return versionName;
+    public String getObjectId() {
+        return objectId;
     }
 
-    public void setVersionName(String versionName) {
-        this.versionName = versionName;
+    public void setObjectId(String objectId) {
+        this.objectId = objectId;
     }
 
     @Override
