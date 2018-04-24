@@ -9,19 +9,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import us.cuatoi.s34j.spring.SpringStorageConstants;
 import us.cuatoi.s34j.spring.dto.InitiateMultipartUploadResultXml;
-import us.cuatoi.s34j.spring.helper.DateHelper;
 import us.cuatoi.s34j.spring.model.BucketModel;
 import us.cuatoi.s34j.spring.model.BucketRepository;
 import us.cuatoi.s34j.spring.model.UploadModel;
 import us.cuatoi.s34j.spring.model.UploadRepository;
 import us.cuatoi.s34j.spring.operation.bucket.AbstractBucketRule;
 
-import java.util.Date;
-import java.util.UUID;
-
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static us.cuatoi.s34j.spring.VersionHelper.newVersion;
 
 @Service
 @Rule(name = "InitiateUpload")
@@ -41,8 +37,7 @@ public class InitiateUpload extends AbstractBucketRule {
     @Action
     public void initiateUpload(Facts facts, @Fact("bucketName") String bucketName,
                                @Fact("objectName") String objectName, @Fact("awsAccessKey") String awsAccessKey) {
-        String uploadId = DateHelper.format(SpringStorageConstants.X_AMZ_DATE_FORMAT, new Date()) +
-                "-" + UUID.randomUUID().toString();
+        String uploadId = newVersion();
         BucketModel bucket = bucketRepository.findOne(bucketName);
         String owner = bucket.getOwner();
 
