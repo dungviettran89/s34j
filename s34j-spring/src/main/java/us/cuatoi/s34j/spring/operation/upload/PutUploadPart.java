@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static us.cuatoi.s34j.spring.VersionHelper.newVersion;
+import static us.cuatoi.s34j.spring.StorageHelper.newVersion;
 
 @Service
 @Rule(name = "PutUploadPart")
@@ -71,9 +71,7 @@ public class PutUploadPart extends AbstractUploadRule {
         uploadPartModel.setEtag(facts.get("ETag"));
 
         ArrayList<PartModel> newParts = new ArrayList<>();
-        for (String partName : partManager.savePart(parts)) {
-            PartModel model = new PartModel();
-            model.setPartName(partName);
+        for (PartModel model : partManager.savePart(parts)) {
             model.setPartId(newVersion());
             model.setObjectName(objectName);
             model.setBucketName(bucketName);

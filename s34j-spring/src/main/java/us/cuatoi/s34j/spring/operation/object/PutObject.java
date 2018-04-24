@@ -18,7 +18,7 @@ import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static us.cuatoi.s34j.spring.VersionHelper.newVersion;
+import static us.cuatoi.s34j.spring.StorageHelper.newVersion;
 
 @Service
 @Rule(name = "PutObject")
@@ -56,15 +56,15 @@ public class PutObject extends AbstractBucketRule {
         String newVersion = newVersion();
         int partOrder = 1;
         ArrayList<PartModel> partModels = new ArrayList<>();
-        for (String name : partManager.savePart(parts)) {
-            PartModel model = new PartModel();
-            model.setPartName(name);
+        long length = 0;
+        for (PartModel model : partManager.savePart(parts)) {
             model.setObjectVersion(newVersion);
             model.setObjectName(objectName);
             model.setBucketName(bucketName);
             model.setPartOrder(partOrder++);
             model.setPartId(newVersion());
             partModels.add(model);
+            length += model.getLength();
         }
         partRepository.save(partModels);
         ObjectModel objectModel = new ObjectModel();
@@ -72,11 +72,11 @@ public class PutObject extends AbstractBucketRule {
         objectModel.setObjectName(objectName);
         objectModel.setObjectVersion(newVersion);
         objectModel.setCreatedDate(System.currentTimeMillis());
+        objectModel.setLength(length);
         objectRepository.save(objectModel);
         facts.put("statusCode", 200);
+        facts.put("ETag", objectModel.getObjectVersion());
         logger.info("putObject() objectModel=" + objectModel);
         logger.info("putObject() partModels=" + partModels);
     }
-
-
 }

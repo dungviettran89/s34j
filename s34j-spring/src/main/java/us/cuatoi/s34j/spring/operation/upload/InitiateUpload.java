@@ -17,7 +17,7 @@ import us.cuatoi.s34j.spring.model.UploadRepository;
 import us.cuatoi.s34j.spring.operation.bucket.AbstractBucketRule;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static us.cuatoi.s34j.spring.VersionHelper.newVersion;
+import static us.cuatoi.s34j.spring.StorageHelper.newVersion;
 
 @Service
 @Rule(name = "InitiateUpload")

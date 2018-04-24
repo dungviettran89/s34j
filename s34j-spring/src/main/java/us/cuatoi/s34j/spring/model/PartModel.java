@@ -11,6 +11,7 @@ public class PartModel {
     private String partId;
     private String partName;
     private int partOrder;
+    private long length;
 
     private String bucketName;
     private String objectName;
@@ -72,6 +73,14 @@ public class PartModel {
 
     public void setUploadPartId(String uploadPartId) {
         this.uploadPartId = uploadPartId;
+    }
+
+    public long getLength() {
+        return length;
+    }
+
+    public void setLength(long length) {
+        this.length = length;
     }
 
     @Override

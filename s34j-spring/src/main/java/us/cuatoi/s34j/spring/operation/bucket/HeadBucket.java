@@ -7,16 +7,17 @@ import org.jeasy.rules.annotation.Rule;
 import org.jeasy.rules.api.Facts;
 import org.springframework.stereotype.Service;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
 @Rule(name = "HeadBucket")
 public class HeadBucket extends AbstractBucketRule {
     @Condition
-    public boolean shouldApply(
-            @Fact("HEAD") boolean isHead,
-            @Fact("bucketName") String bucketName) {
-        return isHead && isNotBlank(bucketName);
+    public boolean shouldApply(Facts facts,
+                               @Fact("HEAD") boolean isHead,
+                               @Fact("bucketName") String bucketName) {
+        return isHead && isNotBlank(bucketName) && isBlank(facts.get("objectName"));
     }
 
     @Action

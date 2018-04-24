@@ -1,17 +1,19 @@
 package us.cuatoi.s34j.spring.model;
 
 import com.google.gson.Gson;
+import org.springframework.data.annotation.Id;
 
 import javax.persistence.Entity;
 
 @Entity
 public class ObjectModel {
-    @org.springframework.data.annotation.Id
+    @Id
     @javax.persistence.Id
     private String objectVersion;
     private long createdDate = System.currentTimeMillis();
     private String bucketName;
     private String objectName;
+    private long length;
 
     public long getCreatedDate() {
         return createdDate;
@@ -43,6 +45,14 @@ public class ObjectModel {
 
     public void setObjectVersion(String objectVersion) {
         this.objectVersion = objectVersion;
+    }
+
+    public long getLength() {
+        return length;
+    }
+
+    public void setLength(long length) {
+        this.length = length;
     }
 
     @Override

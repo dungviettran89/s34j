@@ -200,6 +200,10 @@ public class SpringStorageService {
         servletResponse.setHeader("x-amz-version-id", facts.get("objectVersion"));
         servletResponse.setHeader("ETag", facts.get("ETag"));
         servletResponse.setHeader("x-amz-version-id", "1.0");
+        if (facts.get("responseHeader:contentLength") != null) {
+            servletResponse.setContentLengthLong(facts.get("responseHeader:contentLength"));
+        }
+        setIfAvailable(servletResponse, facts, "Last-Modified");
         Object response = facts.get("response");
         if (response == null) {
             return;
@@ -210,6 +214,12 @@ public class SpringStorageService {
             }
         }
         servletResponse.getWriter().write(response.toString());
+    }
+
+    private void setIfAvailable(HttpServletResponse servletResponse, Facts facts, String headerName) {
+        if (facts.get("responseHeader:" + headerName) != null) {
+            servletResponse.setHeader(headerName, facts.get("responseHeader:" + headerName));
+        }
     }
 
     private InputStream verifyContentMd5(InputStream sourceStream, String md5) {

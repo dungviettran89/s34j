@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-import static us.cuatoi.s34j.spring.VersionHelper.newVersion;
+import static us.cuatoi.s34j.spring.StorageHelper.newVersion;
 
 @Service
 public class PartManager {
@@ -44,20 +44,24 @@ public class PartManager {
         logger.info("deletePart() deletedParts=" + deletedParts);
     }
 
-    public List<String> savePart(List<InputStream> parts) {
-        List<String> savedParts = new ArrayList<>();
-        List<Callable<String>> savers = parts.stream().map((is) -> (Callable<String>) () -> {
+    public List<PartModel> savePart(List<InputStream> parts) {
+        List<PartModel> savedParts = new ArrayList<>();
+        List<Callable<PartModel>> savers = parts.stream().map((is) -> (Callable<PartModel>) () -> {
             try (InputStream i = is) {
                 String partName = newVersion();
-                blockStorage.save(partName, i);
+                long length = blockStorage.save(partName, i);
                 logger.info("savePart() partName=" + partName);
-                return partName;
+                logger.info("savePart() length=" + length);
+                PartModel model = new PartModel();
+                model.setPartName(partName);
+                model.setLength(length);
+                return model;
             }
         }).collect(Collectors.toList());
         boolean rollBack = false;
         try {
-            List<Future<String>> futures = pool.invokeAll(savers);
-            for (Future<String> future : futures) {
+            List<Future<PartModel>> futures = pool.invokeAll(savers);
+            for (Future<PartModel> future : futures) {
                 try {
                     savedParts.add(future.get());
                 } catch (ExecutionException savePartError) {
@@ -66,9 +70,9 @@ public class PartManager {
                 }
             }
             if (rollBack) {
-                for (String savedPart : savedParts) {
+                for (PartModel savedPart : savedParts) {
                     try {
-                        blockStorage.delete(savedPart);
+                        blockStorage.delete(savedPart.getPartName());
                     } catch (IOException rollBackError) {
                         logger.warn("savePart() rollBackError=" + rollBackError, rollBackError);
                     }
