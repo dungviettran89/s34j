@@ -16,7 +16,7 @@ public class PartModel {
     private String objectName;
     private String objectVersion;
 
-    private String uploadId;
+    private String uploadPartId;
 
     public int getPartOrder() {
         return partOrder;
@@ -66,12 +66,12 @@ public class PartModel {
         this.objectVersion = objectVersion;
     }
 
-    public String getUploadId() {
-        return uploadId;
+    public String getUploadPartId() {
+        return uploadPartId;
     }
 
-    public void setUploadId(String uploadId) {
-        this.uploadId = uploadId;
+    public void setUploadPartId(String uploadPartId) {
+        this.uploadPartId = uploadPartId;
     }
 
     @Override

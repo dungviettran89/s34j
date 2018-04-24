@@ -8,4 +8,6 @@ public interface PartRepository extends CrudRepository<PartModel, String> {
     List<PartModel> findAllByBucketName(String bucketName);
 
     List<PartModel> findAllByObjectVersion(String objectVersion);
+
+    List<PartModel> findAllByUploadPartId(String uploadPartId);
 }

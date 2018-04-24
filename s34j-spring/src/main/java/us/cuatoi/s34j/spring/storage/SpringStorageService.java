@@ -136,6 +136,8 @@ public class SpringStorageService {
                 sourceStream = verifyContentSha256(sourceStream, sha256);
             }
 
+            HashingInputStream eTagStream = new HashingInputStream(Hashing.goodFastHash(128), sourceStream);
+            sourceStream = eTagStream;
             //3.5 parse stream
             try (InputStream is = sourceStream) {
                 SplitOutputStream splitOutputStream = new SplitOutputStream(blockSizeBytes);
@@ -145,6 +147,7 @@ public class SpringStorageService {
                 }
                 facts.put("parts", splitOutputStream.getInputStreams());
             }
+            facts.put("ETag", eTagStream.hash().toString());
             //4: perform execution
             Rules execution = new Rules();
             executionRules.forEach(execution::register);
@@ -195,6 +198,7 @@ public class SpringStorageService {
         servletResponse.setContentType(facts.get("contentType"));
         servletResponse.setHeader("x-amz-request-id", facts.get("requestId"));
         servletResponse.setHeader("x-amz-version-id", facts.get("objectVersion"));
+        servletResponse.setHeader("ETag", facts.get("ETag"));
         servletResponse.setHeader("x-amz-version-id", "1.0");
         Object response = facts.get("response");
         if (response == null) {

@@ -1,19 +1,21 @@
 package us.cuatoi.s34j.spring.model;
 
 import com.google.gson.Gson;
+import org.springframework.data.annotation.Id;
 
 import javax.persistence.Entity;
 
 @Entity
 public class UploadPartModel {
-    @org.springframework.data.annotation.Id
+    @Id
     @javax.persistence.Id
     private String uploadPartId;
+    private String uploadPartOrder;
     private long createdDate = System.currentTimeMillis();
     private String uploadId;
-    private int uploadPartOrder;
     private String objectName;
     private String bucketName;
+    private String etag;
 
     public String getObjectName() {
         return objectName;
@@ -55,12 +57,20 @@ public class UploadPartModel {
         this.uploadId = uploadId;
     }
 
-    public int getUploadPartOrder() {
+    public String getUploadPartOrder() {
         return uploadPartOrder;
     }
 
-    public void setUploadPartOrder(int uploadPartOrder) {
+    public void setUploadPartOrder(String uploadPartOrder) {
         this.uploadPartOrder = uploadPartOrder;
+    }
+
+    public String getEtag() {
+        return etag;
+    }
+
+    public void setEtag(String etag) {
+        this.etag = etag;
     }
 
     @Override
