@@ -45,6 +45,7 @@ public class InitiateUpload extends AbstractBucketRule {
         model.setUploadId(uploadId);
         model.setBucketName(bucketName);
         model.setObjectName(objectName);
+        model.setObjectNamePrefix(objectName);
         model.setOwner(owner);
         model.setInitiator(awsAccessKey);
         model.setCreatedDate(System.currentTimeMillis());

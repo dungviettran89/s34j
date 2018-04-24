@@ -13,6 +13,7 @@ public class UploadModel {
     private long createdDate = System.currentTimeMillis();
     private String bucketName;
     private String objectName;
+    private String objectNamePrefix;
     private String owner;
     private String initiator;
 
@@ -67,5 +68,13 @@ public class UploadModel {
     @Override
     public String toString() {
         return getClass().getSimpleName() + new Gson().toJson(this);
+    }
+
+    public String getObjectNamePrefix() {
+        return objectNamePrefix;
+    }
+
+    public void setObjectNamePrefix(String objectNamePrefix) {
+        this.objectNamePrefix = objectNamePrefix;
     }
 }

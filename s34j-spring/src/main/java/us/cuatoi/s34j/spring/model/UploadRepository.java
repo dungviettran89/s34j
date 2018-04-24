@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface UploadRepository extends CrudRepository<UploadModel, String> {
 
-    Page<UploadModel> findByBucketNameAndObjectNameStartsWithAndObjectNameGreaterThanAndUploadIdGreaterThanOrderByObjectName(
+    Page<UploadModel> findByBucketNameAndObjectNamePrefixStartsWithAndObjectNameGreaterThanAndUploadIdGreaterThanOrderByObjectName(
             String bucketName, String prefix, String keyMarker, String uploadIdMarker, Pageable pageable);
 
     void deleteByBucketName(String bucketName);

@@ -58,7 +58,7 @@ public class ListUploads extends AbstractBucketRule {
         String nextKeyMarker = null;
         String nextUploadIdMarker = null;
         if (isBlank(delimiter)) {
-            Page<UploadModel> uploads = uploadRepository.findByBucketNameAndObjectNameStartsWithAndObjectNameGreaterThanAndUploadIdGreaterThanOrderByObjectName(
+            Page<UploadModel> uploads = uploadRepository.findByBucketNameAndObjectNamePrefixStartsWithAndObjectNameGreaterThanAndUploadIdGreaterThanOrderByObjectName(
                     bucketName, prefix, keyMarker, uploadIdMarker, new PageRequest(0, maxUploads));
             truncated = uploads.getTotalElements() > uploads.getSize();
             UploadModel lastUpload = StreamSupport.stream(uploads.spliterator(), false)
