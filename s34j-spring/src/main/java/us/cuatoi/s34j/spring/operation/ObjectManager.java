@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.spring.operation.object;
+package us.cuatoi.s34j.spring.operation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

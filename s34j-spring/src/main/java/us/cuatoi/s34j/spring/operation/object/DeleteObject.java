@@ -7,6 +7,7 @@ import org.jeasy.rules.annotation.Rule;
 import org.jeasy.rules.api.Facts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import us.cuatoi.s34j.spring.operation.ObjectManager;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 

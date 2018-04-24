@@ -10,20 +10,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.SpringStorageConstants;
-import us.cuatoi.s34j.spring.SpringStorageException;
-import us.cuatoi.s34j.spring.dto.ErrorCode;
 import us.cuatoi.s34j.spring.helper.DateHelper;
 import us.cuatoi.s34j.spring.model.*;
+import us.cuatoi.s34j.spring.operation.ObjectManager;
+import us.cuatoi.s34j.spring.operation.ObjectPartManager;
 import us.cuatoi.s34j.spring.operation.bucket.AbstractBucketRule;
-import us.cuatoi.s34j.spring.storage.block.BlockStorage;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -39,11 +36,11 @@ public class PutObject extends AbstractBucketRule {
     private ObjectPartRepository objectPartRepository;
     @Autowired
     private PartMappingRepository partMappingRepository;
-    @Autowired
-    private BlockStorage blockStorage;
+
     @Autowired
     private ObjectManager objectManager;
-
+    @Autowired
+    private ObjectPartManager objectPartManager;
     @Condition
     public boolean shouldApply(Facts facts,
                                @Fact("PUT") boolean isPut,
@@ -61,10 +58,7 @@ public class PutObject extends AbstractBucketRule {
                         @Fact("objectName") String objectName,
                         @Fact("bucketName") String bucketName) {
         ObjectModel oldKey = objectManager.deleteCurrentVersion(objectName, bucketName);
-        List<ObjectPartModel> objectPartModels = parts.parallelStream()
-                .map(this::saveToBlock)
-                .collect(Collectors.toList());
-        objectPartRepository.save(objectPartModels);
+        List<ObjectPartModel> objectPartModels = objectPartManager.saveToStore(parts);
 
         String version = DateHelper.format(SpringStorageConstants.X_AMZ_DATE_FORMAT, new Date()) +
                 "-" + UUID.randomUUID().toString();
@@ -99,21 +93,5 @@ public class PutObject extends AbstractBucketRule {
         logger.info("perform(): key=" + key);
     }
 
-    private ObjectPartModel saveToBlock(InputStream is) {
-        String name = UUID.randomUUID().toString();
-        try (InputStream i = is) {
-            ObjectPartModel model = new ObjectPartModel();
-            model.setPartName(name);
-            model.setCreatedDate(System.currentTimeMillis());
-            blockStorage.save(model.getPartName(), i);
-            logger.info("saveToBlock() is=" + is);
-            logger.info("saveToBlock() name=" + name);
-            return model;
-        } catch (IOException saveError) {
-            logger.error("saveToBlock() is=" + is);
-            logger.error("saveToBlock() name=" + name);
-            logger.error("saveToBlock() saveError=" + saveError, saveError);
-            throw new SpringStorageException(ErrorCode.INTERNAL_ERROR);
-        }
-    }
+
 }
