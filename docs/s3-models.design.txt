@@ -1,0 +1,46 @@
+@startuml
+
+title S3
+
+Bucket : bucketName = PK
+
+Bucket --o Object
+Bucket --o Upload
+
+Object : objectVersion = PK
+Object : bucketName = String
+Object : objectName = String
+
+Object --o Part
+
+Part : partId = PK
+Part : partName = String
+Part : partOrder = String
+Part : objectVersion = String
+Part : objectName = String
+Part : bucketName = String
+Part : uploadPartId = String
+
+Part -> DeletedPart
+
+DeletedPart : partId = PK
+DeletedPart : partName = PK
+DeletedPart : deletedDate = Date
+
+Upload : uploadId = PK
+Upload : bucketName = String
+Upload : objectName = String
+
+Upload -> Object
+Upload --o UploadPart
+UploadPart --o Part
+
+UploadPart : partId = PK
+UploadPart : partOrder = String
+UploadPart : objectVersion = String
+UploadPart : objectName = String
+UploadPart : bucketName = String
+UploadPart : uploadId = FK
+
+@enduml
+
