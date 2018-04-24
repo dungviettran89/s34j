@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
@@ -44,11 +45,14 @@ public class PutObject extends AbstractBucketRule {
     private ObjectManager objectManager;
 
     @Condition
-    public boolean shouldApply(
-            @Fact("PUT") boolean isPut,
-            @Fact("objectName") String objectName,
-            @Fact("bucketName") String bucketName) {
-        return isPut && isNotBlank(objectName) && isNotBlank(bucketName);
+    public boolean shouldApply(Facts facts,
+                               @Fact("PUT") boolean isPut,
+                               @Fact("objectName") String objectName,
+                               @Fact("bucketName") String bucketName) {
+        return isPut &&
+                isNotBlank(objectName) &&
+                isNotBlank(bucketName) &&
+                isBlank(facts.get("query:uploadId"));
     }
 
     @Action(order = 10)

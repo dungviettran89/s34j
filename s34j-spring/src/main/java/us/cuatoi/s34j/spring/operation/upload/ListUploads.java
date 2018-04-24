@@ -1,4 +1,4 @@
-package us.cuatoi.s34j.spring.operation.bucket;
+package us.cuatoi.s34j.spring.operation.upload;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jeasy.rules.annotation.Action;
@@ -17,6 +17,7 @@ import us.cuatoi.s34j.spring.dto.*;
 import us.cuatoi.s34j.spring.helper.DateHelper;
 import us.cuatoi.s34j.spring.model.UploadModel;
 import us.cuatoi.s34j.spring.model.UploadRepository;
+import us.cuatoi.s34j.spring.operation.bucket.AbstractBucketRule;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -72,8 +73,8 @@ public class ListUploads extends AbstractBucketRule {
                 owner.setDisplayName(m.getOwner());
 
                 InitiatorXml initiator = new InitiatorXml();
-                initiator.setId(m.getOwner());
-                initiator.setDisplayName(m.getOwner());
+                initiator.setId(m.getInitiator());
+                initiator.setDisplayName(m.getInitiator());
 
                 UploadXml xml = new UploadXml();
                 xml.setObjectName(m.getObjectName());

@@ -14,6 +14,7 @@ public class UploadModel {
     private String bucketName;
     private String objectName;
     private String owner;
+    private String initiator;
 
     public String getUploadId() {
         return uploadId;
@@ -58,5 +59,13 @@ public class UploadModel {
     @Override
     public String toString() {
         return getClass().getSimpleName() + new Gson().toJson(this);
+    }
+
+    public String getInitiator() {
+        return initiator;
+    }
+
+    public void setInitiator(String initiator) {
+        this.initiator = initiator;
     }
 }
