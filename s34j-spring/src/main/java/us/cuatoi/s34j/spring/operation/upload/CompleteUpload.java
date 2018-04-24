@@ -92,6 +92,7 @@ public class CompleteUpload extends AbstractUploadRule {
             objectModel.setObjectName(objectName);
             objectModel.setBucketName(bucketName);
             objectModel.setLength(length);
+            objectModel.setHeadersJson(uploadModel.getHeadersJson());
             objectRepository.save(objectModel);
             uploadRepository.delete(uploadModel);
             uploadPartRepository.delete(uploadPartModels);

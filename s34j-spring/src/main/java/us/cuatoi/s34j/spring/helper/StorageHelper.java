@@ -1,6 +1,7 @@
 package us.cuatoi.s34j.spring.helper;
 
 import com.google.api.client.xml.Xml;
+import org.jeasy.rules.api.Facts;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import us.cuatoi.s34j.spring.SpringStorageConstants;
@@ -17,6 +18,7 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.lang3.StringUtils.*;
 
 public class StorageHelper {
     public static String newVersion() {
@@ -50,5 +52,17 @@ public class StorageHelper {
 
     public static Date parse(String format, String dateString) throws ParseException {
         return getFormatter(format).parse(dateString);
+    }
+
+    public static Headers extractHeader(Facts facts) {
+        String[] savedHeaders = {"x-amz-meta-", "content-type"};
+        Headers headers = new Headers();
+        facts.asMap().keySet().stream()
+                .filter((h) -> startsWith(h, "header:"))
+                .filter((h) -> containsAny(h, savedHeaders))
+                .forEach((h) -> {
+                    headers.put(replace(h, "header:", ""), facts.get(h));
+                });
+        return headers;
     }
 }

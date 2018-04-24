@@ -16,7 +16,7 @@ public class ObjectModel {
     private String objectName;
     private long length;
     @Lob
-    private String headerJson;
+    private String headersJson;
     @Lob
     private String aclJson;
 
@@ -60,12 +60,12 @@ public class ObjectModel {
         this.length = length;
     }
 
-    public String getHeaderJson() {
-        return headerJson;
+    public String getHeadersJson() {
+        return headersJson;
     }
 
-    public void setHeaderJson(String headerJson) {
-        this.headerJson = headerJson;
+    public void setHeadersJson(String headersJson) {
+        this.headersJson = headersJson;
     }
 
     public String getAclJson() {

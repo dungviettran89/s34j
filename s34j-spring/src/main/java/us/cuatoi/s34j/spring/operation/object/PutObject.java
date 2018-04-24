@@ -1,5 +1,6 @@
 package us.cuatoi.s34j.spring.operation.object;
 
+import com.google.gson.Gson;
 import org.jeasy.rules.annotation.Action;
 import org.jeasy.rules.annotation.Condition;
 import org.jeasy.rules.annotation.Fact;
@@ -9,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import us.cuatoi.s34j.spring.helper.Headers;
+import us.cuatoi.s34j.spring.helper.StorageHelper;
 import us.cuatoi.s34j.spring.model.*;
 import us.cuatoi.s34j.spring.operation.bucket.AbstractBucketRule;
 
@@ -67,12 +70,17 @@ public class PutObject extends AbstractBucketRule {
             length += model.getLength();
         }
         partRepository.save(partModels);
+
+        Headers headers = StorageHelper.extractHeader(facts);
+        String headerJson = new Gson().toJson(headers);
+
         ObjectModel objectModel = new ObjectModel();
         objectModel.setBucketName(bucketName);
         objectModel.setObjectName(objectName);
         objectModel.setObjectVersion(newVersion);
         objectModel.setCreatedDate(System.currentTimeMillis());
         objectModel.setLength(length);
+        objectModel.setHeadersJson(headerJson);
         objectRepository.save(objectModel);
         facts.put("statusCode", 200);
         facts.put("ETag", objectModel.getObjectVersion());

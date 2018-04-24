@@ -1,5 +1,6 @@
 package us.cuatoi.s34j.spring.operation.object;
 
+import com.google.gson.Gson;
 import org.jeasy.rules.annotation.Action;
 import org.jeasy.rules.annotation.Condition;
 import org.jeasy.rules.annotation.Fact;
@@ -8,6 +9,7 @@ import org.jeasy.rules.api.Facts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.SpringStorageConstants;
+import us.cuatoi.s34j.spring.helper.Headers;
 import us.cuatoi.s34j.spring.helper.StorageHelper;
 import us.cuatoi.s34j.spring.model.ObjectModel;
 import us.cuatoi.s34j.spring.model.ObjectRepository;
@@ -40,5 +42,6 @@ public class HeadObject extends AbstractObjectRule {
         facts.put("responseHeader:contentLength", objectModel.getLength());
         facts.put("responseHeader:Last-Modified",
                 StorageHelper.format(SpringStorageConstants.HTTP_HEADER_DATE_FORMAT, new Date(objectModel.getCreatedDate())));
+        facts.put("responseHeaders", new Gson().fromJson(objectModel.getHeadersJson(), Headers.class));
     }
 }

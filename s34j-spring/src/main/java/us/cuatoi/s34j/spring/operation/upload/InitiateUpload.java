@@ -1,5 +1,6 @@
 package us.cuatoi.s34j.spring.operation.upload;
 
+import com.google.gson.Gson;
 import org.jeasy.rules.annotation.Action;
 import org.jeasy.rules.annotation.Condition;
 import org.jeasy.rules.annotation.Fact;
@@ -10,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.dto.InitiateMultipartUploadResultXml;
+import us.cuatoi.s34j.spring.helper.Headers;
+import us.cuatoi.s34j.spring.helper.StorageHelper;
 import us.cuatoi.s34j.spring.model.BucketModel;
 import us.cuatoi.s34j.spring.model.BucketRepository;
 import us.cuatoi.s34j.spring.model.UploadModel;
@@ -41,6 +44,9 @@ public class InitiateUpload extends AbstractBucketRule {
         BucketModel bucket = bucketRepository.findOne(bucketName);
         String owner = bucket.getOwner();
 
+        Headers headers = StorageHelper.extractHeader(facts);
+        String headersJson = new Gson().toJson(headers);
+
         UploadModel model = new UploadModel();
         model.setUploadId(uploadId);
         model.setBucketName(bucketName);
@@ -49,6 +55,7 @@ public class InitiateUpload extends AbstractBucketRule {
         model.setOwner(owner);
         model.setInitiator(awsAccessKey);
         model.setCreatedDate(System.currentTimeMillis());
+        model.setHeadersJson(headersJson);
         uploadRepository.save(model);
         InitiateMultipartUploadResultXml response = new InitiateMultipartUploadResultXml();
         response.setBucket(bucketName);

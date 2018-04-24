@@ -20,6 +20,7 @@ import us.cuatoi.s34j.spring.SpringStorageException;
 import us.cuatoi.s34j.spring.auth.AuthenticationRule;
 import us.cuatoi.s34j.spring.dto.ErrorCode;
 import us.cuatoi.s34j.spring.dto.ErrorResponseXml;
+import us.cuatoi.s34j.spring.helper.Headers;
 import us.cuatoi.s34j.spring.helper.InputStreamWrapper;
 import us.cuatoi.s34j.spring.helper.SplitOutputStream;
 import us.cuatoi.s34j.spring.operation.ExecutionRule;
@@ -204,6 +205,10 @@ public class SpringStorageService {
             servletResponse.setContentLengthLong(facts.get("responseHeader:contentLength"));
         }
         setIfAvailable(servletResponse, facts, "Last-Modified");
+        if (facts.get("responseHeaders") != null) {
+            Headers headers = facts.get("responseHeaders");
+            headers.forEach(servletResponse::setHeader);
+        }
         Object response = facts.get("response");
         if (response == null) {
             return;
