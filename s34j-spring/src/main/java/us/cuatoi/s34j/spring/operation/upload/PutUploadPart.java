@@ -53,7 +53,7 @@ public class PutUploadPart extends AbstractUploadRule {
         //overrides old version
         UploadPartModel oldUploadPartVersion = uploadPartRepository.findOneByUploadPartOrderAndUploadId(partNumber, uploadId);
         if (oldUploadPartVersion != null) {
-            List<PartModel> deletedOldParts = partRepository.findAllByUploadPartId(oldUploadPartVersion.getUploadPartId());
+            List<PartModel> deletedOldParts = partRepository.findAllByUploadPartIdOrderByPartOrder(oldUploadPartVersion.getUploadPartId());
             partManager.deletePart(deletedOldParts);
             uploadPartRepository.delete(oldUploadPartVersion);
             logger.info("putUploadPart() oldUploadPartVersion=" + oldUploadPartVersion);

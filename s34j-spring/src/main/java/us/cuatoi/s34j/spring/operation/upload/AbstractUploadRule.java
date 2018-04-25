@@ -11,7 +11,7 @@ import us.cuatoi.s34j.spring.operation.bucket.AbstractBucketRule;
 
 public abstract class AbstractUploadRule extends AbstractBucketRule {
     @Autowired
-    private UploadRepository uploadRepository;
+    protected UploadRepository uploadRepository;
 
     @Action(order = -1)
     public void checkUploadExists(Facts facts, @Fact("query:uploadId") String uploadId) {

@@ -11,6 +11,7 @@ public class SpringStorageException extends RuntimeException {
     }
 
     public SpringStorageException(ErrorCode errorCode, String description) {
+        super(description);
         this.errorCode = errorCode;
         this.description = description;
     }

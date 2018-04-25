@@ -7,7 +7,7 @@ import java.util.List;
 public interface PartRepository extends CrudRepository<PartModel, String> {
     List<PartModel> findAllByBucketName(String bucketName);
 
-    List<PartModel> findAllByObjectVersion(String objectVersion);
+    List<PartModel> findAllByObjectVersionOrderByPartOrder(String objectVersion);
 
-    List<PartModel> findAllByUploadPartId(String uploadPartId);
+    List<PartModel> findAllByUploadPartIdOrderByPartOrder(String uploadPartId);
 }

@@ -31,8 +31,6 @@ public class CompleteUpload extends AbstractUploadRule {
     public static final Logger logger = LoggerFactory.getLogger(InitiateUpload.class);
 
     @Autowired
-    private UploadRepository uploadRepository;
-    @Autowired
     private UploadPartRepository uploadPartRepository;
     @Autowired
     private ObjectManager objectManager;
@@ -67,7 +65,7 @@ public class CompleteUpload extends AbstractUploadRule {
                     throw new SpringStorageException(ErrorCode.INVALID_PART);
                 }
                 uploadPartModels.add(uploadPart);
-                List<PartModel> partModels = partRepository.findAllByUploadPartId(uploadPart.getUploadPartId());
+                List<PartModel> partModels = partRepository.findAllByUploadPartIdOrderByPartOrder(uploadPart.getUploadPartId());
                 if (partModels.size() == 0) {
                     throw new SpringStorageException(ErrorCode.INVALID_PART);
                 }

@@ -20,7 +20,7 @@ public class ObjectManager {
     public void deleteCurrentVersionIfExists(String objectName, String bucketName) {
         ObjectModel deletedVersion = objectRepository.findOneByObjectNameAndBucketName(objectName, bucketName);
         if (deletedVersion != null) {
-            List<PartModel> deletedParts = partRepository.findAllByObjectVersion(deletedVersion.getObjectVersion());
+            List<PartModel> deletedParts = partRepository.findAllByObjectVersionOrderByPartOrder(deletedVersion.getObjectVersion());
             partManager.deletePart(deletedParts);
             objectRepository.delete(deletedVersion);
             logger.info("deleteCurrentVersionIfExists() deletedVersion=" + deletedVersion);
