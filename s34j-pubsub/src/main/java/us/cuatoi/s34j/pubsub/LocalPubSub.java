@@ -15,18 +15,17 @@
 
 package us.cuatoi.s34j.pubsub;
 
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.pubsub.v1.Publisher;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.context.annotation.Configuration;
+import java.io.Serializable;
+import java.util.function.Consumer;
 
-@Configuration
-@ConditionalOnClass({Publisher.class, GoogleCredentials.class})
-public class PubSubConfig {
-    @Value("s34j.pubsub.keyUri:")
-    private String keyUri;
-    @Value("s34j.pubsub.key:")
-    private String key;
+public class LocalPubSub implements PubSub {
+    @Override
+    public <T extends Serializable> void register(String destination, String name, Class<T> tClass, Consumer<T> consumer) {
+        throw new UnsupportedOperationException("Not implemented!");
+    }
 
+    @Override
+    public void publish(String destination, Object message) {
+        throw new UnsupportedOperationException("Not implemented!");
+    }
 }
