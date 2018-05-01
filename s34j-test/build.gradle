@@ -2,7 +2,7 @@ def isMongo = false
 
 buildscript {
     ext {
-        springBootVersion = '1.5.9.RELEASE'
+        springBootVersion = '1.5.12.RELEASE'
     }
     repositories {
         mavenCentral()

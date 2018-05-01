@@ -28,21 +28,9 @@ repositories {
 dependencies {
     compile('com.google.code.gson:gson:2.8.2')
     compile('com.google.guava:guava:23.3-jre')
-    compile('org.apache.commons:commons-lang3:3.6')
+    compile('com.google.cloud:google-cloud-pubsub:0.32.0-beta')
+
     compile('org.springframework.boot:spring-boot-starter')
-    compile('org.springframework.boot:spring-boot-starter-web')
-    compileOnly('org.springframework.boot:spring-boot-starter-data-jpa')
-    compileOnly('org.springframework.boot:spring-boot-starter-data-mongodb')
-
-    //storage
-    compileOnly('org.apache.commons:commons-vfs2:2.2')
-    compileOnly('com.github.lookfirst:sardine:5.0.3')
-    compileOnly('com.sun.mail:javax.mail:1.6.1')
-
-    //schedule locker
-    compile('net.javacrumbs.shedlock:shedlock-spring:0.18.2')
-    compileOnly('net.javacrumbs.shedlock:shedlock-provider-mongo:0.18.2')
-    compileOnly('net.javacrumbs.shedlock:shedlock-provider-jdbc-template:0.18.2')
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
@@ -98,9 +86,9 @@ uploadArchives {
             }
 
             pom.project {
-                name 'S34J Simple Block Storage'
+                name 'S34J Google Pub Sub'
                 packaging 'jar'
-                description 'A simple block storage which implement a subset of S3 API'
+                description 'A spring boot google pub sub client.'
                 url 'https://s34j.cuatoi.us'
 
                 scm {
