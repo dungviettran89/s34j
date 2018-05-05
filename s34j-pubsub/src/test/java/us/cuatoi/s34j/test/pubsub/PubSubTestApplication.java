@@ -17,12 +17,19 @@ import us.cuatoi.s34j.pubsub.PubSub;
 public class PubSubTestApplication {
 
     public static final Logger logger = LoggerFactory.getLogger(PubSubTestApplication.class);
+    private boolean registered = false;
     @Autowired
-
     private PubSub pubSub;
+
 
     @Scheduled(fixedDelay = 5000)
     void sendMessage() {
-        pubSub.publish("testDestination", new TestMessage());
+        pubSub.publish(new TestMessage());
+        if (!registered) {
+            registered = true;
+            pubSub.register(TestMessage.class, (message) -> {
+                logger.info("Received message={}", message);
+            });
+        }
     }
 }

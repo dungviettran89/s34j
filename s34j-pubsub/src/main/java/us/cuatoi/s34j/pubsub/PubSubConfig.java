@@ -16,6 +16,7 @@
 package us.cuatoi.s34j.pubsub;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.v1.Publisher;
@@ -38,25 +39,25 @@ public class PubSubConfig {
     String credentialBase64;
 
     @Bean
-    DestinationConfigurationProvider destinationConfigurationProvider() {
+    public DestinationConfigurationProvider destinationConfigurationProvider() {
         logger.info("project={}", project);
         byte[] key = BaseEncoding.base64().decode(credentialBase64);
         return (destination) -> new DestinationConfiguration().withProject(project).withKey(key);
     }
 
     @Bean
-    ObjectMapper objectMapper() {
+    public ObjectMapper objectMapper() {
         return new ObjectMapper();
     }
 
     @Bean
-    InstantiatingExecutorProvider instantiatingExecutorProvider() {
+    public ExecutorProvider instantiatingExecutorProvider() {
         return InstantiatingExecutorProvider.newBuilder().setExecutorThreadCount(Runtime.getRuntime()
                 .availableProcessors()).build();
     }
 
     @Bean
-    PubSub pubSub() {
+    public PubSub pubSub() {
         return new GooglePubSub();
     }
 }

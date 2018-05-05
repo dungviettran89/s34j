@@ -15,11 +15,18 @@
 
 package us.cuatoi.s34j.pubsub;
 
-import java.io.Serializable;
 import java.util.function.Consumer;
 
-public interface PubSub {
-    <T extends Serializable> void register(String destination, String name, Class<T> tClass, Consumer<T> consumer);
+public abstract class PubSub {
+    public abstract <T> void register(String topic, String subscription, Class<T> tClass, Consumer<T> consumer);
 
-    void publish(String destination, Object message);
+    public abstract void publish(String topic, Object message);
+
+    public void publish(Object message) {
+        publish(message.getClass().getName(), message);
+    }
+
+    public <T> void register(Class<T> tClass, Consumer<T> consumer) {
+        register(tClass.getName(), tClass.getName() + ".consumer", tClass, consumer);
+    }
 }
