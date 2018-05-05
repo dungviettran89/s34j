@@ -26,13 +26,14 @@ repositories {
 
 
 dependencies {
-    compile('com.google.code.gson:gson:2.8.2')
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
     compile('com.google.guava:guava:23.3-jre')
     compile('com.google.cloud:google-cloud-pubsub:0.32.0-beta')
 
     compile('org.springframework.boot:spring-boot-starter')
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile('org.springframework.boot:spring-boot-starter-web')
 }
 
 bootRepackage {

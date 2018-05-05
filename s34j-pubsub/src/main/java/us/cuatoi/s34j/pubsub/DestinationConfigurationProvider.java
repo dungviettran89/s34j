@@ -15,17 +15,6 @@
 
 package us.cuatoi.s34j.pubsub;
 
-import java.io.Serializable;
-import java.util.function.Consumer;
-
-public class LocalPubSub implements PubSub {
-    @Override
-    public <T extends Serializable> void register(String destination, String name, Class<T> tClass, Consumer<T> consumer) {
-        throw new UnsupportedOperationException("Not implemented!");
-    }
-
-    @Override
-    public void publish(String destination, Object message) {
-        throw new UnsupportedOperationException("Not implemented!");
-    }
+public interface DestinationConfigurationProvider {
+    DestinationConfiguration getConfiguration(String destination);
 }
