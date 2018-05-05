@@ -79,15 +79,26 @@ public class GooglePubSub extends PubSub {
         SubscriptionName subscriptionName = SubscriptionName.of(project, subscription);
         MessageReceiver receiver = (message, response) -> {
             String json = message.getData().toString(UTF_8);
+
+            String messageClass = message.getAttributesOrDefault("class", null);
+            if (!tClass.getName().equalsIgnoreCase(messageClass)) {
+                logger.warn("Ignored message. topic={} subscription={} tClass={} messageClass={} json={}",
+                        topic, subscription, tClass, messageClass, json);
+                response.nack();
+                return;
+            }
+
             try {
                 T t = objectMapper.readValue(json, tClass);
                 consumer.accept(t);
                 response.ack();
                 logger.info("Acknowledged message. topic={} subscription={} tClass={} json={}",
                         topic, subscription, tClass, json);
-            } catch (IOException parseException) {
-                logger.error("Can no read message. topic={} subscription={} tClass={} json={}",
-                        topic, subscription, tClass, json, parseException);
+            } catch (Exception consumeException) {
+                logger.error("Can not handle message. topic={} subscription={} tClass={} json={}",
+                        topic, subscription, tClass, json, consumeException);
+                response.nack();
+                throw new RuntimeException(consumeException);
             }
         };
         CredentialsProvider credentialsProvider = credentialsProviders.getUnchecked(topic);
@@ -101,7 +112,9 @@ public class GooglePubSub extends PubSub {
         try {
             String json = objectMapper.writeValueAsString(objectMessage);
             ByteString data = ByteString.copyFrom(json, UTF_8);
-            PubsubMessage message = PubsubMessage.newBuilder().setData(data).build();
+            PubsubMessage message = PubsubMessage.newBuilder().setData(data)
+                    .putAttributes("class", objectMessage.getClass().getName())
+                    .build();
             publishers.getUnchecked(topic).publish(message);
             logger.info("Published message. topic={}, json={}", topic, json);
         } catch (JsonProcessingException serializationError) {
