@@ -67,12 +67,15 @@ s34j.pubsub.credentialBase64=ew0KICAidHlwZS...
 ## Advanced use cases
 Provide projectId and base64 credential for each topic by specifying <topic_name>.project and
  <topic_name>.credentialBase64. S34J Pub Sub will load and use credential for that topic
+ 
 ```properties
 sample_topic.project=pubsub-demo
 sample_topic.credentialBase64=ew0KICAidHlwZS...
 ```
+
 Use addUniqueSuffix to add an unique suffix to subscription name. This is used when you want to broadcast a message
 to all server.
+
 ```java
 public class PubSubTestApplication {
     @PubSubListener(addUniqueSuffix = true)

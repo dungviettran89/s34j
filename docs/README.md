@@ -3,9 +3,7 @@ S34J, or S3 for Java is an attempt to implement the S3 REST API in Java. S34J is
 At the current stage, it can be used to serve files from any NIO supported path, which includes: local disk, WebDAV, zip file. It can be used embedded in any web app as a Filter or a Servlet or as a Standalone server.
 
 ## Sub Projects
-[Google Pub/ Sub for Spring](PubSub.md)
-[Simple Block Storage](SimpleBlockStorage.md)
-[Spring Storage Service](SpringStorageService.md)
+- [Google Pub/ Sub for Spring](PubSub.md)
 
 ### Supported API:
 - PUT / DELETE Bucket
