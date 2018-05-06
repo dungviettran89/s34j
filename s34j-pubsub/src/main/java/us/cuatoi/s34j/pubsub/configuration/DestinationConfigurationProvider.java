@@ -13,11 +13,8 @@
  *
  */
 
-package us.cuatoi.s34j.pubsub;
+package us.cuatoi.s34j.pubsub.configuration;
 
-public interface PubSubLogger {
-
-    void logIncoming(String topic, String subscription, Class<?> messageClass, String json);
-
-    void logOutgoing(String topic, Class<?> messageClass, String json);
+public interface DestinationConfigurationProvider {
+    DestinationConfiguration getConfiguration(String topic);
 }

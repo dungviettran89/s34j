@@ -34,6 +34,12 @@ import com.google.pubsub.v1.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import us.cuatoi.s34j.pubsub.configuration.DefaultDestinationConfigurationProvider;
+import us.cuatoi.s34j.pubsub.configuration.DestinationConfiguration;
+import us.cuatoi.s34j.pubsub.configuration.DestinationConfigurationProvider;
+import us.cuatoi.s34j.pubsub.log.PubSubLogger;
+import us.cuatoi.s34j.pubsub.log.SimplePubSubLogger;
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
@@ -50,6 +56,8 @@ public class GooglePubSub extends PubSub {
 
     public static final Logger logger = LoggerFactory.getLogger(GooglePubSub.class);
     @Autowired
+    private Environment environment;
+    @Autowired(required = false)
     private DestinationConfigurationProvider configurationProvider;
     @Autowired(required = false)
     private ObjectMapper objectMapper;
@@ -95,6 +103,10 @@ public class GooglePubSub extends PubSub {
             logger.info("Executor Provider not found, setting up default instance.");
             executorProvider = InstantiatingExecutorProvider.newBuilder().setExecutorThreadCount(Runtime.getRuntime()
                     .availableProcessors()).build();
+        }
+        if (configurationProvider == null) {
+            logger.info("Configuration Provider not found, setting up default instance.");
+            configurationProvider = new DefaultDestinationConfigurationProvider(environment);
         }
     }
 

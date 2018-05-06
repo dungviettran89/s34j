@@ -13,7 +13,7 @@
  *
  */
 
-package us.cuatoi.s34j.pubsub;
+package us.cuatoi.s34j.pubsub.log;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

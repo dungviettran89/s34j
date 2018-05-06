@@ -13,7 +13,7 @@
  *
  */
 
-package us.cuatoi.s34j.pubsub;
+package us.cuatoi.s34j.pubsub.configuration;
 
 public class DestinationConfiguration {
     private String project;
