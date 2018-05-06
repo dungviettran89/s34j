@@ -2,7 +2,7 @@
 S34J, or S3 for Java is an attempt to implement the S3 REST API in Java. S34J is inspired by minio and will support all minio 's features in the future.
 At the current stage, it can be used to serve files from any NIO supported path, which includes: local disk, WebDAV, zip file. It can be used embedded in any web app as a Filter or a Servlet or as a Standalone server.
 
-##Sub Projects
+## Sub Projects
 [Google Pub/ Sub for Spring](PubSub.md)
 [Simple Block Storage](SimpleBlockStorage.md)
 [Spring Storage Service](SpringStorageService.md)
@@ -39,7 +39,18 @@ At the current stage, it can be used to serve files from any NIO supported path,
 S34J can be used in Embedded or Standalone mode
 #### Embedded
 ##### Installation
-To be documented
+Installation using gradle
+```groovy
+compile 'us.cuatoi.s34j:s34j-core:0.3.0-SNAPSHOT'
+```
+Installation using maven
+```xml
+<dependency>
+    <groupId>us.cuatoi.s34j</groupId>
+    <artifactId>s34j-core</artifactId>
+    <version>0.3.0-SNAPSHOT</version>
+</dependency>
+```
 ##### Configuration
 SimpleStorageServlet can be used to serve any NIO path with S3 API. Below is 
 a sample web.xml file:

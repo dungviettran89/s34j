@@ -1,6 +1,6 @@
-#S34J Pub Sub
+# S34J Pub Sub
 A google pub sub library to be used in Spring
-##Installation
+## Installation
 Installation using gradle
 ```groovy
 compile 'us.cuatoi.s34j:s34j-pubsub:0.3.0-SNAPSHOT'
@@ -13,7 +13,7 @@ Installation using maven
     <version>0.3.0-SNAPSHOT</version>
 </dependency>
 ```
-##Quick Start
+## Quick Start
 Provide projectId and base64 credential using properties
 ```properties
 s34j.pubsub.project=pubsub-demo
@@ -47,20 +47,24 @@ public class PubSubTestApplication {
     }
 }
 ```
-##How to obtain credential to use
+## How to obtain credential to use
 Copy project from dashboard page
-(s34j-pubsub-projectId.PNG)
+![Copy project from dashboard page](s34j-pubsub-projectId.PNG)
+
 Go to IAM & admin > Service Accounts
-(s34j-pubsub-createKey.PNG)
+![Go to IAM & admin > Service Accounts](s34j-pubsub-createKey.PNG)
+
 Create a new key with json format
-(s34j-pubsub-create-key-json.PNG)
+![Create a new key with json format](s34j-pubsub-create-key-json.PNG)
+
 Download and format key to base64
-(s34j-pubsub-base64.PNG)
+![Download and format key to base64](s34j-pubsub-base64.PNG)
+
 Use the key in property file
 ```properties
 s34j.pubsub.credentialBase64=ew0KICAidHlwZS...
 ```
-##Advanced use cases
+## Advanced use cases
 Provide projectId and base64 credential for each topic by specifying <topic_name>.project and
  <topic_name>.credentialBase64. S34J Pub Sub will load and use credential for that topic
 ```properties
