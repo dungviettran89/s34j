@@ -32,4 +32,6 @@ public @interface PubSubListener {
 
     String name() default "";
 
+    boolean addUniquePrefix() default false;
+
 }

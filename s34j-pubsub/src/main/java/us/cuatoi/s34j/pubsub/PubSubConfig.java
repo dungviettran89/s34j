@@ -26,6 +26,11 @@ import org.springframework.context.annotation.Configuration;
 public class PubSubConfig {
 
     @Bean
+    public PubSubBeanPostProcessor pubSubBeanPostProcessor() {
+        return new PubSubBeanPostProcessor();
+    }
+
+    @Bean
     public PubSub pubSub() {
         return new GooglePubSub();
     }

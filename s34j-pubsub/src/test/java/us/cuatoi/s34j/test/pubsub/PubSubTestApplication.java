@@ -9,8 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import us.cuatoi.s34j.pubsub.EnablePubSub;
 import us.cuatoi.s34j.pubsub.PubSub;
-
-import javax.annotation.PostConstruct;
+import us.cuatoi.s34j.pubsub.PubSubListener;
 
 @SpringBootApplication
 @EnablePubSub
@@ -22,14 +21,17 @@ public class PubSubTestApplication {
     @Autowired
     private PubSub pubSub;
 
-    @PostConstruct
-    void start() {
-        pubSub.register(TestMessage.class, (message) -> {
-            logger.info("Received message={}", message);
-        });
+    @PubSubListener
+    public void onTestMessage(TestMessage message) {
+        logger.info("onTestMessage message={}", message);
     }
 
-    @Scheduled(initialDelay = 1000, fixedDelay = 120 * 1000)
+    @PubSubListener(addUniquePrefix = true)
+    public void onTestMessage2(TestMessage message) {
+        logger.info("onTestMessage2 message={}", message);
+    }
+
+    @Scheduled(initialDelay = 1000, fixedDelay = 5000)
     void sendCorrectMessage() {
         pubSub.publish(new TestMessage());
     }
