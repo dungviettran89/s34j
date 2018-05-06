@@ -10,6 +10,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import us.cuatoi.s34j.pubsub.EnablePubSub;
 import us.cuatoi.s34j.pubsub.PubSub;
 
+import javax.annotation.PostConstruct;
+
 @SpringBootApplication
 @EnablePubSub
 @EnableScheduling
@@ -17,19 +19,24 @@ import us.cuatoi.s34j.pubsub.PubSub;
 public class PubSubTestApplication {
 
     public static final Logger logger = LoggerFactory.getLogger(PubSubTestApplication.class);
-    private boolean registered = false;
     @Autowired
     private PubSub pubSub;
 
-
-    @Scheduled(fixedDelay = 5000)
-    void sendMessage() {
-        pubSub.publish(new TestMessage());
-        if (!registered) {
-            registered = true;
-            pubSub.register(TestMessage.class, (message) -> {
-                logger.info("Received message={}", message);
-            });
-        }
+    @PostConstruct
+    void start() {
+        pubSub.register(TestMessage.class, (message) -> {
+            logger.info("Received message={}", message);
+        });
     }
+
+    @Scheduled(initialDelay = 1000, fixedDelay = 120 * 1000)
+    void sendCorrectMessage() {
+        pubSub.publish(new TestMessage());
+    }
+
+    @Scheduled(initialDelay = 2000, fixedDelay = 120 * 1000)
+    void sendIncorrectMessage() {
+        pubSub.publish(TestMessage.class.getName(), "String Message");
+    }
+
 }

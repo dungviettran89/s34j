@@ -15,6 +15,8 @@
 
 package us.cuatoi.s34j.pubsub;
 
+import com.google.common.base.Preconditions;
+
 import java.util.function.Consumer;
 
 public abstract class PubSub {
@@ -23,10 +25,13 @@ public abstract class PubSub {
     public abstract void publish(String topic, Object message);
 
     public void publish(Object message) {
+        Preconditions.checkNotNull(message);
         publish(message.getClass().getName(), message);
     }
 
     public <T> void register(Class<T> tClass, Consumer<T> consumer) {
+        Preconditions.checkNotNull(tClass);
+        Preconditions.checkNotNull(consumer);
         register(tClass.getName(), tClass.getName() + ".consumer", tClass, consumer);
     }
 }

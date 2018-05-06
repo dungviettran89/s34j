@@ -1,5 +1,8 @@
 package us.cuatoi.s34j.test.pubsub;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.UUID;
 
 public class TestMessage {
@@ -35,5 +38,14 @@ public class TestMessage {
 
     public void setTestInt(int testInt) {
         this.testInt = testInt;
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return getClass().getName() + new ObjectMapper().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return super.toString();
+        }
     }
 }

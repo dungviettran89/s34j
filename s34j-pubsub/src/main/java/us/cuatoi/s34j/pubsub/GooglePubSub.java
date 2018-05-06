@@ -24,6 +24,7 @@ import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.v1.*;
+import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -52,6 +54,8 @@ public class GooglePubSub extends PubSub {
     private ObjectMapper objectMapper;
     @Autowired
     private ExecutorProvider executorProvider;
+    @Autowired(required = false)
+    private PubSubLogger pubSubLogger;
     private Set<Subscriber> subscribers = new HashSet<>();
     private LoadingCache<String, CredentialsProvider> credentialsProviders = CacheBuilder.newBuilder()
             .build(new CacheLoader<String, CredentialsProvider>() {
@@ -75,29 +79,42 @@ public class GooglePubSub extends PubSub {
                 }
             });
 
+
+    @PostConstruct
+    void start() {
+        if (pubSubLogger == null) {
+            logger.info("Logger not found, setting up a simple logger.");
+            pubSubLogger = new SimplePubSubLogger();
+        }
+    }
+
     @Override
-    public <T> void register(String topic, String subscription, Class<T> tClass, Consumer<T> consumer) {
+    public <T> void register(String topic, String subscription, Class<T> messageClass, Consumer<T> consumer) {
+        Preconditions.checkNotNull(topic);
+        Preconditions.checkNotNull(subscription);
+        Preconditions.checkNotNull(messageClass);
+        Preconditions.checkNotNull(consumer);
         SubscriptionName subscriptionName = getSubscriptionName(topic, subscription);
         MessageReceiver receiver = (message, response) -> {
             String json = message.getData().toString(UTF_8);
+            pubSubLogger.logIncoming(topic, subscription, messageClass, json);
 
-            String messageClass = message.getAttributesOrDefault("class", null);
-            if (!tClass.getName().equalsIgnoreCase(messageClass)) {
-                logger.warn("Ignored message. topic={} subscription={} tClass={} messageClass={} json={}",
-                        topic, subscription, tClass, messageClass, json);
-                response.nack();
+            String receivedClass = message.getAttributesOrDefault("class", null);
+            if (!messageClass.getName().equalsIgnoreCase(receivedClass)) {
+                logger.info("Ignored message due to invalid class. topic={} subscription={} messageClass={} receivedClass={} json={}",
+                        topic, subscription, messageClass, receivedClass, json);
                 return;
             }
 
             try {
-                T t = objectMapper.readValue(json, tClass);
+                T t = objectMapper.readValue(json, messageClass);
                 consumer.accept(t);
                 response.ack();
-                logger.info("Acknowledged message. topic={} subscription={} tClass={} json={}",
-                        topic, subscription, tClass, json);
+                logger.debug("Acknowledged message. topic={} subscription={} messageClass={} json={}",
+                        topic, subscription, messageClass, json);
             } catch (Exception consumeException) {
-                logger.error("Can not handle message. topic={} subscription={} tClass={} json={}",
-                        topic, subscription, tClass, json, consumeException);
+                logger.error("Can not handle message. topic={} subscription={} messageClass={} json={}",
+                        topic, subscription, messageClass, json, consumeException);
                 response.nack();
                 throw new RuntimeException(consumeException);
             }
@@ -144,14 +161,18 @@ public class GooglePubSub extends PubSub {
 
     @Override
     public void publish(String topic, Object objectMessage) {
+        Preconditions.checkNotNull(topic);
+        Preconditions.checkNotNull(objectMessage);
         try {
             String json = objectMapper.writeValueAsString(objectMessage);
+            pubSubLogger.logOutgoing(topic, objectMessage.getClass(), json);
+
             ByteString data = ByteString.copyFrom(json, UTF_8);
             PubsubMessage message = PubsubMessage.newBuilder().setData(data)
                     .putAttributes("class", objectMessage.getClass().getName())
                     .build();
             publishers.getUnchecked(topic).publish(message);
-            logger.info("Published message. topic={}, json={}", topic, json);
+            logger.debug("Published message. topic={}, json={}", topic, json);
         } catch (JsonProcessingException serializationError) {
             logger.error("serializationError, topic={}, objectMessage={}",
                     topic, objectMessage, serializationError);
@@ -186,7 +207,7 @@ public class GooglePubSub extends PubSub {
                 logger.info("Found existing topic. topicName={}", topicName);
                 return existingTopic.getNameAsTopicName();
             } catch (Exception checkTopicException) {
-                logger.warn("Topic not found. topicName={} checkTopicException={}",
+                logger.info("Topic not found. topicName={} checkTopicException={}",
                         topicName, checkTopicException);
                 if (checkTopicException.getMessage().contains("NOT_FOUND")) {
                     Topic createdTopic = adminClient.createTopic(topicName);
