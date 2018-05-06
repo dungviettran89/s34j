@@ -15,6 +15,9 @@
 
 package us.cuatoi.s34j.pubsub.log;
 
+/**
+ * Logger interface, application can provide a bean which implements this interface to perform custom logging.
+ */
 public interface PubSubLogger {
 
     void logIncoming(String topic, String subscription, Class<?> messageClass, String json);

@@ -33,6 +33,9 @@ import java.util.UUID;
 
 import static org.springframework.util.StringUtils.isEmpty;
 
+/**
+ * Perform all necessary handling to use PubSubListener annotation.
+ */
 public class PubSubBeanPostProcessor implements BeanPostProcessor {
     private static final Logger logger = LoggerFactory.getLogger(PubSubBeanPostProcessor.class);
 
@@ -70,7 +73,7 @@ public class PubSubBeanPostProcessor implements BeanPostProcessor {
                 topic = isEmpty(topic) ? messageClass.getName() : topic;
                 String subscription = listener.name();
                 subscription = isEmpty(subscription) ? beanName + "." + method.getName() : subscription;
-                if (listener.addUniquePrefix()) {
+                if (listener.addUniqueSuffix()) {
                     subscription += "." + UUID.randomUUID().toString();
                 }
                 pubSub.register(topic, subscription, messageClass, (message) -> {

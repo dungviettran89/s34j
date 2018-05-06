@@ -26,7 +26,7 @@ public class PubSubTestApplication {
         logger.info("onTestMessage message={}", message);
     }
 
-    @PubSubListener(addUniquePrefix = true)
+    @PubSubListener(addUniqueSuffix = true)
     public void onTestMessage2(TestMessage message) {
         logger.info("onTestMessage2 message={}", message);
     }

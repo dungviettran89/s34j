@@ -52,6 +52,9 @@ import java.util.function.Consumer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/**
+ * Google Pub Sub implementation to handle all pub/sub integration.
+ */
 public class GooglePubSub extends PubSub {
 
     public static final Logger logger = LoggerFactory.getLogger(GooglePubSub.class);
@@ -70,25 +73,28 @@ public class GooglePubSub extends PubSub {
             .build(new CacheLoader<String, CredentialsProvider>() {
                 @Override
                 public CredentialsProvider load(String topic) {
-                    return getCredentialsProvider(topic);
-                }
-            });
-    private LoadingCache<String, Publisher> publishers = CacheBuilder.newBuilder()
-            .build(new CacheLoader<String, Publisher>() {
-                @Override
-                public Publisher load(String topic) {
-                    return getPublisher(topic);
+                    return createCredentialsProvider(topic);
                 }
             });
     private LoadingCache<String, TopicName> topics = CacheBuilder.newBuilder()
             .build(new CacheLoader<String, TopicName>() {
                 @Override
                 public TopicName load(String topic) {
-                    return getTopicName(topic);
+                    return createTopicName(topic);
+                }
+            });
+    private LoadingCache<String, Publisher> publishers = CacheBuilder.newBuilder()
+            .build(new CacheLoader<String, Publisher>() {
+                @Override
+                public Publisher load(String topic) {
+                    return createPublisher(topic);
                 }
             });
 
-
+    /**
+     * Auto configure this instance using a set of default object: SimplePubSubLogger, ObjectMapper,
+     * InstantiatingExecutorProvider, DefaultDestinationConfigurationProvider
+     */
     @PostConstruct
     void start() {
         if (pubSubLogger == null) {
@@ -148,6 +154,14 @@ public class GooglePubSub extends PubSub {
         subscribers.add(subscriber);
     }
 
+    /**
+     * Get a subscription name, also perform check if a subscription is available. Create a new subscription if none are
+     * available
+     *
+     * @param topic        the subscription should listen to
+     * @param subscription the name of the subscription
+     * @return subscription name to be used in Google Pub Sub client
+     */
     private SubscriptionName getSubscriptionName(String topic, String subscription) {
         DestinationConfiguration configuration = configurationProvider.getConfiguration(topic);
         String project = configuration.getProject();
@@ -202,7 +216,13 @@ public class GooglePubSub extends PubSub {
         }
     }
 
-    private Publisher getPublisher(String topic) {
+    /**
+     * Create a new publisher to publish message to Google Pub/Sub
+     *
+     * @param topic to create publisher
+     * @return a new Publisher
+     */
+    private Publisher createPublisher(String topic) {
         try {
             TopicName topicName = topics.getUnchecked(topic);
             CredentialsProvider credentialsProvider = credentialsProviders.getUnchecked(topic);
@@ -216,7 +236,14 @@ public class GooglePubSub extends PubSub {
         }
     }
 
-    private TopicName getTopicName(String topic) {
+    /**
+     * Create a new Topic Name to be used by Pub Sub client. This method also check then create a new topic
+     * if none is available.
+     *
+     * @param topic name to create
+     * @return Topic Name to be used by pubsub.
+     */
+    private TopicName createTopicName(String topic) {
         DestinationConfiguration configuration = configurationProvider.getConfiguration(topic);
         TopicName topicName = TopicName.of(configuration.getProject(), topic);
         try {
@@ -246,7 +273,14 @@ public class GooglePubSub extends PubSub {
         }
     }
 
-    private CredentialsProvider getCredentialsProvider(String topic) {
+    /**
+     * Load configuration from provider then prepare a new FixedCredentialProvider to be used to authenticate
+     * with google pub sub
+     *
+     * @param topic to be created
+     * @return CredentialsProvider for this topic.
+     */
+    private CredentialsProvider createCredentialsProvider(String topic) {
         DestinationConfiguration configuration = configurationProvider.getConfiguration(topic);
         try {
             GoogleCredentials credentials = GoogleCredentials.fromStream(new ByteArrayInputStream(configuration.getKey()));
@@ -263,6 +297,9 @@ public class GooglePubSub extends PubSub {
         }
     }
 
+    /**
+     * Clean up and stop all subscribers and publishers
+     */
     @PreDestroy
     void stop() {
         subscribers.forEach(AbstractApiService::stopAsync);

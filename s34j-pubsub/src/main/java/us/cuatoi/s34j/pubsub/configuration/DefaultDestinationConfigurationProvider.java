@@ -24,6 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 
+/**
+ * Default configuration provider which need a default project to be provided using the following properties:
+ * - s34j.pubsub.project=pubsub-demo
+ * - s34j.pubsub.credentialBase64=ZXJ2aWNlX2FjY291bnQiLA0KIC
+ * <p>
+ * Configuration can be further provided using topic_name.project and topic_name.credentialBase64 to connect to multiple
+ * project.
+ */
 public class DefaultDestinationConfigurationProvider implements DestinationConfigurationProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultDestinationConfigurationProvider.class);

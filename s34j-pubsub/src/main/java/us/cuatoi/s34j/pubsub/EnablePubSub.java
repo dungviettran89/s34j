@@ -19,6 +19,14 @@ import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
 
+/**
+ * Enable Pub Sub capability. Application must provide the project and json credential in base64 format using the
+ * following configuration.
+ * - s34j.pubsub.project=pubsub-demo
+ * - s34j.pubsub.credentialBase64=ZXJ2aWNlX2FjY291bnQiLA0KIC
+ * <p>
+ * Application can then send the message using @PubSub class or receive message using @PubSubListener annotation
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

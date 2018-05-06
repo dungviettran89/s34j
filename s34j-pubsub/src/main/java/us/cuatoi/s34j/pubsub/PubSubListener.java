@@ -19,19 +19,37 @@ import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.*;
 
+/**
+ * Method annotation to signal GooglePubSub to invoke this method when a message arrives.
+ */
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Repeatable(PubSubListeners.class)
 public @interface PubSubListener {
+    /**
+     * @return Topic name to be created in google pub sub. Default to message class name
+     */
     @AliasFor("topic")
     String value() default "";
 
+    /**
+     *
+     * @return Topic name to be created in google pub sub. Default to message class name
+     */
     @AliasFor("value")
     String topic() default "";
 
+    /**
+     *
+     * @return Subscriber name to be created
+     */
     String name() default "";
 
-    boolean addUniquePrefix() default false;
+    /**
+     *
+     * @return true if an unique suffix will be added to subscriber name.
+     */
+    boolean addUniqueSuffix() default false;
 
 }

@@ -19,19 +19,50 @@ import com.google.common.base.Preconditions;
 
 import java.util.function.Consumer;
 
+/**
+ * Provide main function for Google Pub/Sub to be used in spring. Application can publish a message
+ * using publish method or can register for a particular topic using register method.
+ */
 public abstract class PubSub {
-    public abstract <T> void register(String topic, String subscription, Class<T> tClass, Consumer<T> consumer);
+    /**
+     * Register a consumer to a particular topic
+     *
+     * @param topic        to be listened to
+     * @param subscription name of this consumer
+     * @param messageClass the message class
+     * @param consumer     to consume the message
+     * @param <T>          message
+     */
+    public abstract <T> void register(String topic, String subscription, Class<T> messageClass, Consumer<T> consumer);
 
+    /**
+     * Publish a message to a topic
+     *
+     * @param topic   to publish to
+     * @param message to publish in json format
+     */
     public abstract void publish(String topic, Object message);
 
+    /**
+     * Overriding method, allows sending message to the topic equal to class name
+     * @param message to publish
+     */
     public void publish(Object message) {
         Preconditions.checkNotNull(message);
         publish(message.getClass().getName(), message);
     }
 
-    public <T> void register(Class<T> tClass, Consumer<T> consumer) {
-        Preconditions.checkNotNull(tClass);
+    /**
+     * Overriding method, default register the consumer to a topic named by message class and consumer default named to
+     * topic + .consumer
+     *
+     * @param messageClass the message class
+     * @param consumer     to consume the message
+     * @param <T>          message
+     */
+    public <T> void register(Class<T> messageClass, Consumer<T> consumer) {
+        Preconditions.checkNotNull(messageClass);
         Preconditions.checkNotNull(consumer);
-        register(tClass.getName(), tClass.getName() + ".consumer", tClass, consumer);
+        register(messageClass.getName(), messageClass.getName() + ".consumer", messageClass, consumer);
     }
 }

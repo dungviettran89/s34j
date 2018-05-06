@@ -15,7 +15,11 @@
 
 package us.cuatoi.s34j.pubsub.configuration;
 
+/**
+ * Configuration to be used to create a new pub/sub configuration
+ */
 public class DestinationConfiguration {
+
     private String project;
     private byte[] key;
 

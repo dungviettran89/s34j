@@ -15,6 +15,18 @@
 
 package us.cuatoi.s34j.pubsub.configuration;
 
+/**
+ * Provide configuration for a topic
+ */
 public interface DestinationConfigurationProvider {
+    /**
+     * Provide configuration for a topic. This method can be used to provide different configuration for different topic
+     * thus enable connecting to multiple google project.
+     * Default implementation of this interfaces loads configuration from Spring configuration. It can also be extended
+     * to load configuration from a database.
+     *
+     * @param topic name
+     * @return configuration used for this object.
+     */
     DestinationConfiguration getConfiguration(String topic);
 }
