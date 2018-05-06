@@ -9,7 +9,7 @@ apply plugin: 'war'
 apply from: 'https://raw.github.com/akhikhl/gretty/master/pluginScripts/gretty.plugin'
 
 group = 'us.cuatoi.s34j'
-version = '0.3.0-SNAPSHOT'
+version = '0.3.0'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    compile('us.cuatoi.s34j:s34j-core:0.3.0-SNAPSHOT')
+    compile('us.cuatoi.s34j:s34j-core:0.3.0')
     compile('org.slf4j:slf4j-simple:1.7.25')
 
     compileOnly('javax.servlet:javax.servlet-api:3.1.0')
