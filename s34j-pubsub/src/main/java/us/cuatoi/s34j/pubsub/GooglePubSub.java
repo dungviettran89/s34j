@@ -23,16 +23,12 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.pubsub.v1.MessageReceiver;
-import com.google.cloud.pubsub.v1.Publisher;
-import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.cloud.pubsub.v1.*;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.protobuf.ByteString;
-import com.google.pubsub.v1.PubsubMessage;
-import com.google.pubsub.v1.SubscriptionName;
-import com.google.pubsub.v1.TopicName;
+import com.google.pubsub.v1.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,12 +67,17 @@ public class GooglePubSub extends PubSub {
                     return getPublisher(topic);
                 }
             });
+    private LoadingCache<String, TopicName> topics = CacheBuilder.newBuilder()
+            .build(new CacheLoader<String, TopicName>() {
+                @Override
+                public TopicName load(String topic) {
+                    return getTopicName(topic);
+                }
+            });
 
     @Override
     public <T> void register(String topic, String subscription, Class<T> tClass, Consumer<T> consumer) {
-        DestinationConfiguration configuration = configurationProvider.getConfiguration(topic);
-        String project = configuration.getProject();
-        SubscriptionName subscriptionName = SubscriptionName.of(project, subscription);
+        SubscriptionName subscriptionName = getSubscriptionName(topic, subscription);
         MessageReceiver receiver = (message, response) -> {
             String json = message.getData().toString(UTF_8);
 
@@ -102,9 +103,43 @@ public class GooglePubSub extends PubSub {
             }
         };
         CredentialsProvider credentialsProvider = credentialsProviders.getUnchecked(topic);
-        Subscriber subscriber = Subscriber.newBuilder(subscriptionName, receiver).setCredentialsProvider(credentialsProvider).setExecutorProvider(executorProvider).build();
+        Subscriber subscriber = Subscriber.newBuilder(subscriptionName, receiver)
+                .setCredentialsProvider(credentialsProvider).setExecutorProvider(executorProvider).build();
         subscriber.startAsync();
         subscribers.add(subscriber);
+    }
+
+    private SubscriptionName getSubscriptionName(String topic, String subscription) {
+        DestinationConfiguration configuration = configurationProvider.getConfiguration(topic);
+        String project = configuration.getProject();
+        CredentialsProvider credentialsProvider = credentialsProviders.getUnchecked(topic);
+        SubscriptionName subscriptionName = SubscriptionName.of(project, subscription);
+        try {
+            SubscriptionAdminSettings settings = SubscriptionAdminSettings.newBuilder()
+                    .setCredentialsProvider(credentialsProvider)
+                    .setExecutorProvider(executorProvider).build();
+            SubscriptionAdminClient client = SubscriptionAdminClient.create(settings);
+            try {
+                Subscription existingSubscription = client.getSubscription(subscriptionName);
+                logger.info("Found existing subscription. subscriptionName={}", subscriptionName);
+                return existingSubscription.getNameAsSubscriptionName();
+            } catch (Exception checkException) {
+                if (checkException.getMessage().contains("NOT_FOUND")) {
+                    logger.info("Subscription not found, creating. subscriptionName={}", subscriptionName);
+                    Subscription createdSubscription = client.createSubscription(subscriptionName,
+                            topics.getUnchecked(topic), PushConfig.getDefaultInstance(), 600);
+                    return createdSubscription.getNameAsSubscriptionName();
+                } else {
+                    throw checkException;
+                }
+            } finally {
+                client.close();
+            }
+        } catch (Exception createClietnException) {
+            logger.error("Can not create subscription admin client.subscriptionName={}",
+                    subscriptionName, createClietnException);
+            throw new RuntimeException(createClietnException);
+        }
     }
 
     @Override
@@ -125,18 +160,46 @@ public class GooglePubSub extends PubSub {
     }
 
     private Publisher getPublisher(String topic) {
-        DestinationConfiguration configuration = configurationProvider.getConfiguration(topic);
-        String project = configuration.getProject();
         try {
+            TopicName topicName = topics.getUnchecked(topic);
             CredentialsProvider credentialsProvider = credentialsProviders.getUnchecked(topic);
-            TopicName topicName = TopicName.of(project, topic);
             Publisher publisher = Publisher.newBuilder(topicName).setCredentialsProvider(credentialsProvider)
                     .setExecutorProvider(executorProvider).build();
-            logger.info("Created publisher. topic={} project={}", topic, project);
+            logger.info("Created publisher. topic={}", topic);
             return publisher;
         } catch (IOException createPublisherException) {
-            logger.error("createPublisherException, topic={}, project={}", topic, project, createPublisherException);
+            logger.error("createPublisherException, topic={}", topic, createPublisherException);
             throw new RuntimeException(createPublisherException);
+        }
+    }
+
+    private TopicName getTopicName(String topic) {
+        DestinationConfiguration configuration = configurationProvider.getConfiguration(topic);
+        TopicName topicName = TopicName.of(configuration.getProject(), topic);
+        try {
+            TopicAdminSettings settings = TopicAdminSettings.newBuilder()
+                    .setCredentialsProvider(credentialsProviders.getUnchecked(topic))
+                    .setExecutorProvider(executorProvider).build();
+            TopicAdminClient adminClient = TopicAdminClient.create(settings);
+            try {
+                Topic existingTopic = adminClient.getTopic(topicName);
+                logger.info("Found existing topic. topicName={}", topicName);
+                return existingTopic.getNameAsTopicName();
+            } catch (Exception checkTopicException) {
+                logger.warn("Topic not found. topicName={} checkTopicException={}",
+                        topicName, checkTopicException);
+                if (checkTopicException.getMessage().contains("NOT_FOUND")) {
+                    Topic createdTopic = adminClient.createTopic(topicName);
+                    return createdTopic.getNameAsTopicName();
+                } else {
+                    throw new RuntimeException(checkTopicException);
+                }
+            } finally {
+                adminClient.close();
+            }
+        } catch (Exception createTopicException) {
+            logger.error("Can not create topic. topicName={}", topicName, createTopicException);
+            throw new RuntimeException(createTopicException);
         }
     }
 

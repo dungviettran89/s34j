@@ -20,15 +20,15 @@ public class DestinationConfiguration {
     private byte[] key;
 
     public byte[] getKey() {
-        return key;
+        return key.clone();
     }
 
     public void setKey(byte[] key) {
-        this.key = key;
+        this.key = key.clone();
     }
 
     public DestinationConfiguration withKey(byte[] key) {
-        this.key = key;
+        this.key = key.clone();
         return this;
     }
 
