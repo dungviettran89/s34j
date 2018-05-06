@@ -65,8 +65,8 @@ Use the key in property file
 s34j.pubsub.credentialBase64=ew0KICAidHlwZS...
 ```
 ## Advanced use cases
-Provide projectId and base64 credential for each topic by specifying <topic_name>.project and
- <topic_name>.credentialBase64. S34J Pub Sub will load and use credential for that topic
+Provide projectId and base64 credential for each topic by specifying **topic_name**.project and
+ **topic_name**.credentialBase64. S34J Pub Sub will load and use credential for that topic
  
 ```properties
 sample_topic.project=pubsub-demo
