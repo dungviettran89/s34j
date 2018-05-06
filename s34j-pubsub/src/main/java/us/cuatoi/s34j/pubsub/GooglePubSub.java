@@ -21,6 +21,7 @@ import com.google.api.core.AbstractApiService;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.v1.*;
@@ -50,9 +51,9 @@ public class GooglePubSub extends PubSub {
     public static final Logger logger = LoggerFactory.getLogger(GooglePubSub.class);
     @Autowired
     private DestinationConfigurationProvider configurationProvider;
-    @Autowired
+    @Autowired(required = false)
     private ObjectMapper objectMapper;
-    @Autowired
+    @Autowired(required = false)
     private ExecutorProvider executorProvider;
     @Autowired(required = false)
     private PubSubLogger pubSubLogger;
@@ -85,6 +86,15 @@ public class GooglePubSub extends PubSub {
         if (pubSubLogger == null) {
             logger.info("Logger not found, setting up a simple logger.");
             pubSubLogger = new SimplePubSubLogger();
+        }
+        if (objectMapper == null) {
+            logger.info("Json Mapper not found, setting up default instance.");
+            objectMapper = new ObjectMapper();
+        }
+        if (executorProvider == null) {
+            logger.info("Executor Provider not found, setting up default instance.");
+            executorProvider = InstantiatingExecutorProvider.newBuilder().setExecutorThreadCount(Runtime.getRuntime()
+                    .availableProcessors()).build();
         }
     }
 
