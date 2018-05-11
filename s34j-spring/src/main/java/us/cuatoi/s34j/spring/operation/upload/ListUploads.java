@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2018 dungviettran89@gmail.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ */
+
 package us.cuatoi.s34j.spring.operation.upload;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -20,12 +35,10 @@ import us.cuatoi.s34j.spring.model.UploadRepository;
 import us.cuatoi.s34j.spring.operation.bucket.AbstractBucketRule;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.stream.StreamSupport;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static us.cuatoi.s34j.spring.SpringStorageConstants.EXPIRATION_DATE_FORMAT;
 
 @Service
 @Rule(name = "ListUploads")
@@ -79,7 +92,7 @@ public class ListUploads extends AbstractBucketRule {
                 UploadXml xml = new UploadXml();
                 xml.setObjectName(m.getObjectName());
                 xml.setStorageClass(SpringStorageConstants.STORAGE_CLASS);
-                xml.setInitiated(StorageHelper.format(EXPIRATION_DATE_FORMAT, new Date(m.getCreatedDate())));
+                xml.setInitiated(StorageHelper.toResponseDateString(m.getCreatedDate()));
                 xml.setUploadId(m.getUploadId());
                 xml.setOwner(owner);
                 xml.setInitiator(initiator);

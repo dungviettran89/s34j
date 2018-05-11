@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2018 dungviettran89@gmail.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ */
+
 package us.cuatoi.s34j.spring.model;
 
 import com.google.gson.Gson;
@@ -10,12 +25,13 @@ public class UploadPartModel {
     @Id
     @javax.persistence.Id
     private String uploadPartId;
-    private String uploadPartOrder;
+    private long uploadPartOrder;
     private long createdDate = System.currentTimeMillis();
     private String uploadId;
     private String objectName;
     private String bucketName;
     private String etag;
+    private long size;
 
     public String getObjectName() {
         return objectName;
@@ -57,11 +73,11 @@ public class UploadPartModel {
         this.uploadId = uploadId;
     }
 
-    public String getUploadPartOrder() {
+    public long getUploadPartOrder() {
         return uploadPartOrder;
     }
 
-    public void setUploadPartOrder(String uploadPartOrder) {
+    public void setUploadPartOrder(long uploadPartOrder) {
         this.uploadPartOrder = uploadPartOrder;
     }
 
@@ -76,5 +92,13 @@ public class UploadPartModel {
     @Override
     public String toString() {
         return getClass().getSimpleName() + new Gson().toJson(this);
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
     }
 }

@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2018 dungviettran89@gmail.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ */
+
 package us.cuatoi.s34j.spring.operation;
 
 import com.google.common.collect.Lists;
@@ -16,12 +31,10 @@ import us.cuatoi.s34j.spring.dto.OwnerXml;
 import us.cuatoi.s34j.spring.helper.StorageHelper;
 import us.cuatoi.s34j.spring.model.BucketRepository;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static us.cuatoi.s34j.spring.SpringStorageConstants.CONTENT_TYPE;
-import static us.cuatoi.s34j.spring.SpringStorageConstants.EXPIRATION_DATE_FORMAT;
 
 @Service
 @Rule(name = "ListAllBuckets")
@@ -38,10 +51,9 @@ public class ListAllBuckets implements ExecutionRule {
     public void returnBucketList(Facts facts, @Fact("awsAccessKey") String awsAccessKey) {
         List<BucketXml> bucketList = Lists.newArrayList(bucketRepository.findAll()).stream()
                 .map((b) -> {
-                    Date createdDate = new Date(b.getCreatedDate());
                     BucketXml xml = new BucketXml();
                     xml.setName(b.getBucketName());
-                    xml.setCreationDate(StorageHelper.format(EXPIRATION_DATE_FORMAT, createdDate));
+                    xml.setCreationDate(StorageHelper.toResponseDateString(b.getCreatedDate()));
                     return xml;
                 })
                 .collect(Collectors.toList());

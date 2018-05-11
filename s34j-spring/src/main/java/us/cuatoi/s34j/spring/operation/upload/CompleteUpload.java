@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2018 dungviettran89@gmail.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ */
+
 package us.cuatoi.s34j.spring.operation.upload;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -54,10 +69,10 @@ public class CompleteUpload extends AbstractUploadRule {
             CompleteMultipartUploadXml requestXml = StorageHelper.parseXml(inputStreams, new CompleteMultipartUploadXml());
             List<UploadPartModel> uploadPartModels = new ArrayList<>();
             List<PartModel> parts = new ArrayList<>();
-            int lastPartNumber = -1;
+            long lastPartNumber = -1;
             for (PartXml partXml : requestXml.getParts()) {
-                String currentPartNumber = partXml.getPartNumber();
-                if (lastPartNumber > NumberUtils.toInt(currentPartNumber)) {
+                long currentPartNumber = NumberUtils.toLong(partXml.getPartNumber());
+                if (lastPartNumber > currentPartNumber) {
                     throw new SpringStorageException(ErrorCode.INVALID_PART_ORDER);
                 }
                 UploadPartModel uploadPart = uploadPartRepository.findOneByUploadPartOrderAndUploadId(currentPartNumber, uploadId);
@@ -70,7 +85,7 @@ public class CompleteUpload extends AbstractUploadRule {
                     throw new SpringStorageException(ErrorCode.INVALID_PART);
                 }
                 parts.addAll(partModels);
-                lastPartNumber = NumberUtils.toInt(currentPartNumber);
+                lastPartNumber = currentPartNumber;
             }
             objectManager.deleteCurrentVersionIfExists(objectName, bucketName);
 

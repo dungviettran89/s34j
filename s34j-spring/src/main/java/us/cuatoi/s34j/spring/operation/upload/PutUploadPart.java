@@ -1,5 +1,21 @@
+/*
+ * Copyright (C) 2018 dungviettran89@gmail.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ */
+
 package us.cuatoi.s34j.spring.operation.upload;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.jeasy.rules.annotation.Action;
 import org.jeasy.rules.annotation.Condition;
 import org.jeasy.rules.annotation.Fact;
@@ -47,10 +63,11 @@ public class PutUploadPart extends AbstractUploadRule {
     @Action
     public void putUploadPart(Facts facts, @Fact("bucketName") String bucketName,
                               @Fact("objectName") String objectName,
-                              @Fact("query:partNumber") String partNumber,
+                              @Fact("query:partNumber") String partNumberString,
                               @Fact("query:uploadId") String uploadId,
                               @Fact("parts") List<InputStream> parts) {
         //overrides old version
+        long partNumber = NumberUtils.toLong(partNumberString);
         UploadPartModel oldUploadPartVersion = uploadPartRepository.findOneByUploadPartOrderAndUploadId(partNumber, uploadId);
         if (oldUploadPartVersion != null) {
             List<PartModel> deletedOldParts = partRepository.findAllByUploadPartIdOrderByPartOrder(oldUploadPartVersion.getUploadPartId());
@@ -60,24 +77,28 @@ public class PutUploadPart extends AbstractUploadRule {
             logger.info("putUploadPart() deletedOldParts=" + deletedOldParts);
         }
 
+        String newPartId = newVersion();
+        long size = 0;
+        ArrayList<PartModel> newParts = new ArrayList<>();
+        for (PartModel model : partManager.savePart(parts)) {
+            model.setPartId(newVersion());
+            model.setObjectName(objectName);
+            model.setBucketName(bucketName);
+            model.setUploadPartId(newPartId);
+            newParts.add(model);
+            size += model.getLength();
+        }
+
         //save new version
         UploadPartModel uploadPartModel = new UploadPartModel();
-        uploadPartModel.setUploadPartId(newVersion());
+        uploadPartModel.setUploadPartId(newPartId);
         uploadPartModel.setBucketName(bucketName);
         uploadPartModel.setObjectName(objectName);
         uploadPartModel.setUploadId(uploadId);
         uploadPartModel.setUploadPartOrder(partNumber);
         uploadPartModel.setCreatedDate(System.currentTimeMillis());
         uploadPartModel.setEtag(facts.get("ETag"));
-
-        ArrayList<PartModel> newParts = new ArrayList<>();
-        for (PartModel model : partManager.savePart(parts)) {
-            model.setPartId(newVersion());
-            model.setObjectName(objectName);
-            model.setBucketName(bucketName);
-            model.setUploadPartId(uploadPartModel.getUploadPartId());
-            newParts.add(model);
-        }
+        uploadPartModel.setSize(size);
 
         partRepository.save(newParts);
         uploadPartRepository.save(uploadPartModel);
