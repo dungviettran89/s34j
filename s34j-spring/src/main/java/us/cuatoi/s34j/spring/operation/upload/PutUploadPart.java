@@ -25,7 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import us.cuatoi.s34j.spring.model.*;
+import us.cuatoi.s34j.spring.model.PartModel;
+import us.cuatoi.s34j.spring.model.PartRepository;
+import us.cuatoi.s34j.spring.model.UploadPartModel;
+import us.cuatoi.s34j.spring.model.UploadPartRepository;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -41,8 +44,7 @@ public class PutUploadPart extends AbstractUploadRule {
 
     @Autowired
     private UploadPartRepository uploadPartRepository;
-    @Autowired
-    private PartManager partManager;
+
     @Autowired
     private PartRepository partRepository;
 

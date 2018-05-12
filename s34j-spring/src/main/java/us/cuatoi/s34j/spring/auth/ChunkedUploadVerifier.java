@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.SpringStorageConstants;
 import us.cuatoi.s34j.spring.SpringStorageException;
+import us.cuatoi.s34j.spring.dto.ErrorCode;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
@@ -146,6 +147,7 @@ class ChunkedDecodeInputStream extends InputStream {
             ByteStreams.readFully(inputStream, buffer);
         } catch (EOFException exception) {
             logger.warn("Can not fill buffer, chunkSize={}", chunkSize, exception);
+            throw new SpringStorageException(ErrorCode.INCOMPLETE_BODY);
         }
         String chunkStringToSign = "AWS4-HMAC-SHA256-PAYLOAD" + "\n";
         chunkStringToSign += xAmzDate + "\n";

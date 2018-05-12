@@ -2427,11 +2427,17 @@ public class FunctionalTest {
         putObject_test3();
         putObject_test4();
         putObject_test5();
+        System.out.println("putObject_test6() ============================");
         putObject_test6();
+        System.out.println("putObject_test7() ============================");
         putObject_test7();
+        System.out.println("putObject_test8() ============================");
         putObject_test8();
+        System.out.println("putObject_test9() ============================");
         putObject_test9();
+        System.out.println("putObject_test10() ============================");
         putObject_test10();
+        System.out.println("putObject_test11() ============================");
         putObject_test11();
 
         statObject_test();

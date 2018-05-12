@@ -21,8 +21,7 @@ import org.jeasy.rules.api.Facts;
 import org.springframework.beans.factory.annotation.Autowired;
 import us.cuatoi.s34j.spring.SpringStorageException;
 import us.cuatoi.s34j.spring.dto.ErrorCode;
-import us.cuatoi.s34j.spring.model.UploadPartRepository;
-import us.cuatoi.s34j.spring.model.UploadRepository;
+import us.cuatoi.s34j.spring.model.*;
 import us.cuatoi.s34j.spring.operation.bucket.AbstractBucketRule;
 
 public abstract class AbstractUploadRule extends AbstractBucketRule {
@@ -30,6 +29,14 @@ public abstract class AbstractUploadRule extends AbstractBucketRule {
     protected UploadRepository uploadRepository;
     @Autowired
     protected UploadPartRepository uploadPartRepository;
+    @Autowired
+    protected ObjectManager objectManager;
+    @Autowired
+    protected PartRepository partRepository;
+    @Autowired
+    protected ObjectRepository objectRepository;
+    @Autowired
+    protected PartManager partManager;
 
     @Action(order = -1)
     public void checkUploadExists(Facts facts, @Fact("query:uploadId") String uploadId) {

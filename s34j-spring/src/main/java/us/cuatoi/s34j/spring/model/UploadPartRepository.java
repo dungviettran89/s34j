@@ -19,6 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.List;
+
 public interface UploadPartRepository extends CrudRepository<UploadPartModel, String> {
 
     void deleteByBucketName(String bucketName);
@@ -26,4 +28,6 @@ public interface UploadPartRepository extends CrudRepository<UploadPartModel, St
     UploadPartModel findOneByUploadPartOrderAndUploadId(long partNumber, String uploadId);
 
     Page<UploadPartModel> findAllByUploadIdAndUploadPartOrderGreaterThanOrderByUploadPartOrder(String uploadId, long partNumberMarker, Pageable page);
+
+    List<UploadPartModel> findAllByUploadId(String uploadId);
 }

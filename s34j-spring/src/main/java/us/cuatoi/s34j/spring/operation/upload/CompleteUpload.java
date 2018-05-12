@@ -23,7 +23,6 @@ import org.jeasy.rules.annotation.Rule;
 import org.jeasy.rules.api.Facts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import us.cuatoi.s34j.spring.SpringStorageException;
 import us.cuatoi.s34j.spring.dto.CompleteMultipartUploadResultXml;
@@ -31,7 +30,10 @@ import us.cuatoi.s34j.spring.dto.CompleteMultipartUploadXml;
 import us.cuatoi.s34j.spring.dto.ErrorCode;
 import us.cuatoi.s34j.spring.dto.PartXml;
 import us.cuatoi.s34j.spring.helper.StorageHelper;
-import us.cuatoi.s34j.spring.model.*;
+import us.cuatoi.s34j.spring.model.ObjectModel;
+import us.cuatoi.s34j.spring.model.PartModel;
+import us.cuatoi.s34j.spring.model.UploadModel;
+import us.cuatoi.s34j.spring.model.UploadPartModel;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -44,15 +46,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 @Rule(name = "CompleteUpload")
 public class CompleteUpload extends AbstractUploadRule {
     public static final Logger logger = LoggerFactory.getLogger(InitiateUpload.class);
-
-    @Autowired
-    private UploadPartRepository uploadPartRepository;
-    @Autowired
-    private ObjectManager objectManager;
-    @Autowired
-    private PartRepository partRepository;
-    @Autowired
-    private ObjectRepository objectRepository;
 
     @Condition
     public boolean shouldApply(@Fact("POST") boolean isPost, @Fact("bucketName") String bucketName,
