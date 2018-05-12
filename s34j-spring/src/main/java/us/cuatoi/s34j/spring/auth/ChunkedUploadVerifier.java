@@ -56,7 +56,10 @@ public class ChunkedUploadVerifier extends AbstractVerifier implements Authentic
                                 @Fact("header:x-amz-content-sha256") String xAmzContentSha256,
                                 @Fact("header:authorization") String authorization) {
         boolean isMultipleChunk = contains(contentEncoding, "aws-chunked") &&
-                equalsIgnoreCase(xAmzContentSha256, SpringStorageConstants.STREAMING_PAYLOAD);
+                equalsIgnoreCase(xAmzContentSha256, SpringStorageConstants.STREAMING_PAYLOAD) &&
+                isBlank(facts.get("header:x-amz-meta-x-amz-iv")) &&
+                isBlank(facts.get("header:x-amz-meta-x-amz-key"));
+        //TODO: find out how to handle encryption
         if (!isMultipleChunk) {
             return false;
         }
@@ -130,7 +133,7 @@ class ChunkedDecodeInputStream extends InputStream {
             return buffer[index++];
         }
         String signatureLine = readLine(inputStream);
-        if (signatureLine == null) {
+        if (isBlank(signatureLine)) {
             return -1;
         }
         Matcher matcher = CHUNK_HEADER_PATTERN.matcher(signatureLine);

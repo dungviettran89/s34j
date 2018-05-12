@@ -52,8 +52,7 @@ import java.util.*;
 import static java.lang.Boolean.TRUE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.StringUtils.*;
-import static us.cuatoi.s34j.spring.SpringStorageConstants.STREAMING_PAYLOAD;
-import static us.cuatoi.s34j.spring.SpringStorageConstants.UNSIGNED_PAYLOAD;
+import static us.cuatoi.s34j.spring.SpringStorageConstants.*;
 
 @Service
 public class SpringStorageService {
@@ -75,11 +74,12 @@ public class SpringStorageService {
         Facts facts = new Facts();
         try {
             //1: gather information
+            String method = request.getMethod();
             facts.put("requestId", requestId);
             facts.put("serverId", serverId);
-            facts.put("method", request.getMethod());
+            facts.put("method", method);
             facts.put("requestInputStream", request.getInputStream());
-            facts.put(request.getMethod(), true);
+            facts.put(method, true);
             String path = StringUtils.trimToEmpty(request.getPathInfo());
             logger.info("handle(): path=" + path);
             facts.put("path", path);
@@ -136,36 +136,39 @@ public class SpringStorageService {
                 return;
             }
             //3: parse payload
-            InputStream sourceStream = facts.get("requestInputStream");
-            //verify md5
-            final String md5 = facts.get("header:content-md5");
-            boolean md5Enabled = isNotBlank(md5);
-            if (md5Enabled) {
-                logger.info("handle() md5Enabled=" + md5Enabled);
-                sourceStream = verifyContentMd5(sourceStream, md5);
-            }
-            //parse streaming payload
-
-            //verify sha256
-            String sha256 = facts.get("header:x-amz-content-sha256");
-            boolean sha256Enabled = isNotBlank(sha256) && !equalsAny(sha256, STREAMING_PAYLOAD, UNSIGNED_PAYLOAD);
-            if (sha256Enabled) {
-                logger.info("handle() sha256Enabled=" + sha256Enabled);
-                sourceStream = verifyContentSha256(sourceStream, sha256);
-            }
-
-            HashingInputStream eTagStream = new HashingInputStream(Hashing.goodFastHash(128), sourceStream);
-            sourceStream = eTagStream;
-            //3.5 parse stream
-            try (InputStream is = sourceStream) {
-                SplitOutputStream splitOutputStream = new SplitOutputStream(blockSizeBytes);
-                try (SplitOutputStream os = splitOutputStream) {
-                    long length = ByteStreams.copy(is, os);
-                    facts.put("contentLength", length);
+            if (!equalsAnyIgnoreCase(method, "GET")) {
+                InputStream sourceStream = facts.get("requestInputStream");
+                //verify md5
+                final String md5 = facts.get("header:content-md5");
+                boolean md5Enabled = isNotBlank(md5);
+                if (md5Enabled) {
+                    logger.info("handle() md5Enabled=" + md5Enabled);
+                    sourceStream = verifyContentMd5(sourceStream, md5);
                 }
-                facts.put("parts", splitOutputStream.getInputStreams());
+                //parse streaming payload
+
+                //verify sha256
+                String sha256 = facts.get("header:x-amz-content-sha256");
+                boolean sha256Enabled = isNotBlank(sha256) &&
+                        !equalsAny(sha256, STREAMING_PAYLOAD, UNSIGNED_PAYLOAD, BLANK_PAYLOAD);
+                if (sha256Enabled) {
+                    logger.info("handle() sha256Enabled=" + sha256Enabled);
+                    sourceStream = verifyContentSha256(sourceStream, sha256);
+                }
+
+                HashingInputStream eTagStream = new HashingInputStream(Hashing.goodFastHash(128), sourceStream);
+                sourceStream = eTagStream;
+                //3.5 parse stream
+                try (InputStream is = sourceStream) {
+                    SplitOutputStream splitOutputStream = new SplitOutputStream(blockSizeBytes);
+                    try (SplitOutputStream os = splitOutputStream) {
+                        long length = ByteStreams.copy(is, os);
+                        facts.put("contentLength", length);
+                    }
+                    facts.put("parts", splitOutputStream.getInputStreams());
+                }
+                facts.put("ETag", eTagStream.hash().toString());
             }
-            facts.put("ETag", eTagStream.hash().toString());
             //4: perform execution
             Rules execution = new Rules();
             executionRules.forEach(execution::register);
@@ -235,8 +238,9 @@ public class SpringStorageService {
             try (InputStream is = (InputStream) response) {
                 ByteStreams.copy(is, servletResponse.getOutputStream());
             }
+        } else {
+            servletResponse.getWriter().write(response.toString());
         }
-        servletResponse.getWriter().write(response.toString());
     }
 
     private void setIfAvailable(HttpServletResponse servletResponse, Facts facts, String headerName) {
