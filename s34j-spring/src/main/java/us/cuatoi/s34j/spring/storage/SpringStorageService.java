@@ -78,6 +78,7 @@ public class SpringStorageService {
             facts.put("requestId", requestId);
             facts.put("serverId", serverId);
             facts.put("method", request.getMethod());
+            facts.put("requestInputStream", request.getInputStream());
             facts.put(request.getMethod(), true);
             String path = StringUtils.trimToEmpty(request.getPathInfo());
             logger.info("handle(): path=" + path);
@@ -135,7 +136,7 @@ public class SpringStorageService {
                 return;
             }
             //3: parse payload
-            InputStream sourceStream = request.getInputStream();
+            InputStream sourceStream = facts.get("requestInputStream");
             //verify md5
             final String md5 = facts.get("header:content-md5");
             boolean md5Enabled = isNotBlank(md5);
