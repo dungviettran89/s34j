@@ -41,6 +41,7 @@ dependencies {
     compile('com.sun.mail:javax.mail:1.6.1')
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile("org.springframework.boot:spring-boot-devtools")
     testCompile('org.awaitility:awaitility:3.1.0')
 
     if (isMongo) {
