@@ -17,6 +17,7 @@ package us.cuatoi.s34jserver.functional;
  */
 
 import com.google.common.base.Preconditions;
+import com.google.common.io.ByteStreams;
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;
 import io.minio.messages.*;
@@ -848,7 +849,7 @@ public class FunctionalTest {
 
             is = client.getObject(bucketName, objectName, 1000L);
             ContentInputStream cis = new ContentInputStream(3 * MB);
-            cis.skip(1000);
+            ByteStreams.skipFully(cis, 1000L);
             Preconditions.checkArgument(IOUtils.contentEquals(is, cis));
             is.close();
             client.removeObject(bucketName, objectName);
@@ -878,7 +879,7 @@ public class FunctionalTest {
 
             is = client.getObject(bucketName, objectName, 1000L, 1024 * 1024L);
             ContentInputStream cis = new ContentInputStream(1000L + 1024 * 1024L);
-            cis.skip(1000);
+            ByteStreams.skipFully(cis, 1000L);
             Preconditions.checkArgument(IOUtils.contentEquals(is, cis));
             is.close();
 
