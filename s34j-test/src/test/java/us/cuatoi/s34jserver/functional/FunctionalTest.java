@@ -820,7 +820,7 @@ public class FunctionalTest {
             is.close();
 
             is = client.getObject(bucketName, objectName);
-            Preconditions.checkArgument(IOUtils.contentEquals(is, new ContentInputStream(3 * MB)));
+            verifyStreams(is, new ContentInputStream(3 * MB));
             is.close();
             client.removeObject(bucketName, objectName);
             mintSuccessLog("getObject(String bucketName, String objectName)", null, startTime);
@@ -829,6 +829,19 @@ public class FunctionalTest {
             mintFailedLog("getObject(String bucketName, String objectName)", null, startTime, null,
                     e.toString() + " >>> " + Arrays.toString(e.getStackTrace()));
             throw e;
+        }
+    }
+
+    private static void verifyStreams(InputStream first, ContentInputStream second) throws IOException {
+        byte[] firstBytes = ByteStreams.toByteArray(first);
+        byte[] secondBytes = ByteStreams.toByteArray(second);
+        if (firstBytes.length != secondBytes.length) {
+            throw new IllegalStateException("Wrong length");
+        }
+        for (int i = 0; i < firstBytes.length; i++) {
+            if (firstBytes[i] != secondBytes[i]) {
+                throw new IllegalStateException("Wrong content.");
+            }
         }
     }
 
@@ -850,7 +863,7 @@ public class FunctionalTest {
             is = client.getObject(bucketName, objectName, 1000L);
             ContentInputStream cis = new ContentInputStream(3 * MB);
             ByteStreams.skipFully(cis, 1000L);
-            Preconditions.checkArgument(IOUtils.contentEquals(is, cis));
+            verifyStreams(is, cis);
             is.close();
             client.removeObject(bucketName, objectName);
             mintSuccessLog("getObject(String bucketName, String objectName, long offset)", "offset: 1000", startTime);
@@ -878,9 +891,9 @@ public class FunctionalTest {
             is.close();
 
             is = client.getObject(bucketName, objectName, 1000L, 1024 * 1024L);
-            ContentInputStream cis = new ContentInputStream(1000L + 1024 * 1024L);
+            ContentInputStream cis = new ContentInputStream(1000L + 1024 * 1024L - 1);
             ByteStreams.skipFully(cis, 1000L);
-            Preconditions.checkArgument(IOUtils.contentEquals(is, cis));
+            verifyStreams(is, cis);
             is.close();
 
             client.removeObject(bucketName, objectName);
@@ -912,7 +925,7 @@ public class FunctionalTest {
 
             client.getObject(bucketName, objectName, objectName + ".downloaded");
             try (InputStream fis = Files.newInputStream(Paths.get(objectName + ".downloaded"))) {
-                Preconditions.checkArgument(IOUtils.contentEquals(fis, new ContentInputStream(3 * MB)));
+                verifyStreams(fis, new ContentInputStream(3 * MB));
             }
             Files.delete(Paths.get(objectName + ".downloaded"));
             client.removeObject(bucketName, objectName);

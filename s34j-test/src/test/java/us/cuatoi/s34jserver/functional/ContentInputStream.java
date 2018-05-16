@@ -175,8 +175,8 @@ class ContentInputStream extends InputStream {
             return -1;
         }
 
-        if (pos == CONTENT.length) {
-            pos = 0;
+        if (pos >= CONTENT.length) {
+            pos = pos % CONTENT.length;
         }
 
         char c = CONTENT[pos];
@@ -195,11 +195,11 @@ class ContentInputStream extends InputStream {
             throw new IOException("no more data");
         }
 
-        if (size - available < n) {
-            n = size - available;
+        if (available < n) {
             available = 0;
         } else {
             available -= n;
+            pos += n;
         }
 
         return n;

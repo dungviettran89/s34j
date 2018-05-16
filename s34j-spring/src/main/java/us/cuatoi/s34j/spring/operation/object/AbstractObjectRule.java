@@ -1,6 +1,22 @@
+/*
+ * Copyright (C) 2018 dungviettran89@gmail.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ */
+
 package us.cuatoi.s34j.spring.operation.object;
 
 import com.google.gson.Gson;
+import org.apache.commons.lang3.StringUtils;
 import org.jeasy.rules.annotation.Action;
 import org.jeasy.rules.annotation.Fact;
 import org.jeasy.rules.api.Facts;
@@ -37,7 +53,10 @@ public abstract class AbstractObjectRule extends AbstractBucketRule {
     }
 
     protected void fillResponseHeaders(Facts facts, ObjectModel objectModel) {
-        facts.put("responseHeader:contentLength", objectModel.getLength());
+        //remove content length in case range header is set
+        if (StringUtils.isBlank(facts.get("header:range"))) {
+            facts.put("responseHeader:contentLength", objectModel.getLength());
+        }
         facts.put("responseHeader:Last-Modified",
                 StorageHelper.format(SpringStorageConstants.HTTP_HEADER_DATE_FORMAT, new Date(objectModel.getCreatedDate())));
         facts.put("responseHeaders", new Gson().fromJson(objectModel.getHeadersJson(), Headers.class));
