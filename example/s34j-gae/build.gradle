@@ -29,6 +29,7 @@ appengine {
         project = 's34j-demo'
         stopPreviousVersion = true
         promote = true
+        version = '1'
     }
 }
 
