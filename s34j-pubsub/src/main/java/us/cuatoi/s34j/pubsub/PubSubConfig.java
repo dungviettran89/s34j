@@ -39,4 +39,9 @@ public class PubSubConfig {
     public PubSub pubSub() {
         return new GooglePubSub();
     }
+
+    @Bean
+    public RequestResponse requestResponse() {
+        return new RequestResponse();
+    }
 }
