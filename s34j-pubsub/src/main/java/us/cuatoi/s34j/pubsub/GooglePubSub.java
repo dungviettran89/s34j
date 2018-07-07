@@ -173,13 +173,13 @@ public class GooglePubSub extends PubSub {
                     .setExecutorProvider(executorProvider).build();
             SubscriptionAdminClient client = SubscriptionAdminClient.create(settings);
             try {
-                Subscription existingSubscription = client.getSubscription(subscriptionName);
+                client.getSubscription(subscriptionName);
                 logger.info("Found existing subscription. subscriptionName={}", subscriptionName);
                 return subscriptionName;
             } catch (Exception checkException) {
                 if (checkException.getMessage().contains("NOT_FOUND")) {
                     logger.info("Subscription not found, creating. subscriptionName={}", subscriptionName);
-                    Subscription createdSubscription = client.createSubscription(subscriptionName,
+                    client.createSubscription(subscriptionName,
                             topics.getUnchecked(topic), PushConfig.getDefaultInstance(), 600);
                     return subscriptionName;
                 } else {
@@ -188,10 +188,10 @@ public class GooglePubSub extends PubSub {
             } finally {
                 client.close();
             }
-        } catch (Exception createClietnException) {
+        } catch (Exception createClientException) {
             logger.error("Can not create subscription admin client.subscriptionName={}",
-                    subscriptionName, createClietnException);
-            throw new RuntimeException(createClietnException);
+                    subscriptionName, createClientException);
+            throw new RuntimeException(createClientException);
         }
     }
 
@@ -252,14 +252,14 @@ public class GooglePubSub extends PubSub {
                     .setExecutorProvider(executorProvider).build();
             TopicAdminClient adminClient = TopicAdminClient.create(settings);
             try {
-                Topic existingTopic = adminClient.getTopic(topicName);
+                adminClient.getTopic(topicName);
                 logger.info("Found existing topic. topicName={}", topicName);
                 return topicName;
             } catch (Exception checkTopicException) {
                 logger.info("Topic not found. topicName={} checkTopicException={}",
                         topicName, checkTopicException);
                 if (checkTopicException.getMessage().contains("NOT_FOUND")) {
-                    Topic createdTopic = adminClient.createTopic(topicName);
+                    adminClient.createTopic(topicName);
                     return topicName;
                 } else {
                     throw new RuntimeException(checkTopicException);

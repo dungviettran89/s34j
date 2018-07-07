@@ -5,7 +5,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assert.assertEquals;
 
@@ -13,7 +13,7 @@ public class RangeInputStreamTest {
     @Test
     public void testRange() throws IOException {
         byte[] buffer = new byte[1024 * 1024];
-        new Random().nextBytes(buffer);
+        ThreadLocalRandom.current().nextBytes(buffer);
         ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
         InputStream is = new RangeInputStream(bais, buffer.length, "bytes=1-1024,2048-6321,19631-");
         for (int i = 1; i < 1024; i++) {
@@ -31,7 +31,7 @@ public class RangeInputStreamTest {
     @Test
     public void testSuffix() throws IOException {
         byte[] buffer = new byte[1024 * 1024];
-        new Random().nextBytes(buffer);
+        ThreadLocalRandom.current().nextBytes(buffer);
         ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
         InputStream is = new RangeInputStream(bais, buffer.length, "bytes=1-1024,-9632");
         for (int i = 1; i < 1024; i++) {

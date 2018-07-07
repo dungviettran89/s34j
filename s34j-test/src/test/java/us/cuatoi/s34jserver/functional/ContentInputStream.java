@@ -147,13 +147,11 @@ class ContentInputStream extends InputStream {
             .append("3Wz8n0JDkW3bLS7E5Dq1YyHDOE2VTSzd0kENcw64oVZY2Ta1mJ9dSk0pizjeiRSU")
             .append("qvgubd4Hz93flD5SNzjtnBdimieB7UD7hj8LPvUzAPFhOqruqAEWMTtpF4wYPbH1")
             .toString().toCharArray();
-    private long size = 0;
     private long available = 0;
     private boolean isClosed = false;
     private int pos = 0;
 
     public ContentInputStream(long size) {
-        this.size = size;
         this.available = size;
     }
 
