@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '1.5.12.RELEASE'
+        springBootVersion = '1.5.14.RELEASE'
     }
     repositories {
         mavenCentral()
@@ -26,12 +26,10 @@ repositories {
 
 
 dependencies {
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+    compile('com.fasterxml.jackson.core:jackson-databind:2.8.8')
     compile('com.google.guava:guava:23.3-jre')
-    compile('com.google.cloud:google-cloud-pubsub:0.32.0-beta')
-
+    compile('com.google.cloud:google-cloud-pubsub:1.31.0')
     compile('org.springframework.boot:spring-boot-starter')
-
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.springframework.boot:spring-boot-starter-web')
 }

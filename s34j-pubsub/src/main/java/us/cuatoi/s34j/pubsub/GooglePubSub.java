@@ -76,10 +76,10 @@ public class GooglePubSub extends PubSub {
                     return createCredentialsProvider(topic);
                 }
             });
-    private LoadingCache<String, TopicName> topics = CacheBuilder.newBuilder()
-            .build(new CacheLoader<String, TopicName>() {
+    private LoadingCache<String, ProjectTopicName> topics = CacheBuilder.newBuilder()
+            .build(new CacheLoader<String, ProjectTopicName>() {
                 @Override
-                public TopicName load(String topic) {
+                public ProjectTopicName load(String topic) {
                     return createTopicName(topic);
                 }
             });
@@ -122,7 +122,7 @@ public class GooglePubSub extends PubSub {
         Preconditions.checkNotNull(subscription);
         Preconditions.checkNotNull(messageClass);
         Preconditions.checkNotNull(consumer);
-        SubscriptionName subscriptionName = getSubscriptionName(topic, subscription);
+        ProjectSubscriptionName subscriptionName = getSubscriptionName(topic, subscription);
         MessageReceiver receiver = (message, response) -> {
             String json = message.getData().toString(UTF_8);
             pubSubLogger.logIncoming(topic, subscription, messageClass, json);
@@ -162,11 +162,11 @@ public class GooglePubSub extends PubSub {
      * @param subscription the name of the subscription
      * @return subscription name to be used in Google Pub Sub client
      */
-    private SubscriptionName getSubscriptionName(String topic, String subscription) {
+    private ProjectSubscriptionName getSubscriptionName(String topic, String subscription) {
         DestinationConfiguration configuration = configurationProvider.getConfiguration(topic);
         String project = configuration.getProject();
         CredentialsProvider credentialsProvider = credentialsProviders.getUnchecked(topic);
-        SubscriptionName subscriptionName = SubscriptionName.of(project, subscription);
+        ProjectSubscriptionName subscriptionName = ProjectSubscriptionName.of(project, subscription);
         try {
             SubscriptionAdminSettings settings = SubscriptionAdminSettings.newBuilder()
                     .setCredentialsProvider(credentialsProvider)
@@ -175,13 +175,13 @@ public class GooglePubSub extends PubSub {
             try {
                 Subscription existingSubscription = client.getSubscription(subscriptionName);
                 logger.info("Found existing subscription. subscriptionName={}", subscriptionName);
-                return existingSubscription.getNameAsSubscriptionName();
+                return subscriptionName;
             } catch (Exception checkException) {
                 if (checkException.getMessage().contains("NOT_FOUND")) {
                     logger.info("Subscription not found, creating. subscriptionName={}", subscriptionName);
                     Subscription createdSubscription = client.createSubscription(subscriptionName,
                             topics.getUnchecked(topic), PushConfig.getDefaultInstance(), 600);
-                    return createdSubscription.getNameAsSubscriptionName();
+                    return subscriptionName;
                 } else {
                     throw checkException;
                 }
@@ -243,9 +243,9 @@ public class GooglePubSub extends PubSub {
      * @param topic name to create
      * @return Topic Name to be used by pubsub.
      */
-    private TopicName createTopicName(String topic) {
+    private ProjectTopicName createTopicName(String topic) {
         DestinationConfiguration configuration = configurationProvider.getConfiguration(topic);
-        TopicName topicName = TopicName.of(configuration.getProject(), topic);
+        ProjectTopicName topicName = ProjectTopicName.of(configuration.getProject(), topic);
         try {
             TopicAdminSettings settings = TopicAdminSettings.newBuilder()
                     .setCredentialsProvider(credentialsProviders.getUnchecked(topic))
@@ -254,13 +254,13 @@ public class GooglePubSub extends PubSub {
             try {
                 Topic existingTopic = adminClient.getTopic(topicName);
                 logger.info("Found existing topic. topicName={}", topicName);
-                return existingTopic.getNameAsTopicName();
+                return topicName;
             } catch (Exception checkTopicException) {
                 logger.info("Topic not found. topicName={} checkTopicException={}",
                         topicName, checkTopicException);
                 if (checkTopicException.getMessage().contains("NOT_FOUND")) {
                     Topic createdTopic = adminClient.createTopic(topicName);
-                    return createdTopic.getNameAsTopicName();
+                    return topicName;
                 } else {
                     throw new RuntimeException(checkTopicException);
                 }
