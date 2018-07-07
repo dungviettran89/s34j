@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import us.cuatoi.s34j.pubsub.EnablePubSub;
 import us.cuatoi.s34j.pubsub.PubSub;
+import us.cuatoi.s34j.pubsub.PubSubHandler;
 import us.cuatoi.s34j.pubsub.PubSubListener;
 
 @SpringBootApplication
@@ -31,6 +32,16 @@ public class PubSubTestApplication {
         logger.info("onTestMessage2 message={}", message);
     }
 
+    @PubSubHandler(responseTopic = "handledTestMessage")
+    public String handleTestMessage(TestMessage message) {
+        return "Received " + message.getMessage();
+    }
+
+    @PubSubListener("handledTestMessage")
+    public void onMessageReplied(String message) {
+        logger.info("onMessageReplied message={}", message);
+    }
+
     @Scheduled(initialDelay = 1000, fixedDelay = 5000)
     void sendCorrectMessage() {
         pubSub.publish(new TestMessage());
@@ -40,5 +51,6 @@ public class PubSubTestApplication {
     void sendIncorrectMessage() {
         pubSub.publish(TestMessage.class.getName(), "String Message");
     }
+
 
 }

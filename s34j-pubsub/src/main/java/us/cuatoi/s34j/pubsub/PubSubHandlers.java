@@ -15,5 +15,11 @@
 
 package us.cuatoi.s34j.pubsub;
 
-public class PubSubBeanPostProcessor {
+import java.lang.annotation.*;
+
+@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface PubSubHandlers {
+    PubSubHandler[] value();
 }

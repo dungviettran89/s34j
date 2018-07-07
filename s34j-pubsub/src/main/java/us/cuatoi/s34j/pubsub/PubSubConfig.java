@@ -26,8 +26,13 @@ import org.springframework.context.annotation.Configuration;
 public class PubSubConfig {
 
     @Bean
-    public PubSubBeanPostProcessor pubSubBeanPostProcessor() {
-        return new PubSubBeanPostProcessor();
+    public PubSubListenerBeanPostProcessor pubSubBeanPostProcessor() {
+        return new PubSubListenerBeanPostProcessor();
+    }
+
+    @Bean
+    public PubSubHandlerBeanPostProcessor pubSubHandlerBeanPostProcessor() {
+        return new PubSubHandlerBeanPostProcessor();
     }
 
     @Bean
