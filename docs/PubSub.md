@@ -83,3 +83,22 @@ public class PubSubTestApplication {
     }
 }
 ```
+
+Use PubSubHandler to quickly send response to a channel
+```java
+@PubSubHandler(requestTopic = "test_request", responseTopic = "test_response")
+public String requestResponseHandled(String message) {
+    return "Received " + message + " at " + new Date();
+}
+```
+PubSubHandler can be used in junction with RequestResponse to quickly route message using Google Pub Sub
+```java
+@Autowired
+private RequestResponse requestResponse;
+
+CompletableFuture<String> response = requestResponse
+    .sendRequestForResponse("test_request", "Message: " + new Date(), "test_response", String.class);
+response.whenCompleteAsync((s, e) -> {
+    logger.info("sendRequestForResponse s={}, ex={}", s, e);
+});
+```
