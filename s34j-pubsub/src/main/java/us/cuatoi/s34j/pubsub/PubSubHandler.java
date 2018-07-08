@@ -40,9 +40,8 @@ public @interface PubSubHandler {
     String requestTopic() default "";
 
     /**
-     * Topic name which this message should response to
      *
-     * @return
+     * @return Topic name which this message should response to
      */
     String responseTopic() default "";
 

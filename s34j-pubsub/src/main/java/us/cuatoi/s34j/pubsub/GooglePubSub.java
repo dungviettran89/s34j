@@ -140,7 +140,7 @@ public class GooglePubSub extends PubSub {
                 Message<T> received = new Message<>();
                 received.setHeaders(message.getAttributesMap());
                 received.setPayload(t);
-                received.setRawPayload(message.getData().toByteArray());
+                received.setRawPayload(message.getData());
                 consumer.accept(received);
                 response.ack();
                 logger.debug("Acknowledged message. topic={} subscription={} messageClass={} json={}",

@@ -52,7 +52,7 @@ public abstract class PubSub {
      *
      * @param topic   to publish to
      * @param message to publish in json format
-     * @param headers
+     * @param headers for the related message
      */
     public abstract void publish(String topic, Object message, Map<String, String> headers);
 

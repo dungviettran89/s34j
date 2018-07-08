@@ -75,7 +75,6 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
         holder.requestTopic = requestTopic;
         holder.responseTopic = responseTopic;
         holder.future = future;
-        holder.responseClass = responseClass;
         futures.put(uuid, holder);
 
         pubSub.publish(requestTopic, request, ImmutableMap.of("uuid", uuid));
@@ -116,6 +115,5 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
         String requestTopic;
         String responseTopic;
         CompletableFuture<T> future;
-        Class<T> responseClass;
     }
 }

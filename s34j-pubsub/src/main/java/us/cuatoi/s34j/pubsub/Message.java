@@ -15,13 +15,15 @@
 
 package us.cuatoi.s34j.pubsub;
 
+import com.google.protobuf.ByteString;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class Message<T> {
     private Map<String, String> headers = new HashMap<>();
     private T payload;
-    private byte[] rawPayload;
+    private ByteString rawPayload;
 
     public Map<String, String> getHeaders() {
         return headers;
@@ -39,11 +41,11 @@ public class Message<T> {
         this.payload = payload;
     }
 
-    public byte[] getRawPayload() {
+    public ByteString getRawPayload() {
         return rawPayload;
     }
 
-    public void setRawPayload(byte[] rawPayload) {
+    public void setRawPayload(ByteString rawPayload) {
         this.rawPayload = rawPayload;
     }
 }
