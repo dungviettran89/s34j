@@ -47,6 +47,7 @@ import javax.annotation.PreDestroy;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -117,7 +118,7 @@ public class GooglePubSub extends PubSub {
     }
 
     @Override
-    public <T> void register(String topic, String subscription, Class<T> messageClass, Consumer<T> consumer) {
+    public <T> void register(String topic, String subscription, Class<T> messageClass, Consumer<Message<T>> consumer) {
         Preconditions.checkNotNull(topic);
         Preconditions.checkNotNull(subscription);
         Preconditions.checkNotNull(messageClass);
@@ -136,7 +137,11 @@ public class GooglePubSub extends PubSub {
 
             try {
                 T t = objectMapper.readValue(json, messageClass);
-                consumer.accept(t);
+                Message<T> received = new Message<>();
+                received.setHeaders(message.getAttributesMap());
+                received.setPayload(t);
+                received.setRawPayload(message.getData().toByteArray());
+                consumer.accept(received);
                 response.ack();
                 logger.debug("Acknowledged message. topic={} subscription={} messageClass={} json={}",
                         topic, subscription, messageClass, json);
@@ -196,7 +201,7 @@ public class GooglePubSub extends PubSub {
     }
 
     @Override
-    public void publish(String topic, Object objectMessage) {
+    public void publish(String topic, Object objectMessage, Map<String, String> headers) {
         Preconditions.checkNotNull(topic);
         Preconditions.checkNotNull(objectMessage);
         try {
@@ -205,6 +210,7 @@ public class GooglePubSub extends PubSub {
 
             ByteString data = ByteString.copyFrom(json, UTF_8);
             PubsubMessage message = PubsubMessage.newBuilder().setData(data)
+                    .putAllAttributes(headers)
                     .putAttributes("class", objectMessage.getClass().getName())
                     .build();
             publishers.getUnchecked(topic).publish(message);

@@ -78,7 +78,7 @@ public class PubSubListenerBeanPostProcessor implements BeanPostProcessor {
                 }
                 pubSub.register(topic, subscription, messageClass, (message) -> {
                     try {
-                        method.invoke(bean, message);
+                        method.invoke(bean, message.getPayload());
                     } catch (IllegalAccessException | InvocationTargetException invocationError) {
                         logger.error("Can not invoke method. beanClass={} beanName={} method={}  message={}",
                                 beanClass, beanName, method, message, invocationError);

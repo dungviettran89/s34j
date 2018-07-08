@@ -83,8 +83,8 @@ public class PubSubHandlerBeanPostProcessor extends PubSubBeanPostProcessor impl
                     try {
                         String responseTopic = listener.responseTopic();
                         responseTopic = isEmpty(responseTopic) ? responseClass.getName() : responseTopic;
-                        Object response = method.invoke(bean, message);
-                        pubSub.publish(responseTopic, response);
+                        Object response = method.invoke(bean, message.getPayload());
+                        pubSub.publish(responseTopic, response, message.getHeaders());
                     } catch (IllegalAccessException | InvocationTargetException invocationError) {
                         logger.error("Can not invoke method. beanClass={} beanName={} method={}  message={}",
                                 beanClass, beanName, method, message, invocationError);

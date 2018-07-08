@@ -19,25 +19,28 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.ImmutableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
 
 public class RequestResponse implements RemovalListener<String, RequestResponse.CompletableFutureHolder> {
+    private static final Logger logger = LoggerFactory.getLogger(RequestResponse.class);
     @Value("${s34j.pubsub.request.response.timeoutMinutes:10}")
     private int timeout;
     @Autowired
     private PubSub pubSub;
-    private Map<String, Consumer<?>> consumers = new ConcurrentHashMap<>();
-    private Cache<String, CompletableFutureHolder> futures;
+    private Set<String> consumers = new HashSet<>();
+    private Cache<String, CompletableFutureHolder<?>> futures;
 
     @PostConstruct
     private void start() {
@@ -57,24 +60,47 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
     }
 
     public <T> CompletableFuture<T> sendRequestForResponse(String requestTopic, Object request, String responseTopic, Class<T> responseClass) {
-        if (!consumers.containsKey(responseTopic)) {
-            pubSub.register(responseTopic, RequestResponse.class.getName(), responseClass, new Consumer<T>() {
-                @Override
-                public void accept(T t) {
-
-                }
-            });
-        }
         String uuid = UUID.randomUUID().toString();
+        if (!consumers.contains(responseTopic)) {
+            consumers.add(responseTopic);
+            String subscriptionName = RequestResponse.class.getName() + "-" + uuid;
+            pubSub.register(responseTopic, subscriptionName, responseClass, (message) -> {
+                this.onMessage(responseTopic, message);
+            });
+            logger.info("Registering for new topic {}. subscriptionName={}", responseTopic, subscriptionName);
+        }
         CompletableFuture<T> future = new CompletableFuture<>();
         CompletableFutureHolder holder = new CompletableFutureHolder();
         holder.uuid = uuid;
         holder.requestTopic = requestTopic;
         holder.responseTopic = responseTopic;
         holder.future = future;
+        holder.responseClass = responseClass;
         futures.put(uuid, holder);
+
+        pubSub.publish(requestTopic, request, ImmutableMap.of("uuid", uuid));
         return future;
     }
+
+    @SuppressWarnings("unchecked")
+    private <T> void onMessage(String responseTopic, Message<T> received) {
+        String uuid = received.getHeaders().get("uuid");
+        if (uuid == null) {
+            logger.warn("Received unknown message from {}. payLoad={}, headers={}",
+                    responseTopic, received.getPayload(), received.getHeaders());
+            return;
+        }
+
+        CompletableFutureHolder holder = futures.getIfPresent(uuid);
+        if (holder == null) {
+            logger.warn("Received unknown {} from {}. payLoad={}, headers={}",
+                    uuid, responseTopic, received.getPayload(), received.getHeaders());
+            return;
+        }
+
+        holder.future.complete(received.getPayload());
+    }
+
 
     @Override
     public void onRemoval(RemovalNotification<String, CompletableFutureHolder> notification) {
@@ -85,10 +111,11 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
         holder.future.completeExceptionally(timeoutException);
     }
 
-    static class CompletableFutureHolder {
+    static class CompletableFutureHolder<T> {
         String uuid;
         String requestTopic;
         String responseTopic;
-        CompletableFuture<?> future;
+        CompletableFuture<T> future;
+        Class<T> responseClass;
     }
 }

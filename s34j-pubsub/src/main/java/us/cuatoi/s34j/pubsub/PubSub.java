@@ -17,6 +17,8 @@ package us.cuatoi.s34j.pubsub;
 
 import com.google.common.base.Preconditions;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -33,7 +35,7 @@ public abstract class PubSub {
      * @param consumer     to consume the message
      * @param <T>          message
      */
-    public abstract <T> void register(String topic, String subscription, Class<T> messageClass, Consumer<T> consumer);
+    public abstract <T> void register(String topic, String subscription, Class<T> messageClass, Consumer<Message<T>> consumer);
 
     /**
      * Publish a message to a topic
@@ -41,7 +43,18 @@ public abstract class PubSub {
      * @param topic   to publish to
      * @param message to publish in json format
      */
-    public abstract void publish(String topic, Object message);
+    public void publish(String topic, Object message) {
+        publish(topic, message, new HashMap<>());
+    }
+
+    /**
+     * Publish a message to a topic
+     *
+     * @param topic   to publish to
+     * @param message to publish in json format
+     * @param headers
+     */
+    public abstract void publish(String topic, Object message, Map<String, String> headers);
 
     /**
      * Overriding method, allows sending message to the topic equal to class name
@@ -60,7 +73,7 @@ public abstract class PubSub {
      * @param consumer     to consume the message
      * @param <T>          message
      */
-    public <T> void register(Class<T> messageClass, Consumer<T> consumer) {
+    public <T> void register(Class<T> messageClass, Consumer<Message<T>> consumer) {
         Preconditions.checkNotNull(messageClass);
         Preconditions.checkNotNull(consumer);
         register(messageClass.getName(), messageClass.getName() + ".consumer", messageClass, consumer);
