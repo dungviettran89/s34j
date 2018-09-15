@@ -27,9 +27,12 @@ repositories {
 
 
 dependencies {
-	compile('com.fasterxml.jackson.core:jackson-databind:2.8.8')
+	compile('org.apache.commons:commons-lang3:3.4')
 	compile('com.google.guava:guava:23.3-jre')
 	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('com.fasterxml.jackson.core:jackson-databind')
+	compileOnly('org.projectlombok:lombok')
+	testCompile('org.springframework.boot:spring-boot-starter-security')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
@@ -84,9 +87,9 @@ uploadArchives {
 			}
 
 			pom.project {
-				name 'S34J Google Pub Sub'
+				name 'S34J Spring Service Mesh'
 				packaging 'jar'
-				description 'A spring boot google pub sub client.'
+				description 'A spring boot service mesh.'
 				url 'https://s34j.cuatoi.us'
 
 				scm {
