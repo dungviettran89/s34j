@@ -1,0 +1,48 @@
+@startuml
+
+title Service Mesh
+
+
+class Node {
+    String name
+    String url
+    List<String> services
+    boolean active
+    long updated
+    
+    ..optional..
+    double cpu
+    double load
+    double totalRam
+    double usedRam
+}
+
+class Mesh {
+    String name
+    Map<String,Node> nodes
+}
+
+class Exchange {
+    Node current
+    Mesh mesh
+}
+
+
+class Invoke {
+    String service
+    String input
+    String output
+
+    String from
+    String to
+    List<String> chain
+}
+
+class InternalInfo {
+    Map<String,Long> latencies
+}
+
+Node -down- Mesh
+Exchange -left- Mesh
+
+@enduml
