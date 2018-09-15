@@ -1,0 +1,9 @@
+s34j:
+  service-mesh:
+    hosts: >
+      http://localhost:9001,
+      http://localhost:9002,
+      http://localhost:9003,
+logging:
+  level:
+    us.cuatoi: debug

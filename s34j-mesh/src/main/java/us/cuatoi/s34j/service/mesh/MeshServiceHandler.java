@@ -15,16 +15,24 @@
 
 package us.cuatoi.s34j.service.mesh;
 
-import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.*;
 
-/**
- * Enable service mesh for current spring
- */
-@Target(ElementType.TYPE)
+@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(MeshConfig.class)
-public @interface EnableServiceMesh {
+@Repeatable(MeshServiceHandlers.class)
+public @interface MeshServiceHandler {
+    /**
+     * @return Name of this service, default to class name
+     */
+    @AliasFor("name")
+    String value() default "";
+
+    /**
+     * @return Name of this service, default to class name
+     */
+    @AliasFor("value")
+    String name() default "";
 }

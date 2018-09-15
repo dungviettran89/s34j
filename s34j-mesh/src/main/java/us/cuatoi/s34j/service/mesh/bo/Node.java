@@ -17,7 +17,7 @@ package us.cuatoi.s34j.service.mesh.bo;
 
 import lombok.Data;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Information about this node
@@ -35,7 +35,7 @@ public class Node {
     /**
      * Available service on the node
      */
-    private List<String> services;
+    private Set<String> services;
     /**
      * Mark if this node can accept request
      */
@@ -52,13 +52,13 @@ public class Node {
     /**
      * Current unix load
      */
-    private float load;
+    private double load;
     /**
-     * Total ram available to this JVM
+     * Total memory available to this JVM
      */
-    private long totalRam;
+    private long totalMemory;
     /**
-     * Total ram used in this JVM
+     * Free memory available in this JVM
      */
-    private long usedRam;
+    private long freeMemory;
 }

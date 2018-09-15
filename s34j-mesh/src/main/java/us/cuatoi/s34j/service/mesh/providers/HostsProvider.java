@@ -13,18 +13,13 @@
  *
  */
 
-package us.cuatoi.s34j.service.mesh;
+package us.cuatoi.s34j.service.mesh.providers;
 
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.*;
+import java.util.List;
 
 /**
- * Enable service mesh for current spring
+ * Allow customization of the list of host.
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Import(MeshConfig.class)
-public @interface EnableServiceMesh {
+public interface HostsProvider {
+    List<String> provide();
 }

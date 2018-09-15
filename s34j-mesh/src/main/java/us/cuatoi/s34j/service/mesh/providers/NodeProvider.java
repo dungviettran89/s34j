@@ -13,18 +13,13 @@
  *
  */
 
-package us.cuatoi.s34j.service.mesh;
+package us.cuatoi.s34j.service.mesh.providers;
 
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.*;
+import us.cuatoi.s34j.service.mesh.bo.Node;
 
 /**
- * Enable service mesh for current spring
+ * Provide information of the current node
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Import(MeshConfig.class)
-public @interface EnableServiceMesh {
+public interface NodeProvider {
+    Node provide();
 }

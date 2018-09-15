@@ -15,16 +15,11 @@
 
 package us.cuatoi.s34j.service.mesh;
 
-import org.springframework.context.annotation.Import;
-
 import java.lang.annotation.*;
 
-/**
- * Enable service mesh for current spring
- */
-@Target(ElementType.TYPE)
+@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(MeshConfig.class)
-public @interface EnableServiceMesh {
+public @interface MeshServiceHandlers {
+    MeshServiceHandler[] value();
 }

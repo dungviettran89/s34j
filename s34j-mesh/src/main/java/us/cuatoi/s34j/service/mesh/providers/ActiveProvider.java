@@ -13,18 +13,11 @@
  *
  */
 
-package us.cuatoi.s34j.service.mesh;
-
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.*;
+package us.cuatoi.s34j.service.mesh.providers;
 
 /**
- * Enable service mesh for current spring
+ * Allow programmatically determine if this node is active or not
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Import(MeshConfig.class)
-public @interface EnableServiceMesh {
+public interface ActiveProvider {
+    boolean provide();
 }
