@@ -31,8 +31,12 @@ public class DefaultNodeProvide implements NodeProvider {
 
     @Autowired
     private ActiveProvider activeProvider;
+    @Value("${server.address:}")
+    private String address;
     @Value("${server.port}")
     private int port;
+    @Value("${server.ssl.key-alias:}")
+    private String sslKeyAlias;
     @Value("${s34j.service-mesh.name:}")
     private String name;
     @Value("${s34j.service-mesh.url:}")
@@ -67,7 +71,9 @@ public class DefaultNodeProvide implements NodeProvider {
 
     private String detectUrl() {
         try {
-            return InetAddress.getLocalHost().getHostAddress() + ":" + port;
+            String protocol = isNotBlank(sslKeyAlias) ? "https://" : "http://";
+            String address = isNotBlank(this.address) ? this.address : InetAddress.getLocalHost().getHostAddress();
+            return protocol + address + ":" + port;
         } catch (UnknownHostException e) {
             throw new IllegalStateException(e);
         }
