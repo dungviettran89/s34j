@@ -28,6 +28,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class MeshFilter extends OncePerRequestFilter {
 
     public static final String SM_AUTHORIZATION = "sm-authorization";
+    public static final String SM_METHOD = "sm-method";
+    public static final String SM_INVOKE = "invoke";
+    public static final String SM_EXCHANGE = "exchange";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
