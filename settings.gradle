@@ -4,4 +4,5 @@ include 's34j-sbs'
 include 's34j-pubsub'
 include 's34j-test'
 include 's34j-spring'
+include 's34j-mesh'
 
