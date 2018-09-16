@@ -249,7 +249,7 @@ public class MeshManager {
         nodes.put(node.getName(), node);
 
         lastExchanges.put(node.getName(), System.currentTimeMillis());
-        printMeshInfo();
+//        printMeshInfo();
     }
 
     private void printMeshInfo() {
