@@ -18,6 +18,7 @@ package us.cuatoi.s34j.service.mesh;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Stopwatch;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -51,8 +52,10 @@ public class MeshManager {
     private HostsProvider hostsProvider;
     @Autowired
     private NodeProvider nodeProvider;
-    private final Cache<String, Long> lastExchanges = CacheBuilder.newBuilder().build();
-    private final Cache<String, Long> latencies = CacheBuilder.newBuilder().build();
+    private final Cache<String, Long> lastExchanges = CacheBuilder.newBuilder()
+            .expireAfterWrite(30, TimeUnit.MINUTES).build();
+    private final Cache<String, Long> exchangeLatencies = CacheBuilder.newBuilder()
+            .expireAfterWrite(30, TimeUnit.MINUTES).build();
     private final Mesh mesh = new Mesh();
     private final ScheduledExecutorService exchangeScheduler = Executors.newSingleThreadScheduledExecutor();
     private final ScheduledExecutorService mergeScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -170,14 +173,20 @@ public class MeshManager {
     }
 
     private Exchange exchangeWithHost(String url) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         Exchange received = meshTemplate.post(url, MeshFilter.SM_EXCHANGE, getExchange(), Exchange.class);
-        log.debug("Exchanged with {}. received={}", url, received);
+        long latency = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+        log.debug("Exchanged with {} in {}ms. received={}", url, latency, received);
+        if (received != null) {
+            exchangeLatencies.put(received.getCurrent().getName(), latency);
+        }
         return received;
     }
 
     public Exchange getExchange() {
         Node current = nodeProvider.provide();
         mesh.getNodes().put(current.getName(), current);
+        exchangeLatencies.put(current.getName(), 0l);
 
         HashMap<String, Node> exchangeNodes = new HashMap<>();
 
@@ -260,5 +269,9 @@ public class MeshManager {
 
     public Mesh getMesh() {
         return mesh;
+    }
+
+    public Map<String, Long> getExchangeLatencies() {
+        return exchangeLatencies.asMap();
     }
 }
