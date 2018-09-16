@@ -134,7 +134,6 @@ public class MeshManager {
                 .map(exchange -> exchange.getCurrent().getName())
                 .findFirst()
                 .orElse("");
-        log.debug("initialExchanged={}", initialExchanged);
 
 
         //exchange with 1 least updated host
@@ -154,7 +153,6 @@ public class MeshManager {
                 .map(exchange -> exchange.getCurrent().getName())
                 .findFirst()
                 .orElse("");
-        log.debug("eldestExchanged={}", eldestExchanged);
 
         //exchange with 1 random host
         Collections.shuffle(nodes);
@@ -173,6 +171,9 @@ public class MeshManager {
                 .map(exchange -> exchange.getCurrent().getName())
                 .findFirst()
                 .orElse("");
+
+        log.debug("initialExchanged={}", initialExchanged);
+        log.debug("eldestExchanged={}", eldestExchanged);
         log.debug("randomExchanged={}", randomExchanged);
     }
 
