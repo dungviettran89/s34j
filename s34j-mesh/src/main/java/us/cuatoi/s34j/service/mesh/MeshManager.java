@@ -52,6 +52,7 @@ public class MeshManager {
     @Autowired
     private NodeProvider nodeProvider;
     private final Cache<String, Long> lastExchanges = CacheBuilder.newBuilder().build();
+    private final Cache<String, Long> latencies = CacheBuilder.newBuilder().build();
     private final Mesh mesh = new Mesh();
     private final ScheduledExecutorService exchangeScheduler = Executors.newSingleThreadScheduledExecutor();
     private final ScheduledExecutorService mergeScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -66,6 +67,12 @@ public class MeshManager {
     private int exchangeIntervalSeconds;
     @Value("${s34j.service-mesh.cleanIntervalSeconds:30}")
     private int cleanIntervalSeconds;
+    @Value("${s34j.service-mesh.initialHostExchangeCount:1}")
+    private int initialHostExchangeCount;
+    @Value("${s34j.service-mesh.eldestExchangeCount:1}")
+    private int eldestHostExchangeCount;
+    @Value("${s34j.service-mesh.randomExchangeCount:1}")
+    private int randomExchangeCount;
 
     @PostConstruct
     public void start() {
@@ -82,9 +89,6 @@ public class MeshManager {
         log.info("- Initial hosts: {}", hostsProvider.provide());
         log.info("- Exchange interval is {} seconds.", exchangeIntervalSeconds);
         log.info("- Node will be deleted if inactive for {} minutes.", deleteAfterInactiveMinutes);
-
-        Node currentNode = nodeProvider.provide();
-        mesh.getNodes().put(currentNode.getName(), currentNode);
 
         List<Exchange> initialExchanges = hostsProvider.provide().parallelStream()
                 .map(this::exchangeWithHost)
@@ -118,63 +122,47 @@ public class MeshManager {
             return;
         }
         Node currentNode = nodeProvider.provide();
-        mesh.getNodes().put(currentNode.getName(), currentNode);
 
         //exchange with 1 initial host
         List<String> initialHosts = new ArrayList<>(hostsProvider.provide());
         Collections.shuffle(initialHosts);
-        String initialExchanged = initialHosts.stream()
+        List<String> initialExchanged = initialHosts.stream()
                 .filter((host) -> !StringUtils.equalsIgnoreCase(host, currentNode.getUrl()))
-                .map((host) -> {
-                    Exchange received = exchangeWithHost(host);
-                    if (received != null) {
-                        mergeScheduler.submit(() -> doMerge(received));
-                    }
-                    return received;
-                })
+                .map(this::exchangeWithHost)
                 .filter(Objects::nonNull)
+                .peek((received) -> mergeScheduler.submit(() -> doMerge(received)))
                 .map(exchange -> exchange.getCurrent().getName())
-                .findFirst()
-                .orElse("");
+                .limit(initialHostExchangeCount)
+                .collect(Collectors.toList());
 
 
         //exchange with 1 least updated host
         List<Node> nodes = new ArrayList<>(mesh.getNodes().values());
-        String eldestExchanged = nodes.stream()
+        List<String> eldestExchanged = nodes.stream()
                 .filter(Node::isActive)
                 .filter((n) -> !StringUtils.equalsIgnoreCase(n.getUrl(), currentNode.getUrl()))
-                .filter((n) -> !equalsIgnoreCase(initialExchanged, n.getName()))
+                .filter((n) -> !initialExchanged.contains(n.getName()))
                 .sorted((n1, n2) -> (int) (n1.getUpdated() - n2.getUpdated()))
-                .map((node) -> {
-                    Exchange received = exchangeWithHost(node.getUrl());
-                    if (received != null) {
-                        mergeScheduler.submit(() -> doMerge(received));
-                    }
-                    return received;
-                })
+                .map((node) -> exchangeWithHost(node.getUrl()))
                 .filter(Objects::nonNull)
+                .peek((received) -> mergeScheduler.submit(() -> doMerge(received)))
                 .map(exchange -> exchange.getCurrent().getName())
-                .findFirst()
-                .orElse("");
+                .limit(eldestHostExchangeCount)
+                .collect(Collectors.toList());
 
         //exchange with 1 random host
         Collections.shuffle(nodes);
-        String randomExchanged = nodes.stream()
+        List<String> randomExchanged = nodes.stream()
                 .filter(Node::isActive)
                 .filter((n) -> !StringUtils.equalsIgnoreCase(n.getUrl(), currentNode.getUrl()))
-                .filter((n) -> !equalsIgnoreCase(initialExchanged, n.getName()))
-                .filter((n) -> !equalsIgnoreCase(eldestExchanged, n.getName()))
-                .map((node) -> {
-                    Exchange received = exchangeWithHost(node.getUrl());
-                    if (received != null) {
-                        mergeScheduler.submit(() -> doMerge(received));
-                    }
-                    return received;
-                })
+                .filter((n) -> !initialExchanged.contains(n.getName()))
+                .filter((n) -> !eldestExchanged.contains(n.getName()))
+                .map((node) -> exchangeWithHost(node.getUrl()))
                 .filter(Objects::nonNull)
+                .peek((received) -> mergeScheduler.submit(() -> doMerge(received)))
                 .map(exchange -> exchange.getCurrent().getName())
-                .findFirst()
-                .orElse("");
+                .limit(randomExchangeCount)
+                .collect(Collectors.toList());
 
         log.debug("initialExchanged={}", initialExchanged);
         log.debug("eldestExchanged={}", eldestExchanged);
@@ -188,6 +176,9 @@ public class MeshManager {
     }
 
     public Exchange getExchange() {
+        Node current = nodeProvider.provide();
+        mesh.getNodes().put(current.getName(), current);
+
         HashMap<String, Node> exchangeNodes = new HashMap<>();
 
         mesh.getNodes().values().stream()
@@ -199,7 +190,7 @@ public class MeshManager {
         exchangeMesh.setNodes(exchangeNodes);
 
         Exchange exchange = new Exchange();
-        exchange.setCurrent(nodeProvider.provide());
+        exchange.setCurrent(current);
         exchange.setMesh(exchangeMesh);
         return exchange;
     }
@@ -265,5 +256,9 @@ public class MeshManager {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+    }
+
+    public Mesh getMesh() {
+        return mesh;
     }
 }
