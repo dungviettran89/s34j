@@ -31,15 +31,15 @@ import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34j.service.mesh.MeshFilter.SM_DIRECT_INVOKE;
 
 @Slf4j
 public class MeshInvoker {
-    private final Cache<String, Integer> invokeLatencies = CacheBuilder.newBuilder()
-            .expireAfterWrite(30, TimeUnit.MINUTES).build();
-    private final Map<String, FutureHolder<?>> futures = new ConcurrentHashMap<>();
+    private final Map<String, FutureHolder> futures = new ConcurrentHashMap<>();
     private ExecutorService executor;
 
 
@@ -108,7 +108,7 @@ public class MeshInvoker {
         invoke.setChain(Lists.newArrayList(currentName));
         executor.submit(() -> remoteInvoke(invoke));
 
-        FutureHolder<T> holder = new FutureHolder<>();
+        FutureHolder holder = new FutureHolder();
         holder.setFuture(new CompletableFuture<>());
         holder.setResponseClass(responseClass);
         futures.put(correlationId, holder);
@@ -116,20 +116,28 @@ public class MeshInvoker {
     }
 
     private void remoteInvoke(Invoke invoke) {
-        log.debug("Remote invoke server {} in node {}", invoke.getService(), invoke.getTo());
+        log.debug("Remote invoke service {} in node {}", invoke.getService(), invoke.getTo());
         //try direct remote invoke first
-        Invoke result = meshManager.getMesh().getNodes().values().stream()
+        List<Node> directNodes = meshManager.getMesh().getNodes().values().stream()
                 .filter((node) -> node.getServices().contains(invoke.getService()))
                 .filter((node) -> isBlank(invoke.getService()) || equalsIgnoreCase(invoke.getTo(), node.getName()))
-                .sorted(Comparator.comparingInt(n -> getLatency(n.getName())))
+                .collect(Collectors.toList());
+        Collections.shuffle(directNodes);
+        Invoke result = directNodes.stream()
                 .map((n) -> directInvoke(n, invoke))
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(null);
 
         if (result == null) {
-            log.error("Can not invoke {}", invoke);
+            FutureHolder holder = futures.get(invoke.getCorrelationId());
+            holder.future.completeExceptionally(new RuntimeException("Can not invoke service." + invoke.getService()));
+            return;
         }
+
+        FutureHolder holder = futures.get(result.getCorrelationId());
+        Object output = meshTemplate.fromJson(result.getOutputJson(), holder.responseClass);
+        holder.future.complete(output);
     }
 
     private Invoke directInvoke(Node node, Invoke invoke) {
@@ -140,17 +148,9 @@ public class MeshInvoker {
         return null;
     }
 
-    private int getLatency(String name) {
-        Integer latency = invokeLatencies.getIfPresent(name);
-        latency = latency != null ? latency : meshManager.getExchangeLatencies().get(latency);
-        latency = latency != null ? latency : 100000;
-        latency = latency > 0 ? latency : 100000;
-        return latency;
-    }
-
     @Data
-    static class FutureHolder<T> {
-        Class<T> responseClass;
-        Future<T> future;
+    static class FutureHolder {
+        Class<?> responseClass;
+        CompletableFuture future;
     }
 }

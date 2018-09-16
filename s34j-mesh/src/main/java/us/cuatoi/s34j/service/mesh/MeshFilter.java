@@ -34,9 +34,9 @@ import static org.apache.commons.lang3.StringUtils.isAnyBlank;
 @Slf4j
 public class MeshFilter extends OncePerRequestFilter {
 
-    public static final String SM_AUTHORIZATION = "sm-authorization";
-    public static final String SM_DATE = "sm-date";
-    public static final String SM_METHOD = "sm-method";
+    public static final String SM_AUTHORIZATION = "x-sm-authorization";
+    public static final String SM_DATE = "x-sm-date";
+    public static final String SM_METHOD = "x-sm-method";
     public static final String SM_DIRECT_INVOKE = "direct-invoke";
     public static final String SM_FORWARD_INVOKE = "forward-invoke";
     public static final String SM_EXCHANGE = "exchange";
@@ -82,7 +82,6 @@ public class MeshFilter extends OncePerRequestFilter {
             default:
                 log.warn("Unknown method, method={}", method);
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown method");
-                return;
         }
     }
 }

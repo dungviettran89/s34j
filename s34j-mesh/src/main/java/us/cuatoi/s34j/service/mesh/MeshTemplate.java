@@ -90,8 +90,12 @@ public class MeshTemplate {
         }
     }
 
-    public <R> R fromJson(String json, Class<R> rClass) throws IOException {
-        return objectMapper.readValue(json, rClass);
+    public <R> R fromJson(String json, Class<R> rClass)  {
+        try {
+            return objectMapper.readValue(json, rClass);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public <R> boolean validExchange(String json, String exchangeDate, String exchangeAuthorization) {
