@@ -15,31 +15,72 @@
 
 package us.cuatoi.s34j.service.mesh;
 
+import com.google.common.io.CharStreams;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.filter.OncePerRequestFilter;
+import us.cuatoi.s34j.service.mesh.bo.Exchange;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.lang3.StringUtils.isAnyBlank;
 
+@Slf4j
 public class MeshFilter extends OncePerRequestFilter {
 
     public static final String SM_AUTHORIZATION = "sm-authorization";
+    public static final String SM_DATE = "sm-date";
     public static final String SM_METHOD = "sm-method";
     public static final String SM_INVOKE = "invoke";
     public static final String SM_EXCHANGE = "exchange";
 
+    @Autowired
+    private MeshTemplate meshTemplate;
+    @Autowired
+    private MeshManager meshManager;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        if (isBlank(request.getHeader(SM_AUTHORIZATION))) {
+        if (isAnyBlank(request.getHeader(SM_AUTHORIZATION),
+                request.getHeader(SM_AUTHORIZATION),
+                request.getHeader(SM_METHOD))) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String authorization = request.getHeader(SM_AUTHORIZATION);
+        String date = request.getHeader(SM_DATE);
+        String method = request.getHeader(SM_METHOD);
+        String json = CharStreams.toString(new InputStreamReader(request.getInputStream(), UTF_8));
+        if (!meshTemplate.validExchange(json, date, authorization)) {
+            log.warn("Invalid exchange. authorization={} date={} method={}", authorization, date, method);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid exchange");
+        }
+        switch (method) {
+            case SM_EXCHANGE:
+                Exchange received = meshTemplate.fromJson(json, Exchange.class);
+                Exchange exchange = meshManager.merge(received);
+                String responseJson = meshTemplate.toJson(exchange);
+                String responseDate = String.valueOf(System.currentTimeMillis());
+                String responseAuthorization = meshTemplate.calculateAuthorization(responseJson, responseDate);
+
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.setHeader(SM_DATE, responseDate);
+                response.setHeader(SM_AUTHORIZATION, responseAuthorization);
+                response.setContentType("application/json; charset=utf-8");
+                response.getWriter().write(responseJson);
+                log.debug("Exchange request completed. received={}", received);
+                return;
+            default:
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown method");
+                return;
+        }
     }
 }

@@ -15,9 +15,12 @@
 
 package us.cuatoi.s34j.service.mesh.bo;
 
+import lombok.Data;
+
 /**
  * An exchange of information between 2 different node
  */
+@Data
 public class Exchange {
     /**
      * The main node in this exchange

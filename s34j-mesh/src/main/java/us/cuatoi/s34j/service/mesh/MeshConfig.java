@@ -43,18 +43,13 @@ public class MeshConfig {
     }
 
     @Bean
-    public MeshPool serviceMeshPool() {
-        return new MeshPool();
-    }
-
-    @Bean
     public ServiceMesh serviceMesh() {
         return new ServiceMesh();
     }
 
     @Bean
-    public FilterRegistrationBean<MeshFilter> meshFilterRegistration() {
-        FilterRegistrationBean<MeshFilter> registrationBean = new FilterRegistrationBean<>(meshFilter());
+    public FilterRegistrationBean<MeshFilter> meshFilterRegistration(MeshFilter meshFilter) {
+        FilterRegistrationBean<MeshFilter> registrationBean = new FilterRegistrationBean<>(meshFilter);
         registrationBean.setOrder(HIGHEST_PRECEDENCE);
         return registrationBean;
     }
@@ -86,5 +81,12 @@ public class MeshConfig {
     public NodeProvider currentNodeProvider() {
         return new DefaultNodeProvide();
     }
+
+    @Bean
+    @ConditionalOnMissingBean(MeshTemplate.class)
+    public MeshTemplate meshTemplate() {
+        return new MeshTemplate();
+    }
+
 
 }

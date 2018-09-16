@@ -5,6 +5,8 @@ s34j:
       http://localhost:9002,
       http://localhost:9003,
       http://localhost:9004
+    name: test
+    secret: eBb6dSVO4cY7QR1YcXfJF8PXHDiDdQmb8qmPsH5Z
 logging:
   level:
     us.cuatoi: debug
