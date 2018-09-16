@@ -73,15 +73,13 @@ public class MeshInvoker {
         boolean serviceAvailableLocally = meshServiceBeanPostProcessor.getServices().contains(service);
         canInvokeLocally = canInvokeLocally && serviceAvailableLocally;
         if (canInvokeLocally) {
-            MeshServiceBeanPostProcessor.ServiceMethodBeanHolder holder = meshServiceBeanPostProcessor
-                    .getServiceMap().get(service);
-            try {
+            log.debug("Invoke locally for service {}, node={}", service, target);
+            return executor.submit(() -> {
+                MeshServiceBeanPostProcessor.ServiceMethodBeanHolder holder = meshServiceBeanPostProcessor
+                        .getServiceMap().get(service);
                 Object result = holder.getMethod().invoke(holder.bean, input);
-                log.debug("Invoke locally for service {}, node={}", service, target);
-                return Futures.immediateFuture(responseClass.cast(result));
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
+                return responseClass.cast(result);
+            });
         }
 
         //Check if service available on target node
