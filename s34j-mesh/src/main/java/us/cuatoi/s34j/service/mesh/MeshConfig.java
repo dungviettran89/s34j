@@ -79,7 +79,7 @@ public class MeshConfig {
     @Bean
     @ConditionalOnMissingBean(NodeProvider.class)
     public NodeProvider currentNodeProvider() {
-        return new DefaultNodeProvide();
+        return new DefaultNodeProvider();
     }
 
     @Bean

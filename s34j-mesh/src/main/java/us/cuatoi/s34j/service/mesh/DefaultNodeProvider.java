@@ -28,7 +28,7 @@ import java.util.HashMap;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class DefaultNodeProvide implements NodeProvider {
+public class DefaultNodeProvider implements NodeProvider {
 
     @Autowired
     private ActiveProvider activeProvider;
