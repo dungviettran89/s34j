@@ -61,8 +61,8 @@ public class MeshConfig {
 
     @Bean
     @ConditionalOnMissingBean(ActiveProvider.class)
-    public ActiveProvider activeProvider() {
-        return () -> true;
+    public ActiveProvider activeProvider(@Value("${s34j.service-mesh.active:true}") boolean active) {
+        return () -> active;
     }
 
     @Bean

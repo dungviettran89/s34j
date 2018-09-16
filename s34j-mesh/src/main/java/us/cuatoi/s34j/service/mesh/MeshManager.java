@@ -32,10 +32,7 @@ import us.cuatoi.s34j.service.mesh.providers.NodeProvider;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -64,40 +61,124 @@ public class MeshManager {
     @Value("${s34j.service-mesh.deleteAfterInactiveMinutes:5}")
     private int deleteAfterInactiveMinutes;
     private int deleteAfterInactiveMillis;
-    @Value("${s34j.service-mesh.exchangeIntervalSeconds:5}")
+    @Value("${s34j.service-mesh.exchangeIntervalSeconds:10}")
     private int exchangeIntervalSeconds;
+    @Value("${s34j.service-mesh.cleanIntervalSeconds:30}")
+    private int cleanIntervalSeconds;
 
     @PostConstruct
     public void start() {
+        mesh.setName(name);
+        mesh.setNodes(new ConcurrentHashMap<>());
         deleteAfterInactiveMillis = deleteAfterInactiveMinutes * 60 * 1000;
         exchangeScheduler.schedule(this::initialExchange, 2, TimeUnit.SECONDS);
     }
 
     private void initialExchange() {
-        log.debug("Mesh manager stated.");
-        log.debug("- Mesh name: {}", name);
-        log.debug("- Current node: {}", nodeProvider.provide());
-        log.debug("- Initial hosts: {}", hostsProvider.provide());
-        log.debug("- Exchange interval is {} seconds.", exchangeIntervalSeconds);
-        log.debug("- Node will be deleted if inactive for {} minutes.", deleteAfterInactiveMinutes);
+        log.info("Mesh manager stated.");
+        log.info("- Mesh name: {}", name);
+        log.info("- Current node: {}", nodeProvider.provide());
+        log.info("- Initial hosts: {}", hostsProvider.provide());
+        log.info("- Exchange interval is {} seconds.", exchangeIntervalSeconds);
+        log.info("- Node will be deleted if inactive for {} minutes.", deleteAfterInactiveMinutes);
 
         Node currentNode = nodeProvider.provide();
-        ConcurrentHashMap<String, Node> nodes = new ConcurrentHashMap<>();
-        nodes.put(currentNode.getName(), currentNode);
-        mesh.setName(name);
-        mesh.setNodes(nodes);
+        mesh.getNodes().put(currentNode.getName(), currentNode);
 
         List<Exchange> initialExchanges = hostsProvider.provide().parallelStream()
                 .map(this::exchangeWithHost)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         initialExchanges.forEach(this::doMerge);
+
+        exchangeScheduler.scheduleAtFixedRate(this::exchange,
+                exchangeIntervalSeconds, exchangeIntervalSeconds, TimeUnit.SECONDS);
+        mergeScheduler.scheduleAtFixedRate(this::cleanUp,
+                cleanIntervalSeconds, cleanIntervalSeconds, TimeUnit.SECONDS);
+    }
+
+    private void cleanUp() {
+        List<String> nodesToDelete = mesh.getNodes().values().stream()
+                .filter((node) -> System.currentTimeMillis() - node.getUpdated() > deleteAfterInactiveMillis)
+                .map((node) -> node.getName())
+                .collect(Collectors.toList());
+        if (nodesToDelete.size() > 0) {
+            log.info("Cleaning up {}", nodesToDelete);
+            nodesToDelete.forEach(mesh.getNodes()::remove);
+        }
+    }
+
+    /**
+     * Each steps a node do exchange with 1 initial host, 1 random host and 1 oldest updated host
+     */
+    private void exchange() {
+        if (!activeProvider.provide()) {
+            log.info("Skipped exchange since host is inactive.");
+            return;
+        }
+        Node currentNode = nodeProvider.provide();
+        mesh.getNodes().put(currentNode.getName(), currentNode);
+
+        //exchange with 1 initial host
+        List<String> initialHosts = new ArrayList<>(hostsProvider.provide());
+        Collections.shuffle(initialHosts);
+        String initialExchanged = initialHosts.stream()
+                .map((h) -> {
+                    Exchange received = exchangeWithHost(h);
+                    if (received != null) {
+                        mergeScheduler.submit(() -> doMerge(received));
+                    }
+                    return received;
+                })
+                .filter(Objects::nonNull)
+                .map(exchange -> exchange.getCurrent().getName())
+                .findFirst()
+                .orElse("");
+        log.debug("initialExchanged={}", initialExchanged);
+
+
+        //exchange with 1 least updated host
+        List<Node> nodes = new ArrayList<>(mesh.getNodes().values());
+        String eldestExchanged = nodes.stream()
+                .filter(Node::isActive)
+                .filter((n) -> !equalsIgnoreCase(initialExchanged, n.getName()))
+                .sorted((n1, n2) -> (int) (n1.getUpdated() - n2.getUpdated()))
+                .map((node) -> {
+                    Exchange received = exchangeWithHost(node.getUrl());
+                    if (received != null) {
+                        mergeScheduler.submit(() -> doMerge(received));
+                    }
+                    return received;
+                })
+                .filter(Objects::nonNull)
+                .map(exchange -> exchange.getCurrent().getName())
+                .findFirst()
+                .orElse("");
+        log.debug("eldestExchanged={}", eldestExchanged);
+
+        //exchange with 1 random host
+        Collections.shuffle(nodes);
+        String randomExchanged = nodes.stream()
+                .filter(Node::isActive)
+                .filter((n) -> !equalsIgnoreCase(initialExchanged, n.getName()))
+                .filter((n) -> !equalsIgnoreCase(eldestExchanged, n.getName()))
+                .map((node) -> {
+                    Exchange received = exchangeWithHost(node.getUrl());
+                    if (received != null) {
+                        mergeScheduler.submit(() -> doMerge(received));
+                    }
+                    return received;
+                })
+                .filter(Objects::nonNull)
+                .map(exchange -> exchange.getCurrent().getName())
+                .findFirst()
+                .orElse("");
+        log.debug("randomExchanged={}", randomExchanged);
     }
 
     private Exchange exchangeWithHost(String url) {
         Exchange received = meshTemplate.post(url, MeshFilter.SM_EXCHANGE, getExchange(), Exchange.class);
-        log.info("Exchanged with {}. Valid={}", url, received != null);
-        log.debug("received={}", received);
+        log.debug("Exchanged with {}. received={}", url, received);
         return received;
     }
 

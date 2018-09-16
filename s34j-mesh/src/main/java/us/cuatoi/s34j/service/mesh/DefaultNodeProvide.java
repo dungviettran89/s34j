@@ -37,9 +37,9 @@ public class DefaultNodeProvide implements NodeProvider {
     private int port;
     @Value("${server.ssl.key-alias:}")
     private String sslKeyAlias;
-    @Value("${s34j.service-mesh.name:}")
+    @Value("${s34j.service-mesh.node.name:}")
     private String name;
-    @Value("${s34j.service-mesh.url:}")
+    @Value("${s34j.service-mesh.node.url:}")
     private String url;
     @Autowired
     private MeshServiceBeanPostProcessor meshServiceBeanPostProcessor;
@@ -56,8 +56,8 @@ public class DefaultNodeProvide implements NodeProvider {
         loadAverage = loadAverage > 0 ? loadAverage : 0;
 
         Node node = new Node();
-        node.setName(url);
-        node.setUrl(name);
+        node.setName(name);
+        node.setUrl(url);
         node.setServices(meshServiceBeanPostProcessor.getServices());
         node.setActive(activeProvider.provide());
         Runtime runtime = Runtime.getRuntime();

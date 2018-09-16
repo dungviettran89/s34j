@@ -2,11 +2,10 @@ s34j:
   service-mesh:
     hosts: >
       http://localhost:9001,
-      http://localhost:9002,
-      http://localhost:9003,
-      http://localhost:9004
+      http://localhost:8888
     name: test
     secret: eBb6dSVO4cY7QR1YcXfJF8PXHDiDdQmb8qmPsH5Z
+    deleteAfterInactiveMinutes: 1
 logging:
   level:
     us.cuatoi: debug

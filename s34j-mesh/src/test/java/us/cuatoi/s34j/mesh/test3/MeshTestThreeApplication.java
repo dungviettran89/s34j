@@ -16,6 +16,7 @@ public class MeshTestThreeApplication {
 
     public static void main(String[] args) {
         System.setProperty("server.port", "9003");
+        System.setProperty("s34j.service-mesh.active", "true");
         SpringApplication.run(MeshTestThreeApplication.class, args);
     }
 
