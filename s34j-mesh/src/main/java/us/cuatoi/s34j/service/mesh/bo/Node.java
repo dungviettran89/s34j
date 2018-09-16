@@ -17,6 +17,7 @@ package us.cuatoi.s34j.service.mesh.bo;
 
 import lombok.Data;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -46,19 +47,7 @@ public class Node {
     private long updated;
 
     /**
-     * Total CPU on this node
+     * Node meta data
      */
-    private int cpu;
-    /**
-     * Current unix load
-     */
-    private double load;
-    /**
-     * Total memory available to this JVM
-     */
-    private long totalMemory;
-    /**
-     * Free memory available in this JVM
-     */
-    private long freeMemory;
+    private Map<String, String> metadata;
 }

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import us.cuatoi.s34j.service.mesh.bo.Exchange;
@@ -100,7 +101,7 @@ public class MeshManager {
     private void cleanUp() {
         List<String> nodesToDelete = mesh.getNodes().values().stream()
                 .filter((node) -> System.currentTimeMillis() - node.getUpdated() > deleteAfterInactiveMillis)
-                .map((node) -> node.getName())
+                .map(Node::getName)
                 .collect(Collectors.toList());
         if (nodesToDelete.size() > 0) {
             log.info("Cleaning up {}", nodesToDelete);
@@ -123,8 +124,9 @@ public class MeshManager {
         List<String> initialHosts = new ArrayList<>(hostsProvider.provide());
         Collections.shuffle(initialHosts);
         String initialExchanged = initialHosts.stream()
-                .map((h) -> {
-                    Exchange received = exchangeWithHost(h);
+                .filter((host) -> !StringUtils.equalsIgnoreCase(host, currentNode.getUrl()))
+                .map((host) -> {
+                    Exchange received = exchangeWithHost(host);
                     if (received != null) {
                         mergeScheduler.submit(() -> doMerge(received));
                     }
@@ -140,6 +142,7 @@ public class MeshManager {
         List<Node> nodes = new ArrayList<>(mesh.getNodes().values());
         String eldestExchanged = nodes.stream()
                 .filter(Node::isActive)
+                .filter((n) -> !StringUtils.equalsIgnoreCase(n.getUrl(), currentNode.getUrl()))
                 .filter((n) -> !equalsIgnoreCase(initialExchanged, n.getName()))
                 .sorted((n1, n2) -> (int) (n1.getUpdated() - n2.getUpdated()))
                 .map((node) -> {
@@ -158,6 +161,7 @@ public class MeshManager {
         Collections.shuffle(nodes);
         String randomExchanged = nodes.stream()
                 .filter(Node::isActive)
+                .filter((n) -> !StringUtils.equalsIgnoreCase(n.getUrl(), currentNode.getUrl()))
                 .filter((n) -> !equalsIgnoreCase(initialExchanged, n.getName()))
                 .filter((n) -> !equalsIgnoreCase(eldestExchanged, n.getName()))
                 .map((node) -> {

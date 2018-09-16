@@ -16,6 +16,8 @@ public class MeshTestTwoApplication {
 
     public static void main(String[] args) {
         System.setProperty("server.port", "9002");
+        System.setProperty("s34j.service-mesh.node.url", "http://localhost:9002");
+        System.setProperty("s34j.service-mesh.node.name", "test-2");
         SpringApplication.run(MeshTestTwoApplication.class, args);
     }
 

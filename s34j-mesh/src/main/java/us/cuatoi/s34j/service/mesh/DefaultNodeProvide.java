@@ -24,6 +24,7 @@ import us.cuatoi.s34j.service.mesh.providers.NodeProvider;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -52,19 +53,22 @@ public class DefaultNodeProvide implements NodeProvider {
         String name = this.name;
         name = isNotBlank(name) ? name : url;
 
-        double loadAverage = ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage();
-        loadAverage = loadAverage > 0 ? loadAverage : 0;
+        double systemLoadAverage = ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage();
+        systemLoadAverage = systemLoadAverage > 0 ? systemLoadAverage : 0;
+
+        HashMap<String, String> metadata = new HashMap<>();
+        Runtime runtime = Runtime.getRuntime();
+        metadata.put("availableProcessors", String.valueOf(runtime.availableProcessors()));
+        metadata.put("totalMemory", String.valueOf(runtime.totalMemory()));
+        metadata.put("freeMemory", String.valueOf(runtime.freeMemory()));
+        metadata.put("systemLoadAverage", String.valueOf(systemLoadAverage));
 
         Node node = new Node();
         node.setName(name);
         node.setUrl(url);
         node.setServices(meshServiceBeanPostProcessor.getServices());
         node.setActive(activeProvider.provide());
-        Runtime runtime = Runtime.getRuntime();
-        node.setCpu(runtime.availableProcessors());
-        node.setLoad(loadAverage);
-        node.setTotalMemory(runtime.totalMemory());
-        node.setFreeMemory(runtime.freeMemory());
+        node.setMetadata(metadata);
         node.setUpdated(System.currentTimeMillis());
         return node;
     }
