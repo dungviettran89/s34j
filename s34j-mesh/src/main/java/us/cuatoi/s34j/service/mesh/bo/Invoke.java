@@ -18,6 +18,7 @@ package us.cuatoi.s34j.service.mesh.bo;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Indicate a service invocation
@@ -38,6 +39,11 @@ public class Invoke {
     String outputJson;
 
     /**
+     * Error if there is an exception
+     */
+    String error;
+
+    /**
      * Node started in invocation
      */
     String from;
@@ -51,4 +57,14 @@ public class Invoke {
      * Invocation chain, in case it passed through more than 1 host
      */
     List<String> chain;
+
+    /**
+     * Used to match response
+     */
+    String correlationId;
+
+    /**
+     * Header for this invocation
+     */
+    Map<String, String> headers;
 }

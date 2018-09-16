@@ -54,7 +54,7 @@ public class MeshManager {
     private NodeProvider nodeProvider;
     private final Cache<String, Long> lastExchanges = CacheBuilder.newBuilder()
             .expireAfterWrite(30, TimeUnit.MINUTES).build();
-    private final Cache<String, Long> exchangeLatencies = CacheBuilder.newBuilder()
+    private final Cache<String, Integer> exchangeLatencies = CacheBuilder.newBuilder()
             .expireAfterWrite(30, TimeUnit.MINUTES).build();
     private final Mesh mesh = new Mesh();
     private final ScheduledExecutorService exchangeScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -178,7 +178,7 @@ public class MeshManager {
         long latency = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         log.debug("Exchanged with {} in {}ms. received={}", url, latency, received);
         if (received != null) {
-            exchangeLatencies.put(received.getCurrent().getName(), latency);
+            exchangeLatencies.put(received.getCurrent().getName(), (int) latency);
         }
         return received;
     }
@@ -186,7 +186,7 @@ public class MeshManager {
     public Exchange getExchange() {
         Node current = nodeProvider.provide();
         mesh.getNodes().put(current.getName(), current);
-        exchangeLatencies.put(current.getName(), 0l);
+        exchangeLatencies.put(current.getName(), 0);
 
         HashMap<String, Node> exchangeNodes = new HashMap<>();
 
@@ -271,7 +271,7 @@ public class MeshManager {
         return mesh;
     }
 
-    public Map<String, Long> getExchangeLatencies() {
+    public Map<String, Integer> getExchangeLatencies() {
         return exchangeLatencies.asMap();
     }
 }

@@ -43,8 +43,8 @@ public class MeshConfig {
     }
 
     @Bean
-    public ServiceMesh serviceMesh() {
-        return new ServiceMesh();
+    public MeshInvoker meshInvoker() {
+        return new MeshInvoker();
     }
 
     @Bean

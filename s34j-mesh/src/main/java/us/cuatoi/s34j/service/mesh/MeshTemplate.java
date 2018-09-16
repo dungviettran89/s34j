@@ -37,6 +37,8 @@ import static us.cuatoi.s34j.service.mesh.MeshFilter.SM_DATE;
 
 @Slf4j
 public class MeshTemplate {
+    @Value("${s34j.service-mesh.name:default}")
+    private String name;
     @Value("${s34j.service-mesh.secret:nx22HgZxTSfcWT2YnYFr4CAnyt7dffTbXbNRNl5y}")
     private String secret;
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -80,8 +82,12 @@ public class MeshTemplate {
         }
     }
 
-    public <R> String toJson(R object) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(object);
+    public <R> String toJson(R object) {
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public <R> R fromJson(String json, Class<R> rClass) throws IOException {
@@ -110,10 +116,13 @@ public class MeshTemplate {
 
     public String calculateAuthorization(String json, String time) {
         String hash = Hashing.hmacSha256(secret.getBytes(UTF_8))
-                .hashString(json, UTF_8)
+                .hashString(name, UTF_8)
+                .toString();
+        hash = Hashing.hmacSha256(hash.getBytes(UTF_8))
+                .hashString(time, UTF_8)
                 .toString();
         return Hashing.hmacSha256(hash.getBytes(UTF_8))
-                .hashString(time, UTF_8)
+                .hashString(json, UTF_8)
                 .toString();
     }
 

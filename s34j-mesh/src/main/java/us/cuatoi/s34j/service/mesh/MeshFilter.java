@@ -37,7 +37,8 @@ public class MeshFilter extends OncePerRequestFilter {
     public static final String SM_AUTHORIZATION = "sm-authorization";
     public static final String SM_DATE = "sm-date";
     public static final String SM_METHOD = "sm-method";
-    public static final String SM_INVOKE = "invoke";
+    public static final String SM_DIRECT_INVOKE = "direct-invoke";
+    public static final String SM_FORWARD_INVOKE = "forward-invoke";
     public static final String SM_EXCHANGE = "exchange";
 
     @Autowired
@@ -79,6 +80,7 @@ public class MeshFilter extends OncePerRequestFilter {
                 log.debug("Exchange request completed. received={}", received);
                 return;
             default:
+                log.warn("Unknown method, method={}", method);
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown method");
                 return;
         }

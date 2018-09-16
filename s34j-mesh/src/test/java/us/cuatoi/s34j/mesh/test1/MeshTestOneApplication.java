@@ -10,8 +10,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import us.cuatoi.s34j.service.mesh.EnableServiceMesh;
+import us.cuatoi.s34j.service.mesh.MeshInvoker;
 import us.cuatoi.s34j.service.mesh.MeshManager;
 import us.cuatoi.s34j.service.mesh.MeshServiceHandler;
+
+import java.util.concurrent.ExecutionException;
 
 @SpringBootApplication
 @EnableServiceMesh
@@ -21,6 +24,8 @@ public class MeshTestOneApplication {
 
     @Autowired
     private MeshManager meshManager;
+    @Autowired
+    private MeshInvoker meshInvoker;
 
     @MeshServiceHandler("hello-1")
     public String hello(String name) {
@@ -29,7 +34,9 @@ public class MeshTestOneApplication {
 
 
     @Scheduled(fixedDelay = 10 * 1000, initialDelay = 10 * 1000)
-    public void printInfo() throws JsonProcessingException {
+    public void printInfo() throws JsonProcessingException, ExecutionException, InterruptedException {
+        log.info("Invoke 1: {}", meshInvoker.invoke("hello-1", "Test", String.class).get());
+        log.info("Invoke 2: {}", meshInvoker.invoke("hello-2", "Test", String.class).get());
         ObjectMapper debugMapper = new ObjectMapper();
         debugMapper.enable(SerializationFeature.INDENT_OUTPUT);
         log.info("Mesh:{}", debugMapper.writeValueAsString(meshManager.getMesh()));

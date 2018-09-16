@@ -15,6 +15,7 @@
 
 package us.cuatoi.s34j.service.mesh;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,10 @@ public class MeshServiceBeanPostProcessor implements BeanPostProcessor {
 
     public Set<String> getServices() {
         return ImmutableSet.copyOf(services.keySet());
+    }
+
+    public ImmutableMap<String, ServiceMethodBeanHolder> getServiceMap() {
+        return ImmutableMap.copyOf(services);
     }
 
     @Override
