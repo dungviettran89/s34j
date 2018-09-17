@@ -44,8 +44,9 @@ public class MeshTestOneApplication {
         }
         ObjectMapper debugMapper = new ObjectMapper();
         debugMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        log.info("Mesh:{}", debugMapper.writeValueAsString(meshManager.getMesh()));
-        log.info("Latencies:{}", debugMapper.writeValueAsString(meshManager.getExchangeLatencies()));
+        log.info("Mesh: {}", debugMapper.writeValueAsString(meshManager.getMesh()));
+        log.info("Latencies: {}", debugMapper.writeValueAsString(meshManager.getExchangeLatencies()));
+        log.info("KnownLatencies: {}", debugMapper.writeValueAsString(meshManager.getKnownLatencies()));
     }
 
     public static void main(String[] args) {

@@ -46,16 +46,28 @@ import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 @Slf4j
 public class MeshManager {
 
+    /**
+     * Store the last known exchange ot the node
+     */
+    private final Cache<String, Long> lastExchanges = CacheBuilder.newBuilder()
+            .expireAfterWrite(30, TimeUnit.MINUTES).build();
+    /**
+     * Store the exchange latencies from this node
+     */
+    private final Cache<String, Integer> exchangeLatencies = CacheBuilder.newBuilder()
+            .expireAfterWrite(30, TimeUnit.MINUTES).build();
+    /**
+     * Store the exchanged latencies, this give a rough idea of how nearby node is connected to the rest of cluster
+     * which allows probing of network.
+     */
+    private final Cache<String, Map<String, Integer>> knownLatencies = CacheBuilder.newBuilder()
+            .expireAfterWrite(60, TimeUnit.MINUTES).build();
     @Autowired
     private ActiveProvider activeProvider;
     @Autowired
     private HostsProvider hostsProvider;
     @Autowired
     private NodeProvider nodeProvider;
-    private final Cache<String, Long> lastExchanges = CacheBuilder.newBuilder()
-            .expireAfterWrite(30, TimeUnit.MINUTES).build();
-    private final Cache<String, Integer> exchangeLatencies = CacheBuilder.newBuilder()
-            .expireAfterWrite(30, TimeUnit.MINUTES).build();
     private final Mesh mesh = new Mesh();
     private final ScheduledExecutorService exchangeScheduler = Executors.newSingleThreadScheduledExecutor();
     private final ScheduledExecutorService mergeScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -113,6 +125,7 @@ public class MeshManager {
         if (nodesToDelete.size() > 0) {
             log.info("Cleaning up {}", nodesToDelete);
             nodesToDelete.forEach(mesh.getNodes()::remove);
+            nodesToDelete.forEach(knownLatencies::invalidate);
         }
     }
 
@@ -201,6 +214,7 @@ public class MeshManager {
         Exchange exchange = new Exchange();
         exchange.setCurrent(current);
         exchange.setMesh(exchangeMesh);
+        exchange.setLatencies(exchangeLatencies.asMap());
         return exchange;
     }
 
@@ -254,6 +268,8 @@ public class MeshManager {
         nodes.put(node.getName(), node);
 
         lastExchanges.put(node.getName(), System.currentTimeMillis());
+        knownLatencies.put(node.getName(), exchange.getLatencies());
+        knownLatencies.put(current.getName(), getExchangeLatencies());
 //        printMeshInfo();
     }
 
@@ -273,5 +289,9 @@ public class MeshManager {
 
     public Map<String, Integer> getExchangeLatencies() {
         return exchangeLatencies.asMap();
+    }
+
+    public Map<String, Map<String, Integer>> getKnownLatencies() {
+        return knownLatencies.asMap();
     }
 }

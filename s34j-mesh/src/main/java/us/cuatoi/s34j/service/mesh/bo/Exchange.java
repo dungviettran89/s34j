@@ -17,6 +17,8 @@ package us.cuatoi.s34j.service.mesh.bo;
 
 import lombok.Data;
 
+import java.util.Map;
+
 /**
  * An exchange of information between 2 different node
  */
@@ -30,4 +32,8 @@ public class Exchange {
      * Mesh information for exchange
      */
     private Mesh mesh;
+    /**
+     * Contains the exchange latencies of the exchanged node.
+     */
+    private Map<String, Integer> latencies;
 }
