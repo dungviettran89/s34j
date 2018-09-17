@@ -141,15 +141,21 @@ public class MeshInvoker {
 
         if (result == null) {
             FutureHolder holder = futures.getIfPresent(invoke.getCorrelationId());
-            if (holder != null)
+            if (holder != null) {
                 holder.future.completeExceptionally(new RuntimeException("Can not invoke service " + service));
+            }
             return;
         }
 
         FutureHolder holder = futures.getIfPresent(result.getCorrelationId());
         if (holder != null) {
-            Object output = meshTemplate.fromJson(result.getOutputJson(), holder.responseClass);
-            holder.future.complete(output);
+            if (isNotBlank(result.getOutputJson())) {
+                Object output = meshTemplate.fromJson(result.getOutputJson(), holder.responseClass);
+                holder.future.complete(output);
+            } else {
+                log.warn("Invoke error, exception={}, stackTrace={}", result.getException(), result.getExceptionStackTrace());
+                holder.future.completeExceptionally(new RuntimeException(result.getException()));
+            }
         }
     }
 
@@ -159,7 +165,7 @@ public class MeshInvoker {
     }
 
     public Invoke handleDirectInvoke(Invoke invoke) {
-        log.debug("handleDirectInvoke service={}", invoke.getService());
+
         invoke.getChain().add(nodeProvider.provide().getName());
 
         String service = invoke.getService();
@@ -174,10 +180,14 @@ public class MeshInvoker {
         try {
             Object result = holder.getMethod().invoke(holder.bean, input);
             invoke.setOutputJson(meshTemplate.toJson(result));
+            log.debug("Direct invoke of service {} completed sucessfully.", invoke.getService());
             return invoke;
         } catch (Exception ex) {
-            invoke.setException(ex.getMessage());
-            invoke.setExceptionStackTrace(ExceptionUtils.getStackTrace(ex));
+            Throwable rootCause = ExceptionUtils.getRootCause(ex);
+            invoke.setException(rootCause.getMessage());
+            invoke.setExceptionStackTrace(ExceptionUtils.getStackTrace(rootCause));
+            log.info("Direct invoke of service {} completed exceptionally. exception={}",
+                    invoke.getService(), rootCause.getMessage(), rootCause);
             return invoke;
         }
     }

@@ -37,6 +37,11 @@ public class MeshTestOneApplication {
     public void printInfo() throws JsonProcessingException, ExecutionException, InterruptedException {
         log.info("Invoke 1: {}", meshInvoker.invoke("hello-1", "Test", String.class).get());
         log.info("Invoke 2: {}", meshInvoker.invoke("hello-2", "Test", String.class).get());
+        try {
+            log.info("Invoke 2 with error: {}", meshInvoker.invoke("hello-2-error", "Test", String.class).get());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         ObjectMapper debugMapper = new ObjectMapper();
         debugMapper.enable(SerializationFeature.INDENT_OUTPUT);
         log.info("Mesh:{}", debugMapper.writeValueAsString(meshManager.getMesh()));

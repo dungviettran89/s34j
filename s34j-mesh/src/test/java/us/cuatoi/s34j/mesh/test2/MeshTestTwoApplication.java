@@ -14,6 +14,11 @@ public class MeshTestTwoApplication {
         return "Hello " + name + " from 2";
     }
 
+    @MeshServiceHandler("hello-2-error")
+    public String helloError(String name) {
+        throw new RuntimeException("Error");
+    }
+
     public static void main(String[] args) {
         System.setProperty("server.port", "9002");
         System.setProperty("s34j.service-mesh.node.url", "http://localhost:9002");
