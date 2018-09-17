@@ -123,7 +123,8 @@ public class MeshInvoker {
         holder.setFuture(new CompletableFuture<>());
         holder.setResponseClass(responseClass);
         futures.put(correlationId, holder);
-        executor.submit(() -> remoteInvoke(invoke));
+        Future<Boolean> future = executor.submit(() -> remoteInvoke(invoke));
+        log.debug("Submitted {} future={}", invoke.getCorrelationId(), future);
         return holder.future;
     }
 

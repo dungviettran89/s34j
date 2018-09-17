@@ -30,6 +30,7 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-web')
 	compile('com.fasterxml.jackson.core:jackson-databind')
 	compileOnly('org.projectlombok:lombok')
+	testCompile('org.projectlombok:lombok')
 	testCompile('org.springframework.boot:spring-boot-starter-security')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
