@@ -78,9 +78,9 @@ public class MeshManager {
     @Value("${s34j.service-mesh.deleteAfterInactiveMinutes:5}")
     private int deleteAfterInactiveMinutes;
     private int deleteAfterInactiveMillis;
-    @Value("${s34j.service-mesh.exchangeIntervalSeconds:10}")
+    @Value("${s34j.service-mesh.exchangeIntervalSeconds:20}")
     private int exchangeIntervalSeconds;
-    @Value("${s34j.service-mesh.cleanIntervalSeconds:30}")
+    @Value("${s34j.service-mesh.cleanIntervalSeconds:60}")
     private int cleanIntervalSeconds;
     @Value("${s34j.service-mesh.initialHostExchangeCount:1}")
     private int initialHostExchangeCount;

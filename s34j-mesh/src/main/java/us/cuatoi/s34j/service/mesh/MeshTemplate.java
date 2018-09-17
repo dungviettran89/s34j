@@ -76,7 +76,7 @@ public class MeshTemplate {
                 return object;
             }
         } catch (Exception e) {
-            log.warn("Can not post error={}, url={}, entity={}, responseClass={}",
+            log.debug("Can not post error={}, url={}, entity={}, responseClass={}",
                     e.getMessage(), url, entity, responseClass);
             return null;
         }

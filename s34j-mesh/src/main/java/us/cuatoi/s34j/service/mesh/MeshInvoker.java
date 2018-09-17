@@ -204,11 +204,12 @@ public class MeshInvoker {
     }
 
     public boolean forwardInvoke(Invoke invoke, String url) {
-        log.debug("Forward invoke service {} through url {}", invoke.getService(), url);
         Invoke result = meshTemplate.post(url, SM_FORWARD_INVOKE, invoke, Invoke.class);
         if (result == null) {
+            log.info("Successfully forward invoke service {} through url {}", invoke.getService(), url);
             return returnError(invoke);
         } else {
+            log.info("Failed to forward invoke service {} through url {}", invoke.getService(), url);
             return returnResult(result);
         }
     }
@@ -259,12 +260,12 @@ public class MeshInvoker {
         invoke.getChain().add(nodeProvider.provide().getName());
         Invoke result = directInvoke(invoke);
         if (result != null) {
-            log.debug("Forward invoke success service={}", invoke.getService());
+            log.info("Forward invoke success service={}", invoke.getService());
             return result;
         } else {
             invoke.setException("Can not invoke service " + invoke.getService() +
                     " due to no available node.");
-            log.debug("Forward invoke failed service={}", invoke.getService());
+            log.info("Forward invoke failed service={}", invoke.getService());
             return invoke;
         }
     }
