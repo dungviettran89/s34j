@@ -19,6 +19,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34j.service.mesh.MeshFilter.SM_DIRECT_INVOKE;
+import static us.cuatoi.s34j.service.mesh.MeshFilter.SM_FORWARD_INVOKE;
 
 @Slf4j
 public class MeshInvoker {
@@ -125,39 +127,69 @@ public class MeshInvoker {
         return holder.future;
     }
 
-    private void remoteInvoke(Invoke invoke) {
+    private boolean remoteInvoke(Invoke invoke) {
+        String currentNodeName = nodeProvider.provide().getName();
         String service = invoke.getService();
         String to = invoke.getTo();
         log.debug("Remote invoke service {} in node {}", service, to);
         //try direct remote invoke first
-        List<Node> directNodes = meshManager.getMesh().getNodes().values().stream()
-                .filter((node) -> node.getServices().contains(service))
-                .filter((node) -> isBlank(to) || equalsIgnoreCase(to, node.getName()))
-                .collect(Collectors.toList());
-        Collections.shuffle(directNodes);
-        Invoke result = directNodes.stream()
-                .map((n) -> directInvoke(n, invoke))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+        Invoke result = directInvoke(invoke);
 
         if (result == null) {
             //throw error if forward invoke is not enabled
             if (!forwardInvokeEnabled) {
-                FutureHolder holder = futures.getIfPresent(invoke.getCorrelationId());
-                if (holder != null) {
-                    holder.future.completeExceptionally(new RuntimeException("Can not invoke service " + service));
-                }
-                return;
+                return returnError(invoke);
             } else {
-                //Need to think of a good way to do forward invoke, it is beneficial when there is a network partition
-                // and only 1 node is able to connect to both partition. In this case blindly forwarding will not work,
-                // We may need to think of a way to probe which node can do the forwarding.
-                //It may be too expensive to perform a forwarding.
-                throw new RuntimeException("Not implemented.");
+                //Only 1 hops forwarding is supported for now, which supports a firewalled network where 1 node can acts
+                //as a gateway to the internal network, also it supposed to help if network is partitioned into 2 segment
+                //with 1 node can connect to both segment.
+                //Support to 3 or more firewalled sub-net is possible but it would require running a full probe of
+                //the network which is too expensive to maintain. This solution strikes a balance between both world
+                Set<String> directNodeNames = meshManager.getMesh().getNodes().values().stream()
+                        .filter((node) -> !equalsIgnoreCase(currentNodeName, node.getName()))
+                        .filter((node) -> node.getServices().contains(service))
+                        .filter((node) -> isBlank(to) || equalsIgnoreCase(to, node.getName()))
+                        .map(Node::getName).collect(Collectors.toSet());
+                List<Node> forwardingNodes = meshManager.getMesh().getNodes().values().stream()
+                        .filter((node) -> !directNodeNames.contains(node.getName()))
+                        .filter((node) -> !equalsIgnoreCase(node.getName(), currentNodeName))
+                        .filter((node) -> {
+                            Map<String, Integer> knownLatency = meshManager.getKnownLatencies().get(node.getName());
+                            Set<String> adjacentNodes = knownLatency != null ? knownLatency.keySet() : new HashSet<>();
+                            return Sets.intersection(adjacentNodes, directNodeNames).size() > 0;
+                        })
+                        .collect(Collectors.toList());
+                if (forwardingNodes.size() == 0) {
+                    return returnError(invoke);
+                }
+
+                Collections.shuffle(forwardingNodes);
+                Node forwardingNode = forwardingNodes.get(0);
+                return forwardInvoke(invoke, forwardingNode.getUrl());
             }
         }
 
+        return returnResult(result);
+    }
+
+    private Invoke directInvoke(Invoke invoke) {
+        String to = invoke.getTo();
+        String service = invoke.getService();
+        String currentNodeName = nodeProvider.provide().getName();
+        List<Node> directNodes = meshManager.getMesh().getNodes().values().stream()
+                .filter((node) -> !equalsIgnoreCase(currentNodeName, node.getName()))
+                .filter((node) -> node.getServices().contains(service))
+                .filter((node) -> isBlank(to) || equalsIgnoreCase(to, node.getName()))
+                .collect(Collectors.toList());
+        Collections.shuffle(directNodes);
+        return directNodes.stream()
+                .map((n) -> doDirectInvoke(n, invoke))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private boolean returnResult(Invoke result) {
         FutureHolder holder = futures.getIfPresent(result.getCorrelationId());
         if (holder != null) {
             if (isNotBlank(result.getOutputJson())) {
@@ -168,9 +200,29 @@ public class MeshInvoker {
                 holder.future.completeExceptionally(new RuntimeException(result.getException()));
             }
         }
+        return true;
     }
 
-    private Invoke directInvoke(Node node, Invoke invoke) {
+    public boolean forwardInvoke(Invoke invoke, String url) {
+        log.debug("Forward invoke service {} through url {}", invoke.getService(), url);
+        Invoke result = meshTemplate.post(url, SM_FORWARD_INVOKE, invoke, Invoke.class);
+        if (result == null) {
+            return returnError(invoke);
+        } else {
+            return returnResult(result);
+        }
+    }
+
+    private boolean returnError(Invoke invoke) {
+        FutureHolder holder = futures.getIfPresent(invoke.getCorrelationId());
+        if (holder != null) {
+            holder.future.completeExceptionally(new RuntimeException("Can not invoke service " + invoke.getService() +
+                    " due to no available node."));
+        }
+        return false;
+    }
+
+    private Invoke doDirectInvoke(Node node, Invoke invoke) {
         log.debug("Direct invoke service {} in node {}", invoke.getService(), node.getName());
         return meshTemplate.post(node.getUrl(), SM_DIRECT_INVOKE, invoke, Invoke.class);
     }
@@ -191,7 +243,7 @@ public class MeshInvoker {
         try {
             Object result = holder.getMethod().invoke(holder.bean, input);
             invoke.setOutputJson(meshTemplate.toJson(result));
-            log.debug("Direct invoke of service {} completed sucessfully.", invoke.getService());
+            log.debug("Direct invoke of service {} completed successfully.", invoke.getService());
             return invoke;
         } catch (Exception ex) {
             Throwable rootCause = ExceptionUtils.getRootCause(ex);
@@ -199,6 +251,20 @@ public class MeshInvoker {
             invoke.setExceptionStackTrace(ExceptionUtils.getStackTrace(rootCause));
             log.info("Direct invoke of service {} completed exceptionally. exception={}",
                     invoke.getService(), rootCause.getMessage(), rootCause);
+            return invoke;
+        }
+    }
+
+    public Invoke handleForwardInvoke(Invoke invoke) {
+        invoke.getChain().add(nodeProvider.provide().getName());
+        Invoke result = directInvoke(invoke);
+        if (result != null) {
+            log.debug("Forward invoke success service={}", invoke.getService());
+            return result;
+        } else {
+            invoke.setException("Can not invoke service " + invoke.getService() +
+                    " due to no available node.");
+            log.debug("Forward invoke failed service={}", invoke.getService());
             return invoke;
         }
     }

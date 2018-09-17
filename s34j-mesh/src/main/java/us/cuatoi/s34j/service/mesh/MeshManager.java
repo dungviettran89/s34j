@@ -55,13 +55,13 @@ public class MeshManager {
      * Store the exchange latencies from this node
      */
     private final Cache<String, Integer> exchangeLatencies = CacheBuilder.newBuilder()
-            .expireAfterWrite(30, TimeUnit.MINUTES).build();
+            .expireAfterWrite(5, TimeUnit.MINUTES).build();
     /**
      * Store the exchanged latencies, this give a rough idea of how nearby node is connected to the rest of cluster
      * which allows probing of network.
      */
     private final Cache<String, Map<String, Integer>> knownLatencies = CacheBuilder.newBuilder()
-            .expireAfterWrite(60, TimeUnit.MINUTES).build();
+            .expireAfterWrite(5, TimeUnit.MINUTES).build();
     @Autowired
     private ActiveProvider activeProvider;
     @Autowired

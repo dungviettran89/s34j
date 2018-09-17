@@ -68,6 +68,9 @@ public class MeshFilter extends OncePerRequestFilter {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid exchange");
         }
         switch (method) {
+            case SM_FORWARD_INVOKE:
+                doForwardInvoke(response, json);
+                return;
             case SM_DIRECT_INVOKE:
                 doDirectInvoke(response, json);
                 return;
@@ -80,18 +83,29 @@ public class MeshFilter extends OncePerRequestFilter {
         }
     }
 
-    private void doExchange(HttpServletResponse response, String json) throws IOException {
-        Exchange received = meshTemplate.fromJson(json, Exchange.class);
-        Exchange exchange = meshManager.merge(received);
-        String responseJson = meshTemplate.toJson(exchange);
+    private void doForwardInvoke(HttpServletResponse response, String json) throws IOException {
+        Invoke invoke = meshTemplate.fromJson(json, Invoke.class);
+        Invoke invokeResult = meshInvoker.handleForwardInvoke(invoke);
+        String responseJson = meshTemplate.toJson(invokeResult);
+        writeResponse(response, responseJson);
+        log.debug("Foward invoke completed. service={}", invoke.getService());
+    }
+
+    private void writeResponse(HttpServletResponse response, String responseJson) throws IOException {
         String responseDate = String.valueOf(System.currentTimeMillis());
         String responseAuthorization = meshTemplate.calculateAuthorization(responseJson, responseDate);
-
         response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader(SM_DATE, responseDate);
         response.setHeader(SM_AUTHORIZATION, responseAuthorization);
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().write(responseJson);
+    }
+
+    private void doExchange(HttpServletResponse response, String json) throws IOException {
+        Exchange received = meshTemplate.fromJson(json, Exchange.class);
+        Exchange exchange = meshManager.merge(received);
+        String responseJson = meshTemplate.toJson(exchange);
+        writeResponse(response, responseJson);
         log.debug("Exchange request completed. received={}", received);
     }
 
@@ -99,14 +113,7 @@ public class MeshFilter extends OncePerRequestFilter {
         Invoke invoke = meshTemplate.fromJson(json, Invoke.class);
         Invoke invokeResult = meshInvoker.handleDirectInvoke(invoke);
         String responseJson = meshTemplate.toJson(invokeResult);
-        String responseDate = String.valueOf(System.currentTimeMillis());
-        String responseAuthorization = meshTemplate.calculateAuthorization(responseJson, responseDate);
-
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader(SM_DATE, responseDate);
-        response.setHeader(SM_AUTHORIZATION, responseAuthorization);
-        response.setContentType("application/json; charset=utf-8");
-        response.getWriter().write(responseJson);
+        writeResponse(response, responseJson);
         log.debug("Direct invoke completed. service={}", invoke.getService());
     }
 }
