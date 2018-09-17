@@ -21,6 +21,7 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import us.cuatoi.s34j.service.mesh.bo.Invoke;
@@ -158,7 +159,27 @@ public class MeshInvoker {
     }
 
     public Invoke handleDirectInvoke(Invoke invoke) {
-        return null;
+        log.debug("handleDirectInvoke service={}", invoke.getService());
+        invoke.getChain().add(nodeProvider.provide().getName());
+
+        String service = invoke.getService();
+        MeshServiceBeanPostProcessor.ServiceMethodBeanHolder holder = meshServiceBeanPostProcessor
+                .getServiceMap().get(service);
+        if (holder == null) {
+            invoke.setException("Unknown service " + invoke.getService());
+            return invoke;
+        }
+        Object input = meshTemplate.fromJson(invoke.getInputJson(), holder.getRequestClass());
+
+        try {
+            Object result = holder.getMethod().invoke(holder.bean, input);
+            invoke.setOutputJson(meshTemplate.toJson(result));
+            return invoke;
+        } catch (Exception ex) {
+            invoke.setException(ex.getMessage());
+            invoke.setExceptionStackTrace(ExceptionUtils.getStackTrace(ex));
+            return invoke;
+        }
     }
 
     @Data

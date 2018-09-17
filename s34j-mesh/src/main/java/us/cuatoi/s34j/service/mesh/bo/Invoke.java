@@ -41,7 +41,11 @@ public class Invoke {
     /**
      * Error if there is an exception
      */
-    String error;
+    String exception;
+    /**
+     * Stacktrace if there is an exception
+     */
+    String exceptionStackTrace;
 
     /**
      * Node started in invocation

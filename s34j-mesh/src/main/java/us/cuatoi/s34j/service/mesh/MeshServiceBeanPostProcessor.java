@@ -69,10 +69,13 @@ public class MeshServiceBeanPostProcessor implements BeanPostProcessor {
             for (MeshServiceHandler listener : entry.getValue()) {
                 String service = listener.name();
                 service = isNotBlank(service) ? service : beanName;
+                Class<?> requestClass = method.getParameters()[0].getType();
+
                 ServiceMethodBeanHolder holder = new ServiceMethodBeanHolder();
                 holder.setService(service);
                 holder.setBean(bean);
                 holder.setMethod(method);
+                holder.setRequestClass(requestClass);
                 services.put(service, holder);
             }
         }
@@ -85,5 +88,6 @@ public class MeshServiceBeanPostProcessor implements BeanPostProcessor {
         String service;
         Object bean;
         Method method;
+        Class<?> requestClass;
     }
 }

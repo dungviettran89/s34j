@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.filter.OncePerRequestFilter;
 import us.cuatoi.s34j.service.mesh.bo.Exchange;
+import us.cuatoi.s34j.service.mesh.bo.Invoke;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -45,6 +46,8 @@ public class MeshFilter extends OncePerRequestFilter {
     private MeshTemplate meshTemplate;
     @Autowired
     private MeshManager meshManager;
+    @Autowired
+    private MeshInvoker meshInvoker;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -65,23 +68,45 @@ public class MeshFilter extends OncePerRequestFilter {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid exchange");
         }
         switch (method) {
+            case SM_DIRECT_INVOKE:
+                doDirectInvoke(response, json);
+                return;
             case SM_EXCHANGE:
-                Exchange received = meshTemplate.fromJson(json, Exchange.class);
-                Exchange exchange = meshManager.merge(received);
-                String responseJson = meshTemplate.toJson(exchange);
-                String responseDate = String.valueOf(System.currentTimeMillis());
-                String responseAuthorization = meshTemplate.calculateAuthorization(responseJson, responseDate);
-
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.setHeader(SM_DATE, responseDate);
-                response.setHeader(SM_AUTHORIZATION, responseAuthorization);
-                response.setContentType("application/json; charset=utf-8");
-                response.getWriter().write(responseJson);
-                log.debug("Exchange request completed. received={}", received);
+                doExchange(response, json);
                 return;
             default:
                 log.warn("Unknown method, method={}", method);
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown method");
         }
+    }
+
+    private void doExchange(HttpServletResponse response, String json) throws IOException {
+        Exchange received = meshTemplate.fromJson(json, Exchange.class);
+        Exchange exchange = meshManager.merge(received);
+        String responseJson = meshTemplate.toJson(exchange);
+        String responseDate = String.valueOf(System.currentTimeMillis());
+        String responseAuthorization = meshTemplate.calculateAuthorization(responseJson, responseDate);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setHeader(SM_DATE, responseDate);
+        response.setHeader(SM_AUTHORIZATION, responseAuthorization);
+        response.setContentType("application/json; charset=utf-8");
+        response.getWriter().write(responseJson);
+        log.debug("Exchange request completed. received={}", received);
+    }
+
+    private void doDirectInvoke(HttpServletResponse response, String json) throws IOException {
+        Invoke invoke = meshTemplate.fromJson(json, Invoke.class);
+        Invoke invokeResult = meshInvoker.handleDirectInvoke(invoke);
+        String responseJson = meshTemplate.toJson(invokeResult);
+        String responseDate = String.valueOf(System.currentTimeMillis());
+        String responseAuthorization = meshTemplate.calculateAuthorization(responseJson, responseDate);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setHeader(SM_DATE, responseDate);
+        response.setHeader(SM_AUTHORIZATION, responseAuthorization);
+        response.setContentType("application/json; charset=utf-8");
+        response.getWriter().write(responseJson);
+        log.debug("Direct invoke completed. service={}", invoke.getService());
     }
 }
