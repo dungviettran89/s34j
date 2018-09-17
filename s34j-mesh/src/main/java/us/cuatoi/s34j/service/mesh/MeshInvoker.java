@@ -17,8 +17,8 @@ package us.cuatoi.s34j.service.mesh;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.Futures;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,23 +28,23 @@ import us.cuatoi.s34j.service.mesh.bo.Node;
 import us.cuatoi.s34j.service.mesh.providers.NodeProvider;
 
 import javax.annotation.PostConstruct;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34j.service.mesh.MeshFilter.SM_DIRECT_INVOKE;
 
 @Slf4j
 public class MeshInvoker {
-    private final Map<String, FutureHolder> futures = new ConcurrentHashMap<>();
+    private Cache<String, FutureHolder> futures;
     private ExecutorService executor;
 
 
     @Value("${s34j.service-mesh.invocationPoolSize:0}")
     private int poolSize;
+    @Value("${s34j.service-mesh.invokeTimeoutSeconds:60}")
+    private int invokeTimeoutSeconds;
     @Autowired
     private MeshManager meshManager;
     @Autowired
@@ -59,6 +59,15 @@ public class MeshInvoker {
         poolSize = poolSize > 0 ? poolSize : Runtime.getRuntime().availableProcessors() - 1;
         poolSize = poolSize > 0 ? poolSize : 1;
         executor = Executors.newFixedThreadPool(poolSize);
+
+        futures = CacheBuilder.newBuilder()
+                .expireAfterWrite(invokeTimeoutSeconds, TimeUnit.SECONDS)
+                .removalListener(this::invokeTimedOut)
+                .build();
+    }
+
+    private void invokeTimedOut(RemovalNotification<String, MeshInvoker.FutureHolder> notification) {
+        notification.getValue().future.completeExceptionally(new TimeoutException("Invocation timed out."));
     }
 
 
@@ -104,21 +113,23 @@ public class MeshInvoker {
         invoke.setTo(target);
         invoke.setHeaders(new HashMap<>());
         invoke.setChain(Lists.newArrayList(currentName));
-        executor.submit(() -> remoteInvoke(invoke));
 
         FutureHolder holder = new FutureHolder();
         holder.setFuture(new CompletableFuture<>());
         holder.setResponseClass(responseClass);
         futures.put(correlationId, holder);
+        executor.submit(() -> remoteInvoke(invoke));
         return holder.future;
     }
 
     private void remoteInvoke(Invoke invoke) {
-        log.debug("Remote invoke service {} in node {}", invoke.getService(), invoke.getTo());
+        String service = invoke.getService();
+        String to = invoke.getTo();
+        log.debug("Remote invoke service {} in node {}", service, to);
         //try direct remote invoke first
         List<Node> directNodes = meshManager.getMesh().getNodes().values().stream()
-                .filter((node) -> node.getServices().contains(invoke.getService()))
-                .filter((node) -> isBlank(invoke.getService()) || equalsIgnoreCase(invoke.getTo(), node.getName()))
+                .filter((node) -> node.getServices().contains(service))
+                .filter((node) -> isBlank(to) || equalsIgnoreCase(to, node.getName()))
                 .collect(Collectors.toList());
         Collections.shuffle(directNodes);
         Invoke result = directNodes.stream()
@@ -128,17 +139,21 @@ public class MeshInvoker {
                 .orElse(null);
 
         if (result == null) {
-            FutureHolder holder = futures.get(invoke.getCorrelationId());
-            holder.future.completeExceptionally(new RuntimeException("Can not invoke service." + invoke.getService()));
+            FutureHolder holder = futures.getIfPresent(invoke.getCorrelationId());
+            if (holder != null)
+                holder.future.completeExceptionally(new RuntimeException("Can not invoke service " + service));
             return;
         }
 
-        FutureHolder holder = futures.get(result.getCorrelationId());
-        Object output = meshTemplate.fromJson(result.getOutputJson(), holder.responseClass);
-        holder.future.complete(output);
+        FutureHolder holder = futures.getIfPresent(result.getCorrelationId());
+        if (holder != null) {
+            Object output = meshTemplate.fromJson(result.getOutputJson(), holder.responseClass);
+            holder.future.complete(output);
+        }
     }
 
     private Invoke directInvoke(Node node, Invoke invoke) {
+        log.debug("Direct invoke service {} in node {}", invoke.getService(), node.getName());
         return meshTemplate.post(node.getUrl(), SM_DIRECT_INVOKE, invoke, Invoke.class);
     }
 
