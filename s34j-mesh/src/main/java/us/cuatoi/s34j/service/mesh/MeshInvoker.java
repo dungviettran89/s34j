@@ -46,6 +46,8 @@ public class MeshInvoker {
     private int poolSize;
     @Value("${s34j.service-mesh.invokeTimeoutSeconds:60}")
     private int invokeTimeoutSeconds;
+    @Value("${s34j.service-mesh.forwardInvokeEnabled:false}")
+    private boolean forwardInvokeEnabled;
     @Autowired
     private MeshManager meshManager;
     @Autowired
@@ -140,11 +142,20 @@ public class MeshInvoker {
                 .orElse(null);
 
         if (result == null) {
-            FutureHolder holder = futures.getIfPresent(invoke.getCorrelationId());
-            if (holder != null) {
-                holder.future.completeExceptionally(new RuntimeException("Can not invoke service " + service));
+            //throw error if forward invoke is not enabled
+            if (!forwardInvokeEnabled) {
+                FutureHolder holder = futures.getIfPresent(invoke.getCorrelationId());
+                if (holder != null) {
+                    holder.future.completeExceptionally(new RuntimeException("Can not invoke service " + service));
+                }
+                return;
+            } else {
+                //Need to think of a good way to do forward invoke, it is beneficial when there is a network partition
+                // and only 1 node is able to connect to both partition. In this case blindly forwarding will not work,
+                // We may need to think of a way to probe which node can do the forwarding.
+                //It may be too expensive to perform a forwarding.
+                throw new RuntimeException("Not implemented.");
             }
-            return;
         }
 
         FutureHolder holder = futures.getIfPresent(result.getCorrelationId());
