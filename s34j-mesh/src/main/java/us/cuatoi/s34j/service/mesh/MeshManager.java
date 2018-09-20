@@ -94,7 +94,7 @@ public class MeshManager {
         mesh.setName(name);
         mesh.setNodes(new ConcurrentHashMap<>());
         deleteAfterInactiveMillis = deleteAfterInactiveMinutes * 60 * 1000;
-        exchangeScheduler.schedule(this::initialExchange, 2, TimeUnit.SECONDS);
+        exchangeScheduler.schedule(this::initialExchange, exchangeIntervalSeconds, TimeUnit.SECONDS);
     }
 
     private void initialExchange() {
