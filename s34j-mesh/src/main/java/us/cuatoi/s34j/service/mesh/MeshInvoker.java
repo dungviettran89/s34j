@@ -20,6 +20,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Futures;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -60,7 +61,7 @@ public class MeshInvoker {
     private MeshTemplate meshTemplate;
 
     @PostConstruct
-    public void start() {
+    void start() {
         poolSize = poolSize > 0 ? poolSize : Runtime.getRuntime().availableProcessors() - 1;
         poolSize = poolSize > 0 ? poolSize : 1;
         executor = Executors.newFixedThreadPool(poolSize);
@@ -77,23 +78,19 @@ public class MeshInvoker {
 
 
     public <T> Future<T> invoke(String service, Object input, Class<T> responseClass) {
-        return invoke(service, input, responseClass, null);
+        return Futures.lazyTransform(invokeJson(service, meshTemplate.toJson(input), null),
+                (json) -> meshTemplate.fromJson(json, responseClass));
     }
 
-    private <T> Future<T> invoke(String service, Object input, Class<T> responseClass, String target) {
+    @SuppressWarnings("WeakerAccess")
+    public Future<String> invokeJson(String service, String inputJson, String target) {
         //invoke locally if applicable
         String currentName = nodeProvider.provide().getName();
         boolean canInvokeLocally = target == null || equalsIgnoreCase(currentName, target);
         boolean serviceAvailableLocally = meshServiceBeanPostProcessor.getServices().contains(service);
         canInvokeLocally = canInvokeLocally && serviceAvailableLocally;
         if (canInvokeLocally) {
-            log.debug("Invoke locally for service {}, node={}", service, target);
-            return executor.submit(() -> {
-                MeshServiceBeanPostProcessor.ServiceMethodBeanHolder holder = meshServiceBeanPostProcessor
-                        .getServiceMap().get(service);
-                Object result = holder.getMethod().invoke(holder.bean, input);
-                return responseClass.cast(result);
-            });
+            return doLocalInvoke(service, inputJson, target);
         }
 
         //Check if service available on target node
@@ -107,8 +104,7 @@ public class MeshInvoker {
 
         String correlationId = UUID.randomUUID().toString();
 
-        //forward invocation
-        String inputJson = meshTemplate.toJson(input);
+        //remote invocation
         Invoke invoke = new Invoke();
         invoke.setService(service);
         invoke.setInputJson(inputJson);
@@ -121,11 +117,21 @@ public class MeshInvoker {
 
         FutureHolder holder = new FutureHolder();
         holder.setFuture(new CompletableFuture<>());
-        holder.setResponseClass(responseClass);
         futures.put(correlationId, holder);
         Future<Boolean> future = executor.submit(() -> remoteInvoke(invoke));
         log.debug("Submitted {} future={}", invoke.getCorrelationId(), future);
         return holder.future;
+    }
+
+    private Future<String> doLocalInvoke(String service, String inputJson, String target) {
+        log.debug("Invoke locally for service {}, node={}", service, target);
+        return executor.submit(() -> {
+            MeshServiceBeanPostProcessor.ServiceMethodBeanHolder holder = meshServiceBeanPostProcessor
+                    .getServiceMap().get(service);
+            Object input = meshTemplate.fromJson(inputJson, holder.getRequestClass());
+            Object result = holder.getMethod().invoke(holder.bean, input);
+            return meshTemplate.toJson(result);
+        });
     }
 
     private boolean remoteInvoke(Invoke invoke) {
@@ -173,7 +179,7 @@ public class MeshInvoker {
         return returnResult(result);
     }
 
-    private Invoke directInvoke(Invoke invoke) {
+    public Invoke directInvoke(Invoke invoke) {
         String to = invoke.getTo();
         String service = invoke.getService();
         String currentNodeName = nodeProvider.provide().getName();
@@ -194,8 +200,7 @@ public class MeshInvoker {
         FutureHolder holder = futures.getIfPresent(result.getCorrelationId());
         if (holder != null) {
             if (isNotBlank(result.getOutputJson())) {
-                Object output = meshTemplate.fromJson(result.getOutputJson(), holder.responseClass);
-                holder.future.complete(output);
+                holder.future.complete(result.getOutputJson());
             } else {
                 log.warn("Invoke error, exception={}, stackTrace={}", result.getException(), result.getExceptionStackTrace());
                 holder.future.completeExceptionally(new RuntimeException(result.getException()));
@@ -204,6 +209,7 @@ public class MeshInvoker {
         return true;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public boolean forwardInvoke(Invoke invoke, String url) {
         Invoke result = meshTemplate.post(url, SM_FORWARD_INVOKE, invoke, Invoke.class);
         if (result == null) {
@@ -224,12 +230,12 @@ public class MeshInvoker {
         return false;
     }
 
-    private Invoke doDirectInvoke(Node node, Invoke invoke) {
+    Invoke doDirectInvoke(Node node, Invoke invoke) {
         log.debug("Direct invoke service {} in node {}", invoke.getService(), node.getName());
         return meshTemplate.post(node.getUrl(), SM_DIRECT_INVOKE, invoke, Invoke.class);
     }
 
-    public Invoke handleDirectInvoke(Invoke invoke) {
+    Invoke handleDirectInvoke(Invoke invoke) {
 
         invoke.getChain().add(nodeProvider.provide().getName());
 
@@ -257,7 +263,7 @@ public class MeshInvoker {
         }
     }
 
-    public Invoke handleForwardInvoke(Invoke invoke) {
+    Invoke handleForwardInvoke(Invoke invoke) {
         invoke.getChain().add(nodeProvider.provide().getName());
         Invoke result = directInvoke(invoke);
         if (result != null) {
@@ -273,7 +279,6 @@ public class MeshInvoker {
 
     @Data
     static class FutureHolder {
-        Class<?> responseClass;
-        CompletableFuture future;
+        CompletableFuture<String> future;
     }
 }

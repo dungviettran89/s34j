@@ -90,11 +90,11 @@ public class MeshManager {
     private int randomExchangeCount;
 
     @PostConstruct
-    public void start() {
+    void start() {
         mesh.setName(name);
         mesh.setNodes(new ConcurrentHashMap<>());
         deleteAfterInactiveMillis = deleteAfterInactiveMinutes * 60 * 1000;
-        exchangeScheduler.schedule(this::initialExchange, exchangeIntervalSeconds, TimeUnit.SECONDS);
+        exchangeScheduler.schedule(this::initialExchange, exchangeIntervalSeconds / 2, TimeUnit.SECONDS);
     }
 
     private void initialExchange() {

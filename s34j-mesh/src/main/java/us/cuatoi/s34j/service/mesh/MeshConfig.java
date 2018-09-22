@@ -48,6 +48,11 @@ public class MeshConfig {
     }
 
     @Bean
+    public DefaultMeshHandlers defaultHandlers() {
+        return new DefaultMeshHandlers();
+    }
+
+    @Bean
     public FilterRegistrationBean<MeshFilter> meshFilterRegistration(MeshFilter meshFilter) {
         FilterRegistrationBean<MeshFilter> registrationBean = new FilterRegistrationBean<>(meshFilter);
         registrationBean.setOrder(HIGHEST_PRECEDENCE);
