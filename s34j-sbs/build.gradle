@@ -17,7 +17,7 @@ apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
 group = 'us.cuatoi.s34j'
-version = '0.5.0'
+version = '0.6.0'
 sourceCompatibility = 1.8
 
 repositories {

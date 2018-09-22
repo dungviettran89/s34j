@@ -196,6 +196,7 @@ public class MeshManager {
         return received;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public Exchange getExchange() {
         Node current = nodeProvider.provide();
         mesh.getNodes().put(current.getName(), current);
@@ -219,12 +220,12 @@ public class MeshManager {
     }
 
     @PreDestroy
-    public void stop() {
+    void stop() {
         exchangeScheduler.shutdown();
         mergeScheduler.shutdown();
     }
 
-    public Exchange merge(Exchange received) {
+    Exchange merge(Exchange received) {
         //queue merge here
         mergeScheduler.submit(() -> this.doMerge(received));
         return getExchange();
@@ -293,5 +294,13 @@ public class MeshManager {
 
     public Map<String, Map<String, Integer>> getKnownLatencies() {
         return knownLatencies.asMap();
+    }
+
+    @SuppressWarnings("unused")
+    public List<String> getServiceUrls(String service) {
+        return getMesh().getNodes().values().stream()
+                .filter((n) -> n.getServices().contains(service))
+                .map(Node::getUrl)
+                .collect(Collectors.toList());
     }
 }

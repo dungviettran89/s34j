@@ -43,7 +43,7 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
     private Cache<String, CompletableFutureHolder<?>> futures;
 
     @PostConstruct
-    private void start() {
+    void start() {
         futures = CacheBuilder.newBuilder().expireAfterWrite(timeout, TimeUnit.MINUTES).removalListener(this).build();
     }
 
