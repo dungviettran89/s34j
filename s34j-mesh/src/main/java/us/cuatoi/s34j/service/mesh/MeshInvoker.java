@@ -39,6 +39,9 @@ import static org.apache.commons.lang3.StringUtils.*;
 import static us.cuatoi.s34j.service.mesh.MeshFilter.SM_DIRECT_INVOKE;
 import static us.cuatoi.s34j.service.mesh.MeshFilter.SM_FORWARD_INVOKE;
 
+/**
+ * Allow remote invocation in the mesh
+ */
 @Slf4j
 public class MeshInvoker {
     private Cache<String, FutureHolder> futures;
@@ -77,11 +80,41 @@ public class MeshInvoker {
     }
 
 
+    /**
+     * Invoke the service with input object and the expected response object
+     *
+     * @param service       to invoke
+     * @param input         object
+     * @param responseClass response class
+     * @param <T>           response class
+     * @return response or null if failed
+     */
     public <T> Future<T> invoke(String service, Object input, Class<T> responseClass) {
-        return Futures.lazyTransform(invokeJson(service, meshTemplate.toJson(input), null),
+        return invoke(service, input, responseClass, null);
+    }
+
+    /**
+     * Invoke the service with input object and the expected response object
+     *
+     * @param service       to invoke
+     * @param input         object
+     * @param responseClass response class
+     * @param target        target node of this invocation
+     * @param <T>           response class
+     * @return response or null if failed
+     */
+    public <T> Future<T> invoke(String service, Object input, Class<T> responseClass, String target) {
+        return Futures.lazyTransform(invokeJson(service, meshTemplate.toJson(input), target),
                 (json) -> meshTemplate.fromJson(json, responseClass));
     }
 
+    /**
+     * Perform a raw invocation in json format
+     * @param service to invoke
+     * @param inputJson input in Json
+     * @param target target node to invoke
+     * @return response json if success
+     */
     @SuppressWarnings("WeakerAccess")
     public Future<String> invokeJson(String service, String inputJson, String target) {
         //invoke locally if applicable
