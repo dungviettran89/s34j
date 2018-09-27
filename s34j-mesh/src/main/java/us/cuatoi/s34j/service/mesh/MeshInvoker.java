@@ -65,8 +65,7 @@ public class MeshInvoker {
 
     @PostConstruct
     void start() {
-        poolSize = poolSize > 0 ? poolSize : Runtime.getRuntime().availableProcessors() - 1;
-        poolSize = poolSize > 0 ? poolSize : 1;
+        poolSize = poolSize > 0 ? poolSize : Runtime.getRuntime().availableProcessors();
         executor = Executors.newFixedThreadPool(poolSize);
 
         futures = CacheBuilder.newBuilder()
@@ -110,9 +109,10 @@ public class MeshInvoker {
 
     /**
      * Perform a raw invocation in json format
-     * @param service to invoke
+     *
+     * @param service   to invoke
      * @param inputJson input in Json
-     * @param target target node to invoke
+     * @param target    target node to invoke
      * @return response json if success
      */
     @SuppressWarnings("WeakerAccess")
@@ -181,8 +181,8 @@ public class MeshInvoker {
                 return returnError(invoke);
             } else {
                 //Only 1 hops forwarding is supported for now, which supports a firewalled network where 1 node can acts
-                //as a gateway to the internal network, also it supposed to help if network is partitioned into 2 segment
-                //with 1 node can connect to both segment.
+                //as a gateway to the internal network, also it supposed to help if network is partitioned into 2
+                //segments with 1 node can connect to both segment.
                 //Support to 3 or more firewalled sub-net is possible but it would require running a full probe of
                 //the network which is too expensive to maintain. This solution strikes a balance between both world
                 Set<String> directNodeNames = meshManager.getMesh().getNodes().values().stream()
@@ -212,6 +212,11 @@ public class MeshInvoker {
         return returnResult(result);
     }
 
+    /**
+     * Perform a direct invoke on the node. It will execute the targeted service or throw error if there is any exception
+     * @param invoke invocation information
+     * @return invocation result
+     */
     public Invoke directInvoke(Invoke invoke) {
         String to = invoke.getTo();
         String service = invoke.getService();
@@ -242,6 +247,13 @@ public class MeshInvoker {
         return true;
     }
 
+    /**
+     * Perform a forward invoke where current node ask the remote node to perform a direct
+     * invoke for him
+     * @param invoke invocation info
+     * @param url of the remote nore
+     * @return true if forward invoke is success
+     */
     @SuppressWarnings("WeakerAccess")
     public boolean forwardInvoke(Invoke invoke, String url) {
         Invoke result = meshTemplate.post(url, SM_FORWARD_INVOKE, invoke, Invoke.class);
