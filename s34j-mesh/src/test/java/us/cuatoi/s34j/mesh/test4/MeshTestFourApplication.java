@@ -11,7 +11,7 @@ public class MeshTestFourApplication {
 
     public static void main(String[] args) {
         System.setProperty("server.port", "9004");
-        System.setProperty("s34j.service-mesh.active", "true");
+        System.setProperty("s34j.service-mesh.active", "false");
         System.setProperty("s34j.service-mesh.node.url", "http://localhost:9004");
         System.setProperty("s34j.service-mesh.node.name", "test-4");
         SpringApplication.run(MeshTestFourApplication.class, args);

@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Value;
 import us.cuatoi.s34j.service.mesh.bo.Exchange;
 import us.cuatoi.s34j.service.mesh.bo.Mesh;
 import us.cuatoi.s34j.service.mesh.bo.Node;
-import us.cuatoi.s34j.service.mesh.providers.ActiveProvider;
 import us.cuatoi.s34j.service.mesh.providers.HostsProvider;
 import us.cuatoi.s34j.service.mesh.providers.NodeProvider;
 
@@ -62,8 +61,6 @@ public class MeshManager {
      */
     private final Cache<String, Map<String, Integer>> knownLatencies = CacheBuilder.newBuilder()
             .expireAfterWrite(5, TimeUnit.MINUTES).build();
-    @Autowired
-    private ActiveProvider activeProvider;
     @Autowired
     private HostsProvider hostsProvider;
     @Autowired
@@ -133,10 +130,6 @@ public class MeshManager {
      * Each steps a node do exchange with 1 initial host, 1 random host and 1 oldest updated host
      */
     private void exchange() {
-        if (!activeProvider.provide()) {
-            log.info("Skipped exchange since host is inactive.");
-            return;
-        }
         Node currentNode = nodeProvider.provide();
 
         //exchange with 1 initial host
@@ -238,6 +231,11 @@ public class MeshManager {
         }
         if (!equalsIgnoreCase(exchange.getMesh().getName(), mesh.getName())) {
             log.error("Wrong mesh name. exchange={}, name={}", exchange.getMesh().getName(), mesh.getName());
+            return;
+        }
+        if(!exchange.getCurrent().isActive()){
+            log.info("Exchange host is not active, skipping merge. exchange={}, name={}",
+                    exchange.getMesh().getName(), mesh.getName());
             return;
         }
 
