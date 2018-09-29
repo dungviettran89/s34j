@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Stopwatch;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Collections2;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -233,7 +234,7 @@ public class MeshManager {
             log.error("Wrong mesh name. exchange={}, name={}", exchange.getMesh().getName(), mesh.getName());
             return;
         }
-        if(!exchange.getCurrent().isActive()){
+        if (!exchange.getCurrent().isActive()) {
             log.info("Exchange host is not active, skipping merge. exchange={}, name={}",
                     exchange.getMesh().getName(), mesh.getName());
             return;
@@ -294,11 +295,19 @@ public class MeshManager {
         return knownLatencies.asMap();
     }
 
+
+    @SuppressWarnings("WeakerAccess")
+    public Collection<Node> getActiveNodes() {
+        return Collections2.filter(getMesh().getNodes().values(), Node::isActive);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public Collection<Node> getServiceNodes(String service) {
+        return Collections2.filter(getActiveNodes(), (n) -> n != null && n.getServices().contains(service));
+    }
+
     @SuppressWarnings("unused")
-    public List<String> getServiceUrls(String service) {
-        return getMesh().getNodes().values().stream()
-                .filter((n) -> n.getServices().contains(service))
-                .map(Node::getUrl)
-                .collect(Collectors.toList());
+    public Collection<String> getServiceUrls(String service) {
+        return Collections2.transform(getServiceNodes(service), Node::getUrl);
     }
 }
