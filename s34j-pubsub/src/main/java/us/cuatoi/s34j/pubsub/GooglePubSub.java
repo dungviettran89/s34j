@@ -34,6 +34,7 @@ import com.google.pubsub.v1.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import us.cuatoi.s34j.pubsub.configuration.DefaultDestinationConfigurationProvider;
 import us.cuatoi.s34j.pubsub.configuration.DestinationConfiguration;
@@ -52,6 +53,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 /**
  * Google Pub Sub implementation to handle all pub/sub integration.
@@ -91,6 +93,8 @@ public class GooglePubSub extends PubSub {
                     return createPublisher(topic);
                 }
             });
+    @Value("${s34j.pubsub.topicPrefix:}")
+    private String topicPrefix;
 
     /**
      * Auto configure this instance using a set of default object: SimplePubSubLogger, ObjectMapper,
@@ -123,15 +127,21 @@ public class GooglePubSub extends PubSub {
         Preconditions.checkNotNull(subscription);
         Preconditions.checkNotNull(messageClass);
         Preconditions.checkNotNull(consumer);
-        ProjectSubscriptionName subscriptionName = getSubscriptionName(topic, subscription);
+        if (!isEmpty(topicPrefix)) {
+            topic = topicPrefix + "." + topic;
+            subscription = topicPrefix + "." + subscription;
+        }
+        String finalTopic = topic;
+        String finalSubscription = subscription;
+        ProjectSubscriptionName subscriptionName = getSubscriptionName(finalTopic, finalSubscription);
         MessageReceiver receiver = (message, response) -> {
             String json = message.getData().toString(UTF_8);
-            pubSubLogger.logIncoming(topic, subscription, messageClass, json);
+            pubSubLogger.logIncoming(finalTopic, finalSubscription, messageClass, json);
 
             String receivedClass = message.getAttributesOrDefault("class", null);
             if (!messageClass.getName().equalsIgnoreCase(receivedClass)) {
                 logger.info("Ignored message due to invalid class. topic={} subscription={} messageClass={} receivedClass={} json={}",
-                        topic, subscription, messageClass, receivedClass, json);
+                        finalTopic, finalSubscription, messageClass, receivedClass, json);
                 return;
             }
 
@@ -144,10 +154,10 @@ public class GooglePubSub extends PubSub {
                 consumer.accept(received);
                 response.ack();
                 logger.debug("Acknowledged message. topic={} subscription={} messageClass={} json={}",
-                        topic, subscription, messageClass, json);
+                        finalTopic, finalSubscription, messageClass, json);
             } catch (Exception consumeException) {
                 logger.error("Can not handle message. topic={} subscription={} messageClass={} json={}",
-                        topic, subscription, messageClass, json, consumeException);
+                        finalTopic, finalSubscription, messageClass, json, consumeException);
                 response.nack();
                 throw new RuntimeException(consumeException);
             }
@@ -204,6 +214,9 @@ public class GooglePubSub extends PubSub {
     public void publish(String topic, Object objectMessage, Map<String, String> headers) {
         Preconditions.checkNotNull(topic);
         Preconditions.checkNotNull(objectMessage);
+        if (!isEmpty(topicPrefix)) {
+            topic = topicPrefix + "." + topic;
+        }
         try {
             String json = objectMapper.writeValueAsString(objectMessage);
             pubSubLogger.logOutgoing(topic, objectMessage.getClass(), json);

@@ -66,6 +66,7 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
             String subscriptionName = RequestResponse.class.getName() + "-" + uuid;
             pubSub.register(responseTopic, subscriptionName, responseClass, (message) -> {
                 this.onMessage(responseTopic, message);
+                futures.invalidate(uuid);
             });
             logger.info("Registering for new topic {}. subscriptionName={}", responseTopic, subscriptionName);
         }
@@ -104,6 +105,7 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
     @Override
     public void onRemoval(RemovalNotification<String, CompletableFutureHolder> notification) {
         CompletableFutureHolder holder = notification.getValue();
+        if (holder.future.isDone()) return;
         String message = String.format("Timed out waiting for response for message %s. " +
                 "requestTopic: %s, responseTopic: %s", holder.uuid, holder.requestTopic, holder.responseTopic);
         TimeoutException timeoutException = new TimeoutException(message);

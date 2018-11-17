@@ -23,6 +23,7 @@ import com.google.common.io.BaseEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
+import org.springframework.util.StringUtils;
 
 /**
  * Default configuration provider which need a default project to be provided using the following properties:
@@ -68,9 +69,9 @@ public class DefaultDestinationConfigurationProvider implements DestinationConfi
 
         String project = environment.getProperty(topic + ".project");
         String credentialBase64 = environment.getProperty(topic + ".credentialBase64");
-        boolean credentialCorrect = project != null &&
+        boolean credentialCorrect = !StringUtils.isEmpty(project) &&
                 project.length() > 0 &&
-                credentialBase64 != null &&
+                !StringUtils.isEmpty(credentialBase64) &&
                 credentialBase64.length() > 0;
         if (credentialCorrect) {
             logger.info("Loaded project {} for topic {}", project, topic);
