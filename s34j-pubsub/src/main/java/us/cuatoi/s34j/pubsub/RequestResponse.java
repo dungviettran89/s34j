@@ -37,6 +37,8 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
     private static final Logger logger = LoggerFactory.getLogger(RequestResponse.class);
     @Value("${s34j.pubsub.request.response.timeoutMinutes:10}")
     private int timeout;
+    @Value("${random.uuid}")
+    private String instanceId;
     @Autowired
     private PubSub pubSub;
     private Set<String> consumers = new HashSet<>();
@@ -63,10 +65,9 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
         String uuid = UUID.randomUUID().toString();
         if (!consumers.contains(responseTopic)) {
             consumers.add(responseTopic);
-            String subscriptionName = RequestResponse.class.getName() + "-" + uuid;
+            String subscriptionName = responseTopic + "_" + RequestResponse.class.getSimpleName() + "_" + instanceId;
             pubSub.register(responseTopic, subscriptionName, responseClass, (message) -> {
                 this.onMessage(responseTopic, message);
-                futures.invalidate(uuid);
             });
             logger.info("Registering for new topic {}. subscriptionName={}", responseTopic, subscriptionName);
         }
@@ -99,6 +100,7 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
         }
 
         holder.future.complete(received.getPayload());
+        futures.invalidate(uuid);
     }
 
 

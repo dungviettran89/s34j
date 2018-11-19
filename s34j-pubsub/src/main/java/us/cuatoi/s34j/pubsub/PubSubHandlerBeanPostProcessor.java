@@ -75,7 +75,7 @@ public class PubSubHandlerBeanPostProcessor extends PubSubBeanPostProcessor impl
                 String requestTopic = handler.requestTopic();
                 requestTopic = isEmpty(requestTopic) ? requestClass.getName() : requestTopic;
                 String subscription = handler.name();
-                subscription = isEmpty(subscription) ? (beanName + "." + method.getName()): subscription;
+                subscription = isEmpty(subscription) ? (requestTopic + "_" + beanName + "." + method.getName()) : subscription;
                 if (handler.addUniqueSuffix()) {
                     subscription += "." + UUID.randomUUID().toString();
                 }

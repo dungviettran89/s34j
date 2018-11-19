@@ -181,21 +181,32 @@ public class GooglePubSub extends PubSub {
         DestinationConfiguration configuration = configurationProvider.getConfiguration(topic);
         String project = configuration.getProject();
         CredentialsProvider credentialsProvider = credentialsProviders.getUnchecked(topic);
-        ProjectSubscriptionName subscriptionName = ProjectSubscriptionName.of(project, topic + "_" + subscription);
+        ProjectTopicName topicName = topics.getUnchecked(topic);
+        ProjectSubscriptionName subscriptionName = ProjectSubscriptionName.of(project, subscription);
         try {
             SubscriptionAdminSettings settings = SubscriptionAdminSettings.newBuilder()
                     .setCredentialsProvider(credentialsProvider)
                     .setExecutorProvider(executorProvider).build();
             SubscriptionAdminClient client = SubscriptionAdminClient.create(settings);
             try {
-                client.getSubscription(subscriptionName);
-                logger.info("Found existing subscription. subscriptionName={}", subscriptionName);
-                return subscriptionName;
+                Subscription existingSubscription = client.getSubscription(subscriptionName);
+                if (topicName.toString().equalsIgnoreCase(existingSubscription.getTopic())) {
+                    logger.info("Found existing subscription. subscriptionName={}", subscriptionName);
+                    return subscriptionName;
+                } else {
+                    logger.warn("Found existing subscription but it is not bound to correct topic." +
+                            " subscriptionName={} topicName={}", subscriptionName, existingSubscription.getTopic());
+                    client.deleteSubscription(subscriptionName);
+                    client.createSubscription(subscriptionName,
+                            topicName, PushConfig.getDefaultInstance(), 600);
+                    logger.info("Re-created new subscription. subscriptionName={}", subscriptionName);
+                    return subscriptionName;
+                }
             } catch (Exception checkException) {
                 if (checkException.getMessage().contains("NOT_FOUND")) {
                     logger.info("Subscription not found, creating. subscriptionName={}", subscriptionName);
                     client.createSubscription(subscriptionName,
-                            topics.getUnchecked(topic), PushConfig.getDefaultInstance(), 600);
+                            topicName, PushConfig.getDefaultInstance(), 600);
                     return subscriptionName;
                 } else {
                     throw checkException;

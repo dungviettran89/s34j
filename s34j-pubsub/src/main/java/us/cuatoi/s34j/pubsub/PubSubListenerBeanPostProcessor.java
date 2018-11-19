@@ -72,7 +72,7 @@ public class PubSubListenerBeanPostProcessor implements BeanPostProcessor {
                 String topic = listener.topic();
                 topic = isEmpty(topic) ? messageClass.getName() : topic;
                 String subscription = listener.name();
-                subscription = isEmpty(subscription) ? (beanName + "." + method.getName()) : subscription;
+                subscription = isEmpty(subscription) ? (topic + "_" + beanName + "." + method.getName()) : subscription;
                 if (listener.addUniqueSuffix()) {
                     subscription += "." + UUID.randomUUID().toString();
                 }
