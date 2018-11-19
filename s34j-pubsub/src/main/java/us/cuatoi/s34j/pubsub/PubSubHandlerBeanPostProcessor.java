@@ -71,17 +71,17 @@ public class PubSubHandlerBeanPostProcessor extends PubSubBeanPostProcessor impl
             }
             Class<?> requestClass = method.getParameters()[0].getType();
             Class<?> responseClass = method.getReturnType();
-            for (PubSubHandler listener : entry.getValue()) {
-                String requestTopic = listener.requestTopic();
+            for (PubSubHandler handler : entry.getValue()) {
+                String requestTopic = handler.requestTopic();
                 requestTopic = isEmpty(requestTopic) ? requestClass.getName() : requestTopic;
-                String subscription = listener.name();
-                subscription = isEmpty(subscription) ? beanName + "." + method.getName() : subscription;
-                if (listener.addUniqueSuffix()) {
+                String subscription = handler.name();
+                subscription = isEmpty(subscription) ? (beanName + "." + method.getName()): subscription;
+                if (handler.addUniqueSuffix()) {
                     subscription += "." + UUID.randomUUID().toString();
                 }
                 pubSub.register(requestTopic, subscription, requestClass, (message) -> {
                     try {
-                        String responseTopic = listener.responseTopic();
+                        String responseTopic = handler.responseTopic();
                         responseTopic = isEmpty(responseTopic) ? responseClass.getName() : responseTopic;
                         Object response = method.invoke(bean, message.getPayload());
                         pubSub.publish(responseTopic, response, message.getHeaders());

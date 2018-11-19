@@ -3,14 +3,14 @@ A google pub sub library to be used in Spring
 ## Installation
 Installation using gradle
 ```groovy
-compile 'us.cuatoi.s34j:s34j-pubsub:0.7.0'
+compile 'us.cuatoi.s34j:s34j-pubsub:0.7.1'
 ```
 Installation using maven
 ```xml
 <dependency>
     <groupId>us.cuatoi.s34j</groupId>
     <artifactId>s34j-pubsub</artifactId>
-    <version>0.7.0</version>
+    <version>0.7.1</version>
 </dependency>
 ```
 ## Quick Start

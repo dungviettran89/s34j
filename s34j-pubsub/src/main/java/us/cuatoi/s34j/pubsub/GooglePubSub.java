@@ -181,7 +181,7 @@ public class GooglePubSub extends PubSub {
         DestinationConfiguration configuration = configurationProvider.getConfiguration(topic);
         String project = configuration.getProject();
         CredentialsProvider credentialsProvider = credentialsProviders.getUnchecked(topic);
-        ProjectSubscriptionName subscriptionName = ProjectSubscriptionName.of(project, subscription);
+        ProjectSubscriptionName subscriptionName = ProjectSubscriptionName.of(project, topic + "_" + subscription);
         try {
             SubscriptionAdminSettings settings = SubscriptionAdminSettings.newBuilder()
                     .setCredentialsProvider(credentialsProvider)

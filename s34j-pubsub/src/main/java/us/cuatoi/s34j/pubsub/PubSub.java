@@ -50,6 +50,17 @@ public abstract class PubSub {
     /**
      * Publish a message to a topic
      *
+     * @param message to publish in json format
+     * @param headers for the related message
+     */
+    public void publish(Object message, Map<String, String> headers) {
+        Preconditions.checkNotNull(message);
+        publish(message.getClass().getName(), message, headers);
+    }
+
+    /**
+     * Publish a message to a topic
+     *
      * @param topic   to publish to
      * @param message to publish in json format
      * @param headers for the related message
@@ -58,6 +69,7 @@ public abstract class PubSub {
 
     /**
      * Overriding method, allows sending message to the topic equal to class name
+     *
      * @param message to publish
      */
     public void publish(Object message) {

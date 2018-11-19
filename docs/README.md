@@ -39,14 +39,14 @@ S34J can be used in Embedded or Standalone mode
 ##### Installation
 Installation using gradle
 ```groovy
-compile 'us.cuatoi.s34j:s34j-core:0.7.0'
+compile 'us.cuatoi.s34j:s34j-core:0.7.1'
 ```
 Installation using maven
 ```xml
 <dependency>
     <groupId>us.cuatoi.s34j</groupId>
     <artifactId>s34j-core</artifactId>
-    <version>0.7.0</version>
+    <version>0.7.1</version>
 </dependency>
 ```
 ##### Configuration
