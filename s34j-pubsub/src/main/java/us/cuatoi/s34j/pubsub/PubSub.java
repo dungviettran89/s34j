@@ -35,7 +35,7 @@ public abstract class PubSub {
      * @param consumer     to consume the message
      * @param <T>          message
      */
-    public abstract <T> void register(String topic, String subscription, Class<T> messageClass, Consumer<Message<T>> consumer);
+    public abstract <T> SubscriptionInformation register(String topic, String subscription, Class<T> messageClass, Consumer<Message<T>> consumer);
 
     /**
      * Publish a message to a topic
@@ -85,9 +85,9 @@ public abstract class PubSub {
      * @param consumer     to consume the message
      * @param <T>          message
      */
-    public <T> void register(Class<T> messageClass, Consumer<Message<T>> consumer) {
+    public <T> SubscriptionInformation register(Class<T> messageClass, Consumer<Message<T>> consumer) {
         Preconditions.checkNotNull(messageClass);
         Preconditions.checkNotNull(consumer);
-        register(messageClass.getName(), messageClass.getName() + ".consumer", messageClass, consumer);
+        return register(messageClass.getName(), messageClass.getName() + ".consumer", messageClass, consumer);
     }
 }

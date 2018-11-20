@@ -79,7 +79,7 @@ public class PubSubHandlerBeanPostProcessor extends PubSubBeanPostProcessor impl
                 if (handler.addUniqueSuffix()) {
                     subscription += "." + UUID.randomUUID().toString();
                 }
-                pubSub.register(requestTopic, subscription, requestClass, (message) -> {
+                SubscriptionInformation information = pubSub.register(requestTopic, subscription, requestClass, (message) -> {
                     try {
                         String responseTopic = handler.responseTopic();
                         responseTopic = isEmpty(responseTopic) ? responseClass.getName() : responseTopic;
@@ -91,6 +91,9 @@ public class PubSubHandlerBeanPostProcessor extends PubSubBeanPostProcessor impl
                         throw new RuntimeException(invocationError);
                     }
                 });
+                if (handler.addUniqueSuffix()) {
+                    information.autoRemove();
+                }
                 logger.info("Registered requestTopic={} subscription={} beanName={} method={}",
                         requestTopic, subscription, beanName, method);
             }

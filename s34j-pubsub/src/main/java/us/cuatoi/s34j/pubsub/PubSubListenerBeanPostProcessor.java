@@ -76,7 +76,7 @@ public class PubSubListenerBeanPostProcessor implements BeanPostProcessor {
                 if (listener.addUniqueSuffix()) {
                     subscription += "." + UUID.randomUUID().toString();
                 }
-                pubSub.register(topic, subscription, messageClass, (message) -> {
+                SubscriptionInformation information = pubSub.register(topic, subscription, messageClass, (message) -> {
                     try {
                         method.invoke(bean, message.getPayload());
                     } catch (IllegalAccessException | InvocationTargetException invocationError) {
@@ -85,6 +85,9 @@ public class PubSubListenerBeanPostProcessor implements BeanPostProcessor {
                         throw new RuntimeException(invocationError);
                     }
                 });
+                if (listener.addUniqueSuffix()) {
+                    information.autoRemove();
+                }
                 logger.info("Registered topic={} subscription={} beanName={} method={}",
                         topic, subscription, beanName, method);
             }

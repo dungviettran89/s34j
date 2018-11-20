@@ -17,7 +17,6 @@ package us.cuatoi.s34j.pubsub;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.core.AbstractApiService;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
@@ -71,7 +70,7 @@ public class GooglePubSub extends PubSub {
     private ExecutorProvider executorProvider;
     @Autowired(required = false)
     private PubSubLogger pubSubLogger;
-    private Set<Subscriber> subscribers = new HashSet<>();
+    private Set<SubscriptionInformation> subscribers = new HashSet<>();
     private LoadingCache<String, CredentialsProvider> credentialsProviders = CacheBuilder.newBuilder()
             .build(new CacheLoader<String, CredentialsProvider>() {
                 @Override
@@ -122,7 +121,7 @@ public class GooglePubSub extends PubSub {
     }
 
     @Override
-    public <T> void register(String topic, String subscription, Class<T> messageClass, Consumer<Message<T>> consumer) {
+    public <T> SubscriptionInformation register(String topic, String subscription, Class<T> messageClass, Consumer<Message<T>> consumer) {
         Preconditions.checkNotNull(topic);
         Preconditions.checkNotNull(subscription);
         Preconditions.checkNotNull(messageClass);
@@ -166,7 +165,9 @@ public class GooglePubSub extends PubSub {
         Subscriber subscriber = Subscriber.newBuilder(subscriptionName, receiver)
                 .setCredentialsProvider(credentialsProvider).setExecutorProvider(executorProvider).build();
         subscriber.startAsync();
-        subscribers.add(subscriber);
+        SubscriptionInformation subscriptionInformation = new SubscriptionInformation(subscriber, topic, subscriptionName);
+        subscribers.add(subscriptionInformation);
+        return subscriptionInformation;
     }
 
     /**
@@ -332,13 +333,32 @@ public class GooglePubSub extends PubSub {
      */
     @PreDestroy
     void stop() {
-        subscribers.forEach(AbstractApiService::stopAsync);
-        publishers.asMap().forEach((topic, publisher) -> {
-            try {
-                publisher.shutdown();
-            } catch (Exception shutdownError) {
-                logger.error("Can not shutdown publisher. topic={}", topic, shutdownError);
+        subscribers.parallelStream().forEach((this::stop));
+        publishers.asMap().values().parallelStream().forEach(this::stop);
+    }
+
+    private void stop(Publisher publisher) {
+        try {
+            publisher.shutdown();
+        } catch (Exception shutdownError) {
+            logger.error("Can not shutdown publisher. topic={}", publisher.getTopicName(), shutdownError);
+        }
+    }
+
+    private void stop(SubscriptionInformation information) {
+        try {
+            information.subscriber.stopAsync();
+            if (information.isAutoRemove()) {
+                CredentialsProvider credentials = credentialsProviders.getUnchecked(information.topic);
+                SubscriptionAdminSettings settings = SubscriptionAdminSettings.newBuilder()
+                        .setCredentialsProvider(credentials)
+                        .setExecutorProvider(executorProvider).build();
+                SubscriptionAdminClient client = SubscriptionAdminClient.create(settings);
+                client.deleteSubscription(information.subscriptionName);
+                logger.info("Deleted subscription {}", information.subscriptionName);
             }
-        });
+        } catch (Exception ex) {
+            logger.warn("Can not clean up subscription {}", information.subscriptionName, ex);
+        }
     }
 }

@@ -68,7 +68,7 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
             String subscriptionName = responseTopic + "_" + RequestResponse.class.getSimpleName() + "_" + instanceId;
             pubSub.register(responseTopic, subscriptionName, responseClass, (message) -> {
                 this.onMessage(responseTopic, message);
-            });
+            }).autoRemove();
             logger.info("Registering for new topic {}. subscriptionName={}", responseTopic, subscriptionName);
         }
         CompletableFuture<T> future = new CompletableFuture<>();
