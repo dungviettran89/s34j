@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.util.HashSet;
@@ -37,7 +38,7 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
     private static final Logger logger = LoggerFactory.getLogger(RequestResponse.class);
     @Value("${s34j.pubsub.request.response.timeoutMinutes:10}")
     private int timeout;
-    @Value("${random.uuid}")
+    @Value("${s34j.pubsub.request.response.instanceId:}")
     private String instanceId;
     @Autowired
     private PubSub pubSub;
@@ -47,6 +48,7 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
     @PostConstruct
     void start() {
         futures = CacheBuilder.newBuilder().expireAfterWrite(timeout, TimeUnit.MINUTES).removalListener(this).build();
+        instanceId = StringUtils.isEmpty(instanceId) ? UUID.randomUUID().toString() : instanceId;
     }
 
     public <T> CompletableFuture<T> sendRequestForResponse(Object request, Class<T> responseClass) {
