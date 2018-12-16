@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
-import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.v1.*;
@@ -32,17 +31,12 @@ import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
-import us.cuatoi.s34j.pubsub.configuration.DefaultDestinationConfigurationProvider;
 import us.cuatoi.s34j.pubsub.configuration.DestinationConfiguration;
 import us.cuatoi.s34j.pubsub.configuration.DestinationConfigurationProvider;
 import us.cuatoi.s34j.pubsub.log.PubSubLogger;
-import us.cuatoi.s34j.pubsub.log.SimplePubSubLogger;
 
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -52,72 +46,48 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.springframework.util.ObjectUtils.isEmpty;
+import static org.springframework.util.StringUtils.isEmpty;
 
 /**
  * Google Pub Sub implementation to handle all pub/sub integration.
  */
 public class GooglePubSub extends PubSub {
 
-    public static final Logger logger = LoggerFactory.getLogger(GooglePubSub.class);
-    @Autowired
-    private Environment environment;
-    @Autowired(required = false)
-    private DestinationConfigurationProvider configurationProvider;
-    @Autowired(required = false)
-    private ObjectMapper objectMapper;
-    @Autowired(required = false)
-    private ExecutorProvider executorProvider;
-    @Autowired(required = false)
-    private PubSubLogger pubSubLogger;
-    private Set<SubscriptionInformation> subscribers = new HashSet<>();
-    private LoadingCache<String, CredentialsProvider> credentialsProviders = CacheBuilder.newBuilder()
+    private static final Logger logger = LoggerFactory.getLogger(GooglePubSub.class);
+    private final Set<SubscriptionInformation> subscribers = new HashSet<>();
+    private final LoadingCache<String, CredentialsProvider> credentialsProviders = CacheBuilder.newBuilder()
             .build(new CacheLoader<String, CredentialsProvider>() {
                 @Override
                 public CredentialsProvider load(String topic) {
                     return createCredentialsProvider(topic);
                 }
             });
-    private LoadingCache<String, ProjectTopicName> topics = CacheBuilder.newBuilder()
+    private final LoadingCache<String, ProjectTopicName> topics = CacheBuilder.newBuilder()
             .build(new CacheLoader<String, ProjectTopicName>() {
                 @Override
                 public ProjectTopicName load(String topic) {
                     return createTopicName(topic);
                 }
             });
-    private LoadingCache<String, Publisher> publishers = CacheBuilder.newBuilder()
+    private final LoadingCache<String, Publisher> publishers = CacheBuilder.newBuilder()
             .build(new CacheLoader<String, Publisher>() {
                 @Override
                 public Publisher load(String topic) {
                     return createPublisher(topic);
                 }
             });
-    @Value("${s34j.pubsub.topicPrefix:}")
-    private String topicPrefix;
+    private final Environment environment;
+    private final DestinationConfigurationProvider configurationProvider;
+    private final ObjectMapper objectMapper;
+    private final ExecutorProvider executorProvider;
+    private final PubSubLogger pubSubLogger;
 
-    /**
-     * Auto configure this instance using a set of default object: SimplePubSubLogger, ObjectMapper,
-     * InstantiatingExecutorProvider, DefaultDestinationConfigurationProvider
-     */
-    @PostConstruct
-    void start() {
-        if (pubSubLogger == null) {
-            logger.info("Logger not found, setting up a simple logger.");
-            pubSubLogger = new SimplePubSubLogger();
-        }
-        if (objectMapper == null) {
-            logger.info("Json Mapper not found, setting up default instance.");
-            objectMapper = new ObjectMapper();
-        }
-        if (executorProvider == null) {
-            logger.info("Executor Provider not found, setting up default instance.");
-            executorProvider = InstantiatingExecutorProvider.newBuilder().setExecutorThreadCount(Runtime.getRuntime()
-                    .availableProcessors()).build();
-        }
-        if (configurationProvider == null) {
-            logger.info("Configuration Provider not found, setting up default instance.");
-            configurationProvider = new DefaultDestinationConfigurationProvider(environment);
-        }
+    public GooglePubSub(Environment environment, DestinationConfigurationProvider configurationProvider, ObjectMapper objectMapper, ExecutorProvider executorProvider, PubSubLogger pubSubLogger) {
+        this.environment = environment;
+        this.configurationProvider = configurationProvider;
+        this.objectMapper = objectMapper;
+        this.executorProvider = executorProvider;
+        this.pubSubLogger = pubSubLogger;
     }
 
     @Override
@@ -126,9 +96,9 @@ public class GooglePubSub extends PubSub {
         Preconditions.checkNotNull(subscription);
         Preconditions.checkNotNull(messageClass);
         Preconditions.checkNotNull(consumer);
-        if (!isEmpty(topicPrefix)) {
-            topic = topicPrefix + "." + topic;
-            subscription = topicPrefix + "." + subscription;
+        if (!isEmpty(getTopicPrefix())) {
+            topic = getTopicPrefix() + "." + topic;
+            subscription = getTopicPrefix() + "." + subscription;
         }
         String finalTopic = topic;
         String finalSubscription = subscription;
@@ -168,6 +138,10 @@ public class GooglePubSub extends PubSub {
         SubscriptionInformation subscriptionInformation = new SubscriptionInformation(subscriber, topic, subscriptionName);
         subscribers.add(subscriptionInformation);
         return subscriptionInformation;
+    }
+
+    private String getTopicPrefix() {
+        return environment.getProperty("s34j.pubsub.topicPrefix", "");
     }
 
     /**
@@ -226,8 +200,8 @@ public class GooglePubSub extends PubSub {
     public void publish(String topic, Object objectMessage, Map<String, String> headers) {
         Preconditions.checkNotNull(topic);
         Preconditions.checkNotNull(objectMessage);
-        if (!isEmpty(topicPrefix)) {
-            topic = topicPrefix + "." + topic;
+        if (!isEmpty(getTopicPrefix())) {
+            topic = getTopicPrefix() + "." + topic;
         }
         try {
             String json = objectMapper.writeValueAsString(objectMessage);

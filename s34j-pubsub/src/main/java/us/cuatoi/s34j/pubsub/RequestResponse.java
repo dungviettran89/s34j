@@ -22,11 +22,8 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.StringUtils;
+import org.springframework.core.env.Environment;
 
-import javax.annotation.PostConstruct;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -36,20 +33,19 @@ import java.util.concurrent.TimeoutException;
 
 public class RequestResponse implements RemovalListener<String, RequestResponse.CompletableFutureHolder> {
     private static final Logger logger = LoggerFactory.getLogger(RequestResponse.class);
-    @Value("${s34j.pubsub.request.response.timeoutMinutes:10}")
-    private int timeout;
-    @Value("${s34j.pubsub.request.response.instanceId:}")
-    private String instanceId;
-    @Autowired
-    private PubSub pubSub;
-    private Set<String> consumers = new HashSet<>();
-    private Cache<String, CompletableFutureHolder<?>> futures;
+    private static final String DEFAULT_INSTANCE_ID = UUID.randomUUID().toString();
+    private final Set<String> consumers = new HashSet<>();
+    private final Cache<String, CompletableFutureHolder<?>> futures;
+    private final PubSub pubSub;
+    private final Environment environment;
 
-    @PostConstruct
-    void start() {
-        futures = CacheBuilder.newBuilder().expireAfterWrite(timeout, TimeUnit.MINUTES).removalListener(this).build();
-        instanceId = StringUtils.isEmpty(instanceId) ? UUID.randomUUID().toString() : instanceId;
+    public RequestResponse(PubSub pubSub, Environment environment) {
+        this.pubSub = pubSub;
+        this.environment = environment;
+        Integer timeoutMinutes = environment.getProperty("s34j.pubsub.request.response.timeoutMinutes", Integer.class, 10);
+        this.futures = CacheBuilder.newBuilder().expireAfterWrite(timeoutMinutes, TimeUnit.MINUTES).removalListener(this).build();
     }
+
 
     public <T> CompletableFuture<T> sendRequestForResponse(Object request, Class<T> responseClass) {
         return sendRequestForResponse(request.getClass().getName(), request, responseClass.getName(), responseClass);
@@ -67,7 +63,7 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
         String uuid = UUID.randomUUID().toString();
         if (!consumers.contains(responseTopic)) {
             consumers.add(responseTopic);
-            String subscriptionName = responseTopic + "_" + RequestResponse.class.getSimpleName() + "_" + instanceId;
+            String subscriptionName = responseTopic + "_" + RequestResponse.class.getSimpleName() + "_" + getInstanceId();
             pubSub.register(responseTopic, subscriptionName, responseClass, (message) -> {
                 this.onMessage(responseTopic, message);
             }).autoRemove();
@@ -83,6 +79,10 @@ public class RequestResponse implements RemovalListener<String, RequestResponse.
 
         pubSub.publish(requestTopic, request, ImmutableMap.of("uuid", uuid));
         return future;
+    }
+
+    private String getInstanceId() {
+        return environment.getProperty("s34j.pubsub.request.response.instanceId", String.class, DEFAULT_INSTANCE_ID);
     }
 
     @SuppressWarnings("unchecked")

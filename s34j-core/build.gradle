@@ -9,7 +9,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 group = 'us.cuatoi.s34j'
-version = '0.7.2'
+version = '0.7.3'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 

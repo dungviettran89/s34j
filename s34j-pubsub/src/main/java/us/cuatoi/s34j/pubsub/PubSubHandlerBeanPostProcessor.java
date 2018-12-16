@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -37,8 +36,11 @@ public class PubSubHandlerBeanPostProcessor extends PubSubBeanPostProcessor impl
 
     private static final Logger logger = LoggerFactory.getLogger(PubSubHandlerBeanPostProcessor.class);
 
-    @Autowired
-    private PubSub pubSub;
+    private final PubSub pubSub;
+
+    public PubSubHandlerBeanPostProcessor(PubSub pubSub) {
+        this.pubSub = pubSub;
+    }
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
